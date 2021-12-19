@@ -1,27 +1,14 @@
-#include "defs.h"
-
-int piece[64] = {
-    ROOK  , KNIGHT, BISHOP, QUEEN , KING  , BISHOP, KNIGHT, ROOK  ,
-    PAWN  , PAWN  , PAWN  , PAWN  , PAWN  , PAWN  , PAWN  , PAWN  ,
-    EMPTY , EMPTY , EMPTY , EMPTY , EMPTY , EMPTY , EMPTY , EMPTY ,
-    EMPTY , EMPTY , EMPTY , EMPTY , EMPTY , EMPTY , EMPTY , EMPTY ,
-    EMPTY , EMPTY , EMPTY , EMPTY , EMPTY , EMPTY , EMPTY , EMPTY ,
-    EMPTY , EMPTY , EMPTY , EMPTY , EMPTY , EMPTY , EMPTY , EMPTY ,
-    PAWN  , PAWN  , PAWN  , PAWN  , PAWN  , PAWN  , PAWN  , PAWN  ,
-    ROOK  , KNIGHT, BISHOP, QUEEN , KING  , BISHOP, KNIGHT, ROOK
-};
-int color[64] = {
-    WHITE , WHITE , WHITE , WHITE , WHITE , WHITE , WHITE , WHITE ,
-    WHITE , WHITE , WHITE , WHITE , WHITE , WHITE , WHITE , WHITE ,
-    EMPTY , EMPTY , EMPTY , EMPTY , EMPTY , EMPTY , EMPTY , EMPTY ,
-    EMPTY , EMPTY , EMPTY , EMPTY , EMPTY , EMPTY , EMPTY , EMPTY ,
-    EMPTY , EMPTY , EMPTY , EMPTY , EMPTY , EMPTY , EMPTY , EMPTY ,
-    EMPTY , EMPTY , EMPTY , EMPTY , EMPTY , EMPTY , EMPTY , EMPTY ,
-    BLACK , BLACK , BLACK , BLACK , BLACK , BLACK , BLACK , BLACK ,
-    BLACK , BLACK , BLACK , BLACK , BLACK , BLACK , BLACK , BLACK
-};
+int piece[64];
+int color[64];
+int side;
+int xside;
+int castling;
+int passant;
+int halfmove;
+int fullmove;
 
 char piece_to_char[7] = {'.', 'P', 'R', 'N', 'B', 'Q', 'K'};
+char castling_char[4] = {'K', 'Q', 'k', 'q'};
 
 int board[64] = {
     56, 57, 58, 59, 60, 61, 62, 63,

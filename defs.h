@@ -1,6 +1,16 @@
 #define MAX_COMMAND_LENGTH 256
+#define MAX_FEN_LENGTH 90
+
+#define INIT_FEN "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
 #define EMPTY 0
+
+#define FILE(s) (s & 7)
+#define RANK(s) (s >> 3)
+
+#define FILE_A 0
+#define FILE_H 7
+#define RANK_8 7
 
 // piece
 #define PAWN 1
