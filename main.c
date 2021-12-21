@@ -81,7 +81,6 @@ int main() {
             printf("Illegal move\n");
             continue;
         }
-        print_board();
         gen_moves();
         print_result();
 
