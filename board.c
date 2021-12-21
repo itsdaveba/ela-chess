@@ -310,7 +310,7 @@ void gen_moves() {
                             break;
                         }
                         if(color[n] != EMPTY) {
-                            if(color[s] == xside) {
+                            if(color[n] == xside) {
                                 add_move(s, n, CAPTURE);
                             }
                             break;
