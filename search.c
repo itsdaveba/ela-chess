@@ -15,5 +15,8 @@ int search() {
         }
     }
 
-    return legal_moves[rand() % i];
+    if(i) {
+        return legal_moves[rand() % i];
+    }
+    return -1;
 }

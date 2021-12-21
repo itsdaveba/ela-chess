@@ -20,6 +20,10 @@ void xboard() {
 
         if(side == computer_side) {
             m = search();
+            if(m == -1) {
+                computer_side = EMPTY;
+                continue;
+            }
             lan = move_to_lan(m);
             printf("move %s\n", lan);
             make_move(m);

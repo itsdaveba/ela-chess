@@ -25,6 +25,10 @@ int main() {
 
         if(side == computer_side) {
             m = search();
+            if(m == -1) {
+                computer_side = EMPTY;
+                continue;
+            }
             lan = move_to_lan(m);
             printf("Ela's move: %s\n", lan);
             make_move(m);
@@ -37,11 +41,13 @@ int main() {
         scanf("%s", command);
 
         if(!strcmp(command, "new")) {
+            computer_side = EMPTY;
             set_board(INIT_FEN);
             gen_moves();
             continue;
         }
         if(!strcmp(command, "fen")) {
+            computer_side = EMPTY;
             getchar();
             fgets(fen, MAX_FEN_LENGTH, stdin);
             fen[strcspn(fen, "\n")] = '\0';
