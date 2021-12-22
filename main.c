@@ -49,6 +49,8 @@ int main() {
         if(!strcmp(command, "new")) {
             computer_side = EMPTY;
             set_board(INIT_FEN);
+            hply = 0;
+            ply = 0;
             gen_moves();
             continue;
         }
