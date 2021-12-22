@@ -47,8 +47,137 @@ void xboard() {
         if(!strcmp(command, "quit")) {
             break;
         }
+        if(!strcmp(command, "random")) {
+            continue;
+        }
+        if(!strcmp(command, "force")) {
+            computer_side = EMPTY;
+            continue;
+        }
         if(!strcmp(command, "go")) {
             computer_side = side;
+            continue;
+        }
+        if(!strcmp(command, "white")) {
+            computer_side = BLACK;
+            side = WHITE;
+            xside = BLACK;
+            ply = 0;
+            gen_moves();
+            continue;
+        }
+        if(!strcmp(command, "black")) {
+            computer_side = WHITE;
+            side = BLACK;
+            xside = WHITE;
+            ply = 0;
+            gen_moves();
+            continue;
+        }
+        if(!strcmp(command, "level")) {
+            continue;
+        }
+        if(!strcmp(command, "st")) {
+            continue;
+        }
+        if(!strcmp(command, "sd")) {
+            continue;
+        }
+        if(!strcmp(command, "time")) {
+            continue;
+        }
+        if(!strcmp(command, "otim")) {
+            continue;
+        }
+        if(!strcmp(command, "?")) {
+            continue;
+        }
+        if(!strcmp(command, "draw")) {
+            continue;
+        }
+        if(!strcmp(command, "result")) {
+            continue;
+        }
+        if(!strcmp(command, "edit")) {
+            side = WHITE;
+            while(TRUE) {
+                scanf("%s", command);
+                if(!strcmp(command, "#")) {
+                    set_board(CLEAR_FEN);
+                    continue;
+                }
+                if(!strcmp(command, "c")) {
+                    side = -side;
+                    continue;
+                }
+                if(!strcmp(command, ".")) {
+                    break;
+                }
+                switch(command[0]) {
+                    case 'P': piece[((command[2] - '1') << 3) + command[1] - 'a'] = PAWN; break;
+                    case 'R': piece[((command[2] - '1') << 3) + command[1] - 'a'] = ROOK; break;
+                    case 'N': piece[((command[2] - '1') << 3) + command[1] - 'a'] = KNIGHT; break;
+                    case 'B': piece[((command[2] - '1') << 3) + command[1] - 'a'] = BISHOP; break;
+                    case 'Q': piece[((command[2] - '1') << 3) + command[1] - 'a'] = QUEEN; break;
+                    case 'K': piece[((command[2] - '1') << 3) + command[1] - 'a'] = KING; break;
+                }
+                color[((command[2] - '1') << 3) + command[1] - 'a'] = side;
+            }
+            fflush(stdin);
+            side = -xside;
+            hply = 0;
+            ply = 0;
+            gen_moves();
+            continue;
+        }
+        if(!strcmp(command, "hint")) {
+            continue;
+        }
+        if(!strcmp(command, "bk")) {
+            continue;
+        }
+        if(!strcmp(command, "undo")) {
+            if(hply == 0) {
+                continue;
+            }
+            take_back();
+            ply = 0;
+            gen_moves();
+            continue;
+        }
+        if(!strcmp(command, "remove")) {
+            if(hply == 0) {
+                continue;
+            }
+            take_back();
+            take_back();
+            ply = 0;
+            gen_moves();
+            continue;
+        }
+        if(!strcmp(command, "hard")) {
+            continue;
+        }
+        if(!strcmp(command, "easy")) {
+            continue;
+        }
+        if(!strcmp(command, "post")) {
+            continue;
+        }
+        if(!strcmp(command, "nopost")) {
+            continue;
+        }
+        if(!strcmp(command, "analyze")) {
+            // TODO
+            continue;
+        }
+        if(!strcmp(command, "name")) {
+            continue;
+        }
+        if(!strcmp(command, "rating")) {
+            continue;
+        }
+        if(!strcmp(command, "computer")) {
             continue;
         }
         
