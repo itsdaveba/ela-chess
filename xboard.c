@@ -125,6 +125,23 @@ void xboard() {
             }
             fflush(stdin);
             side = -xside;
+            castling = 0;
+            if(piece[E1] == KING && color[E1] == WHITE) {
+                if(piece[H1] == ROOK && color[H1] == WHITE) {
+                    castling |= 0b1000;
+                }
+                if(piece[A1] == ROOK && color[A1] == WHITE) {
+                    castling |= 0b0100;
+                }
+            }
+            if(piece[E8] == KING && color[E8] == BLACK) {
+                if(piece[H8] == ROOK && color[H8] == BLACK) {
+                    castling |= 0b0010;
+                }
+                if(piece[A8] == ROOK && color[A8] == BLACK) {
+                    castling |= 0b0001;
+                }
+            }
             hply = 0;
             ply = 0;
             gen_moves();
