@@ -203,10 +203,10 @@ void print_board() {
 
 // add move to move_list
 void add_move(int from, int to, int type) {
-    move_t *move_p = &move_list[n_moves];
+    move_t *move_p = &move_list[ply][n_moves[ply]];
     if(type & PROMOTION) {
         for(int prom = ROOK; prom <= QUEEN; prom++) {
-            n_moves++;
+            n_moves[ply]++;
             move_p->from = from;
             move_p->to = to;
             move_p->prom = prom;
@@ -214,7 +214,7 @@ void add_move(int from, int to, int type) {
         }
     }
     else {
-        n_moves++;
+        n_moves[ply]++;
         move_p->from = from;
         move_p->to = to;
         move_p->prom = EMPTY;
@@ -227,7 +227,7 @@ void gen_moves() {
 
     int type;
 
-    n_moves = 0;
+    n_moves[ply] = 0;
 
     for(int s = 0; s < 64; s++) {
         if(color[s] == side) {
@@ -466,13 +466,13 @@ bool in_check(int side) {
 // make move if it's legal
 bool make_move(int m) {
 
-    move_t move = move_list[m];
+    move_t move = move_list[ply++][m];
 
-    history.move = move;
-    history.castling = castling;
-    history.passant = passant;
-    history.halfmove = halfmove;
-    history.capture = piece[move.to];
+    history[hply].move = move;
+    history[hply].castling = castling;
+    history[hply].passant = passant;
+    history[hply].halfmove = halfmove;
+    history[hply++].capture = piece[move.to];
 
     if(move.type & PROMOTION) {
         piece[move.to] = move.prom;
@@ -567,49 +567,52 @@ bool make_move(int m) {
 // take back last move
 void take_back() {
 
+    hist_t hist = history[--hply];
+    --ply;
+
     side = xside;
     xside = -side;
 
-    castling = history.castling;
-    passant = history.passant;
-    halfmove = history.halfmove;
+    castling = hist.castling;
+    passant = hist.passant;
+    halfmove = hist.halfmove;
 
     if(side == BLACK) {
         fullmove--;
     }
 
-    if(history.move.type & PROMOTION) {
-        piece[history.move.from] = PAWN;
+    if(hist.move.type & PROMOTION) {
+        piece[hist.move.from] = PAWN;
     }
     else {
-        piece[history.move.from] = piece[history.move.to];
+        piece[hist.move.from] = piece[hist.move.to];
     }
-    color[history.move.from] = side;
-    if(history.move.type & CAPTURE) {
-        if(history.move.type & EP_CAPTURE) {
+    color[hist.move.from] = side;
+    if(hist.move.type & CAPTURE) {
+        if(hist.move.type & EP_CAPTURE) {
             if(side == WHITE) {
-                piece[history.move.to + DOWN] = PAWN;
-                color[history.move.to + DOWN] = BLACK;
+                piece[hist.move.to + DOWN] = PAWN;
+                color[hist.move.to + DOWN] = BLACK;
             }
             else {
-                piece[history.move.to + UP] = PAWN;
-                color[history.move.to + UP] = WHITE;
+                piece[hist.move.to + UP] = PAWN;
+                color[hist.move.to + UP] = WHITE;
             }
-            piece[history.move.to] = EMPTY;
-            color[history.move.to] = EMPTY;
+            piece[hist.move.to] = EMPTY;
+            color[hist.move.to] = EMPTY;
         }
         else {
-            piece[history.move.to] = history.capture;
-            color[history.move.to] = xside;
+            piece[hist.move.to] = hist.capture;
+            color[hist.move.to] = xside;
         }
     }
     else {
-        piece[history.move.to] = EMPTY;
-        color[history.move.to] = EMPTY;
+        piece[hist.move.to] = EMPTY;
+        color[hist.move.to] = EMPTY;
     }
 
-    if(history.move.type & CASTLE) {
-        if(history.move.to > history.move.from) {
+    if(hist.move.type & CASTLE) {
+        if(hist.move.to > hist.move.from) {
             if(side == WHITE) {
                 piece[H1] = piece[F1];
                 color[H1] = WHITE;
@@ -639,4 +642,24 @@ void take_back() {
         }
     }
     
+}
+
+u64 Perft(int depth) {
+
+    if(depth == 0) {
+        return 1ULL;
+    }
+
+    u64 nodes = 0;
+
+    gen_moves();
+
+    for(int m = 0; m < n_moves[ply]; m++) {
+        if(make_move(m)) {
+            nodes += Perft(depth - 1);
+            take_back();
+        }
+    }
+
+    return nodes;
 }

@@ -8,6 +8,7 @@ bool attack(int square, int side);
 bool in_check(int side);
 bool make_move(int m);
 void take_back();
+u64 Perft(int depth);
 
 // search.c
 int search();

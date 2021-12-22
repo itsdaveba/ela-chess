@@ -1,3 +1,5 @@
+#define MAX_DEPTH 8
+#define MAX_PLIES 512
 #define MAX_GEN_MOVES 256
 #define MAX_LAN_LENGTH 6
 #define MAX_FEN_LENGTH 90
@@ -60,6 +62,7 @@
 #define DOUBLE_UP 16
 #define DOUBLE_DOWN -16
 
+typedef unsigned long long u64;
 typedef enum {
     FALSE,
     TRUE

@@ -1,7 +1,9 @@
-extern hist_t history;
+extern int ply;
+extern int hply;
+extern hist_t history[MAX_PLIES];
 
-extern int n_moves;
-extern move_t move_list[MAX_GEN_MOVES];
+extern int n_moves[MAX_DEPTH];
+extern move_t move_list[MAX_DEPTH][MAX_GEN_MOVES];
 
 extern int piece[64];
 extern int color[64];

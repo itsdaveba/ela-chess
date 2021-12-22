@@ -8,9 +8,9 @@ void xboard() {
 
     int m;
     char *lan;
-    int computer_side;
     char line[MAX_COMMAND_LENGTH];
     char command[MAX_COMMAND_LENGTH];
+    int computer_side = EMPTY;
 
     setbuf(stdin, NULL);
     setbuf(stdout, NULL);
@@ -27,6 +27,7 @@ void xboard() {
             lan = move_to_lan(m);
             printf("move %s\n", lan);
             make_move(m);
+            ply = 0;
             gen_moves();
             print_result();
             continue;
@@ -38,6 +39,8 @@ void xboard() {
         if(!strcmp(command, "new")) {
             computer_side = BLACK;
             set_board(INIT_FEN);
+            hply = 0;
+            ply = 0;
             gen_moves();
             continue;
         }
@@ -58,6 +61,7 @@ void xboard() {
             printf("Illegal move: %s\n", command);
             continue;
         }
+        ply = 0;
         gen_moves();
         print_result();
     }
@@ -67,14 +71,14 @@ void print_result() {
 
     int m;
 
-    for(m = 0; m < n_moves; m++) {
+    for(m = 0; m < n_moves[ply]; m++) {
         if(make_move(m)) {
             take_back();
             break;
         }
     }
 
-    if(m == n_moves) {
+    if(m == n_moves[ply]) {
         if(in_check(side)) {
             if(side == WHITE) {
                 printf("0-1 {Black mates}\n");
@@ -97,7 +101,7 @@ char *move_to_lan(int m) {
 
     static char lan[MAX_LAN_LENGTH];
 
-    move_t move = move_list[m];
+    move_t move = move_list[ply][m];
 
     lan[0] = FILE(move.from) + 'a';
     lan[1] = RANK(move.from) + '1';
@@ -141,8 +145,8 @@ int lan_to_move(char *lan) {
         default: return -1;
     }
 
-    for(int m = 0; m < n_moves; m++) {
-        if(move_list[m].from == from && move_list[m].to == to && move_list[m].prom == prom) {
+    for(int m = 0; m < n_moves[ply]; m++) {
+        if(move_list[ply][m].from == from && move_list[ply][m].to == to && move_list[ply][m].prom == prom) {
             return m;
         }
     }

@@ -1,9 +1,11 @@
 #include "defs.h"
 
-hist_t history;
+int ply;
+int hply;
+hist_t history[MAX_PLIES];
 
-int n_moves;
-move_t move_list[MAX_GEN_MOVES];
+int n_moves[MAX_DEPTH];
+move_t move_list[MAX_DEPTH][MAX_GEN_MOVES];
 
 int piece[64];
 int color[64];

@@ -14,11 +14,15 @@ int main() {
 
     int m;
     char *lan;
-    int computer_side;
+    u64 nodes;
+    int perft_depth;
     char fen[MAX_FEN_LENGTH];
     char command[MAX_COMMAND_LENGTH];
+    int computer_side = EMPTY;
 
     set_board(INIT_FEN);
+    hply = 0;
+    ply = 0;    
     gen_moves();
     
     while(TRUE) {
@@ -32,11 +36,13 @@ int main() {
             lan = move_to_lan(m);
             printf("Ela's move: %s\n", lan);
             make_move(m);
+            ply = 0;
             gen_moves();
             print_result();
             continue;
         }
 
+        fflush(stdin);
         printf("ela> ");
         scanf("%s", command);
 
@@ -55,6 +61,8 @@ int main() {
                 set_board(INIT_FEN);
                 printf("Error: wrong FEN format\n");
             }
+            hply = 0;
+            ply = 0;
             gen_moves();
             continue;
         }
@@ -68,6 +76,30 @@ int main() {
         }
         if(!strcmp(command, "off")) {
             computer_side = EMPTY;
+            continue;
+        }
+        if(!strcmp(command, "undo")) {
+            if(hply == 0) {
+                continue;
+            }
+            computer_side = EMPTY;
+            take_back();
+            ply = 0;
+            gen_moves();
+            continue;
+        }
+        if(!strcmp(command, "perft")) {
+            computer_side = EMPTY;
+            if(scanf("%d", &perft_depth) == 0 || perft_depth < 1) {
+                printf("Error: wrong perft depth\n");
+                continue;
+            }
+            for(int d = 1; d <= perft_depth; d++) {
+                nodes = Perft(d);
+                printf("perft(%d)= %10llu\n", d, nodes);
+            }
+            ply = 0;
+            gen_moves();
             continue;
         }
         if(!strcmp(command, "exit")) {
@@ -87,6 +119,7 @@ int main() {
             printf("Illegal move\n");
             continue;
         }
+        ply = 0;
         gen_moves();
         print_result();
 
