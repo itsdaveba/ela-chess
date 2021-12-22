@@ -26,10 +26,8 @@ bool set_board(char *fen) {
     }
 
     char *castl = strtok(NULL, " ");
-    if(castl == NULL || !strcmp(castl, "-")) {
-        castling = 0;
-    }
-    else {
+    castling = 0;
+    if(castl != NULL && strcmp(castl, "-")) {
         for(int i = 0; i < strlen(castl); i++) {
             if(castl[i + 1] != '\0' && castl[i] >= castl[i + 1]) {
                 return FALSE;
