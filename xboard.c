@@ -11,6 +11,7 @@ void xboard() {
     char line[MAX_COMMAND_LENGTH];
     char command[MAX_COMMAND_LENGTH];
     int computer_side = EMPTY;
+    bool post = FALSE;
 
     setbuf(stdin, NULL);
     setbuf(stdout, NULL);
@@ -19,7 +20,7 @@ void xboard() {
     while(TRUE) {
 
         if(side == computer_side) {
-            m = search();
+            m = search(post);
             if(m == -1) {
                 computer_side = EMPTY;
                 continue;
@@ -38,6 +39,8 @@ void xboard() {
 
         if(!strcmp(command, "new")) {
             computer_side = BLACK;
+            search_time = DEFAULT_TIME;
+            search_depth = MAX_DEPTH;
             set_board(INIT_FEN);
             hply = 0;
             ply = 0;
@@ -78,9 +81,20 @@ void xboard() {
             continue;
         }
         if(!strcmp(command, "st")) {
+            sscanf(line, "st %d", &search_time);
+            search_depth = MAX_DEPTH;
+            search_time *= 100;
+            if(search_time > MAX_TIME) {
+                search_time = MAX_TIME;
+            }
             continue;
         }
         if(!strcmp(command, "sd")) {
+            sscanf(line, "sd %d", &search_depth);
+            search_time = MAX_TIME;
+            if(search_depth > MAX_DEPTH) {
+                search_depth = MAX_DEPTH;
+            }
             continue;
         }
         if(!strcmp(command, "time")) {
@@ -179,9 +193,11 @@ void xboard() {
             continue;
         }
         if(!strcmp(command, "post")) {
+            post = TRUE;
             continue;
         }
         if(!strcmp(command, "nopost")) {
+            post = FALSE;
             continue;
         }
         if(!strcmp(command, "analyze")) {

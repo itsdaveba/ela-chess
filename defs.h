@@ -1,9 +1,13 @@
-#define MAX_DEPTH 8
+#define MAX_TIME 30000
+#define MAX_DEPTH 14
 #define MAX_PLIES 512
 #define MAX_GEN_MOVES 256
 #define MAX_LAN_LENGTH 6
 #define MAX_FEN_LENGTH 90
 #define MAX_COMMAND_LENGTH 256
+
+#define DEFAULT_TIME 600
+#define DEFAULT_DEPTH 8
 
 #define INIT_FEN "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 #define CLEAR_FEN "8/8/8/8/8/8/8/8 w - - 0 1"

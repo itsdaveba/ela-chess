@@ -11,7 +11,13 @@ void take_back();
 u64 Perft(int depth);
 
 // search.c
-int search();
+int search(bool post);
+int negamax(int alpha, int beta, int depth);
+int quiesce(int alpha, int beta);
+int get_time();
+
+// eval.c
+int evaluate();
 
 // xboard.c
 void xboard();

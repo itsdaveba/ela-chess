@@ -2,6 +2,7 @@ SOURCE_FILES = \
 	main.c \
 	board.c \
 	search.c \
+	eval.c \
 	xboard.c \
 	data.c
 

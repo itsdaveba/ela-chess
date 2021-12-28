@@ -20,6 +20,9 @@ int main() {
     char command[MAX_COMMAND_LENGTH];
     int computer_side = EMPTY;
 
+    search_time = DEFAULT_TIME;
+    search_depth = DEFAULT_DEPTH;
+
     set_board(INIT_FEN);
     hply = 0;
     ply = 0;    
@@ -28,7 +31,7 @@ int main() {
     while(TRUE) {
 
         if(side == computer_side) {
-            m = search();
+            m = search(FALSE);
             if(m == -1) {
                 computer_side = EMPTY;
                 continue;
@@ -88,6 +91,31 @@ int main() {
             take_back();
             ply = 0;
             gen_moves();
+            continue;
+        }
+        if(!strcmp(command, "st")) {
+            if(scanf("%d", &search_time) == 0 || search_time < 0) {
+                search_time = DEFAULT_TIME;
+                printf("Error: wrong search time\n");
+            }
+            else {
+                search_time *= 100;
+            }
+            if(search_time > MAX_TIME) {
+                search_time = MAX_TIME;
+                printf("Error: maximum search time reached (%d seconds)\n", MAX_TIME / 100);
+            }
+            continue;
+        }
+        if(!strcmp(command, "sd")) {
+            if(scanf("%d", &search_depth) == 0 || search_depth < 0) {
+                search_depth = DEFAULT_DEPTH;
+                printf("Error: wrong search depth\n");
+            }
+            if(search_depth > MAX_DEPTH) {
+                search_depth = MAX_DEPTH;
+                printf("Error: maximum search depth reached (%d plies)\n", MAX_DEPTH);
+            }
             continue;
         }
         if(!strcmp(command, "perft")) {
