@@ -4,7 +4,7 @@
 
 int ply;
 int hply;
-hist_t history[MAX_PLIES];
+hist_t history[MAX_HPLY];
 
 int n_moves[MAX_DEPTH + 32];
 move_t move_list[MAX_DEPTH + 32][MAX_GEN_MOVES];

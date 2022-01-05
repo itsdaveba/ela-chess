@@ -12,8 +12,8 @@ int main() {
 
     srand(time(NULL));
 
-    int m;
     char *lan;
+    move_t move;
     u64 nodes;
     int perft_depth;
     char fen[MAX_FEN_LENGTH];
@@ -31,14 +31,14 @@ int main() {
     while(TRUE) {
 
         if(side == computer_side) {
-            m = search(FALSE);
-            if(m == -1) {
+            move = search(FALSE);
+            if(move.type == NO_MOVE) {
                 computer_side = EMPTY;
                 continue;
             }
-            lan = move_to_lan(m);
+            lan = move_to_lan(move);
             printf("Ela's move: %s\n", lan);
-            make_move(m);
+            make_move(move);
             ply = 0;
             gen_moves();
             print_result();
@@ -140,12 +140,12 @@ int main() {
             break;
         }
 
-        m = lan_to_move(command);
-        if(m == -1) {
-            printf("Error: uknown command\n");
+        move = lan_to_move(command);
+        if(move.type == NO_MOVE) {
+            printf("Error: unknown command\n");
             continue;
         }
-        if(m == -2 || !make_move(m)) {
+        if(move.type == ILLEGAL_MOVE || !make_move(move)) {
             printf("Illegal move\n");
             continue;
         }

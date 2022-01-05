@@ -3,7 +3,7 @@
 
 extern int ply;
 extern int hply;
-extern hist_t history[MAX_PLIES];
+extern hist_t history[MAX_HPLY];
 
 extern int n_moves[MAX_DEPTH + 32];
 extern move_t move_list[MAX_DEPTH + 32][MAX_GEN_MOVES];

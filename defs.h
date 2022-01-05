@@ -1,6 +1,6 @@
 #define MAX_TIME 30000
-#define MAX_DEPTH 14
-#define MAX_PLIES 512
+#define MAX_DEPTH 12
+#define MAX_HPLY 512
 #define MAX_GEN_MOVES 256
 #define MAX_LAN_LENGTH 6
 #define MAX_FEN_LENGTH 90
@@ -29,6 +29,9 @@
 #define CAPTURE 8
 #define CASTLE 16
 #define EP_CAPTURE 32
+#define ILLEGAL_MOVE 64
+#define NO_MOVE 128
+
 
 #define FILE(s) (s & 7)
 #define RANK(s) (s >> 3)
@@ -77,6 +80,7 @@ typedef struct {
     int to;
     int prom;
     int type;
+    int score;
 } move_t;
 typedef struct {
     move_t move;

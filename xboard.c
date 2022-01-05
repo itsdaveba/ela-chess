@@ -6,8 +6,8 @@
 
 void xboard() {
 
-    int m;
     char *lan;
+    move_t move;
     char line[MAX_COMMAND_LENGTH];
     char command[MAX_COMMAND_LENGTH];
     int computer_side = EMPTY;
@@ -20,14 +20,14 @@ void xboard() {
     while(TRUE) {
 
         if(side == computer_side) {
-            m = search(post);
-            if(m == -1) {
+            move = search(post);
+            if(move.type == NO_MOVE) {
                 computer_side = EMPTY;
                 continue;
             }
-            lan = move_to_lan(m);
+            lan = move_to_lan(move);
             printf("move %s\n", lan);
-            make_move(m);
+            make_move(move);
             ply = 0;
             gen_moves();
             print_result();
@@ -214,12 +214,12 @@ void xboard() {
             continue;
         }
         
-        m = lan_to_move(command);
-        if(m == -1) {
-            printf("Error (uknown command): %s\n", command);
+        move = lan_to_move(command);
+        if(move.type == NO_MOVE) {
+            printf("Error (unknown command): %s\n", command);
             continue;
         }
-        if(m == -2 || !make_move(m)) {
+        if(move.type == ILLEGAL_MOVE || !make_move(move)) {
             printf("Illegal move: %s\n", command);
             continue;
         }
@@ -234,7 +234,7 @@ void print_result() {
     int m;
 
     for(m = 0; m < n_moves[ply]; m++) {
-        if(make_move(m)) {
+        if(make_move(move_list[ply][m])) {
             take_back();
             break;
         }
@@ -259,11 +259,9 @@ void print_result() {
     
 }
 
-char *move_to_lan(int m) {
+char *move_to_lan(move_t move) {
 
     static char lan[MAX_LAN_LENGTH];
-
-    move_t move = move_list[ply][m];
 
     lan[0] = FILE(move.from) + 'a';
     lan[1] = RANK(move.from) + '1';
@@ -285,33 +283,40 @@ char *move_to_lan(int m) {
     return lan;
 }
 
-int lan_to_move(char *lan) {
+move_t lan_to_move(char *lan) {
+
+    move_t move;
 
     if(lan[0] < 'a' || lan[0] > 'h' ||
        lan[1] < '1' || lan[1] > '8' ||
        lan[2] < 'a' || lan[2] > 'h' ||
        lan[3] < '1' || lan[3] > '8') {
-        return -1;
+        move.type = NO_MOVE;
+        return move;
     } 
 
-    int from = ((lan[1] - '1') << 3) + lan[0] - 'a';
-    int to = ((lan[3] - '1') << 3) + lan[2] - 'a';
-    int prom;
+    move.from = ((lan[1] - '1') << 3) + lan[0] - 'a';
+    move.to = ((lan[3] - '1') << 3) + lan[2] - 'a';
 
     switch(lan[4] | ' ') {
-        case ' ': prom = EMPTY; break;
-        case 'r': prom = ROOK; break;
-        case 'n': prom = KNIGHT; break;
-        case 'b': prom = BISHOP; break;
-        case 'q': prom = QUEEN; break;
-        default: return -1;
+        case ' ': move.prom = EMPTY; break;
+        case 'r': move.prom = ROOK; break;
+        case 'n': move.prom = KNIGHT; break;
+        case 'b': move.prom = BISHOP; break;
+        case 'q': move.prom = QUEEN; break;
+        default: {
+            move.type = NO_MOVE;
+            return move;
+        }
     }
 
     for(int m = 0; m < n_moves[ply]; m++) {
-        if(move_list[ply][m].from == from && move_list[ply][m].to == to && move_list[ply][m].prom == prom) {
-            return m;
+        if(move_list[ply][m].from == move.from && move_list[ply][m].to == move.to && move_list[ply][m].prom == move.prom) {
+            move.type = move_list[ply][m].type;
+            return move;
         }
     }
-    return -2;
-    
+    move.type = ILLEGAL_MOVE;
+    return move;
+
 }

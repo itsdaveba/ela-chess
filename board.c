@@ -462,9 +462,9 @@ bool in_check(int side) {
 }
 
 // make move if it's legal
-bool make_move(int m) {
+bool make_move(move_t move) {
 
-    move_t move = move_list[ply++][m];
+    ply++;
 
     history[hply].move = move;
     history[hply].castling = castling;
@@ -653,7 +653,7 @@ u64 Perft(int depth) {
     gen_moves();
 
     for(int m = 0; m < n_moves[ply]; m++) {
-        if(make_move(m)) {
+        if(make_move(move_list[ply][m])) {
             nodes += Perft(depth - 1);
             take_back();
         }
