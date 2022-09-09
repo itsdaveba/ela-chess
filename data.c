@@ -1,5 +1,3 @@
-#include "defs.h"
-
 int piece[64];
 int color[64];
 
