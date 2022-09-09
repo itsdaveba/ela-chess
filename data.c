@@ -1,7 +1,13 @@
 int piece[64];
 int color[64];
+int side;
+int castling;
+int passant;
+int halfmove;
+int fullmove;
 
 char piece_to_char[7] = {'.', 'P', 'R', 'N', 'B', 'Q', 'K'};
+char castling_char[4] = {'K', 'Q', 'k', 'q'};
 int board[] = {
     56, 57, 58, 59, 60, 61, 62, 63,
     48, 49, 50, 51, 52, 53, 54, 55,

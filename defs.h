@@ -1,3 +1,5 @@
+#define MAX_FEN_LENGTH 90
+
 #define WHITE 1
 #define BLACK -1
 
@@ -10,6 +12,13 @@
 #define KING 6
 
 #define FILE_A 0
+#define FILE_H 7
 
 #define RANK(s) (s >> 3)
 #define FILE(s) (s & 7)
+
+typedef enum
+{
+    FALSE,
+    TRUE
+} bool;

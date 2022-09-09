@@ -1,7 +1,7 @@
 SOURCE_FILES = \
+	main.c \
 	board.c \
-	data.c \
-	main.c
+	data.c
 
 HEADER_FILES = \
 	defs.h \
