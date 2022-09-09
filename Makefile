@@ -1,8 +1,15 @@
 SOURCE_FILES = \
+	board.c \
+	data.c \
 	main.c
 
-ela: ${SOURCE_FILES}
-	gcc -O3 -o ela ${SOURCE_FILES}
+HEADER_FILES = \
+	defs.h \
+	data.h \
+	protos.h
+
+ela: $(SOURCE_FILES) $(HEADER_FILES)
+	gcc -O3 -o ela $(SOURCE_FILES)
 
 run: ela
 	./ela

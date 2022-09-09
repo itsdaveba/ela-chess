@@ -1,8 +1,9 @@
 #include <stdio.h>
+#include "protos.h"
 
 int main()
 {
-    printf("Hello World!\n");
+    print_board();
 
     return 0;
 }
