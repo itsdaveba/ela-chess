@@ -1,1 +1,1 @@
-# ela-chess
+# random-chess
