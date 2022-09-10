@@ -5,7 +5,7 @@
 
 int main()
 {
-    char fen[] = "r1b1k1nr/p2p1pNp/1ppppppp/1p1NP2P/6P1/3P1Q2/P1P1K3/q5b1 w KQkq d3 0 1";
+    char fen[] = "r1b1k1nr/p2p1pNp/n2B4/1p1NP2P/6P1/3P1Q2/P1P1K3/q5b1 b kq g3 0 1";
     if (set_board(fen))
     {
         print_board();
