@@ -74,21 +74,13 @@ bool set_board(char *fen)
         halfmove = 0;
         fullmove = 1;
     }
-    else if (sscanf(hf, "%d %d", &halfmove, &fullmove) < 2)
-    {
-        return FALSE;
-    }
-    else if (halfmove < 0 || fullmove < 1)
+    else if (sscanf(hf, "%d %d", &halfmove, &fullmove) < 2 || halfmove < 0 || fullmove < 1)
     {
         return FALSE;
     }
 
-    char *row = strtok(brd, "/");
-    if (row == NULL)
-    {
-        return FALSE;
-    }
     int s = 0;
+    char *row = strtok(brd, "/");
     while (row != NULL)
     {
         if (strlen(row) > 8 || FILE(board[s]) != FILE_A)
@@ -160,6 +152,7 @@ char *get_fen()
     static char fen[MAX_FEN_LENGTH];
 
     int c = 0;
+    
     for (int s = 0; s < 64; s++)
     {
         if (piece[board[s]] == EMPTY)
