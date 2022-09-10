@@ -5,13 +5,37 @@
 
 int main()
 {
-    char fen[] = "r1b1k1nr/p2p1pNp/n2B4/1p1NP2P/6P1/3P1Q2/P1P1K3/q5b1 b kq g3 0 1";
-    if (set_board(fen))
+    char fen[MAX_FEN_LENGTH];
+    char command[MAX_COMMAND_LENGTH];
+
+    set_board(INIT_FEN);
+
+    while (TRUE)
     {
-        print_board();
-        if (strcmp(fen, get_fen())) {
-            printf("ERROR\n");
+        printf("random> ");
+        scanf("%s", command);
+
+        if (!strcmp(command, "fen"))
+        {
+            getchar();
+            fgets(fen, MAX_FEN_LENGTH, stdin);
+            fen[strcspn(fen, "\n")] = '\0';
+            if (!set_board(fen))
+            {
+                printf("Error: wrong FEN format\n");
+            }
+            continue;
+        }
+        if (!strcmp(command, "d"))
+        {
+            print_board();
+            continue;
+        }
+        if (!strcmp(command, "exit"))
+        {
+            break;
         }
     }
+
     return 0;
 }

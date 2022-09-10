@@ -1,7 +1,7 @@
 #define MAX_FEN_LENGTH 90
+#define MAX_COMMAND_LENGTH 256
 
-#define WHITE 1
-#define BLACK -1
+#define INIT_FEN "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
 #define EMPTY 0
 #define PAWN 1
@@ -10,6 +10,9 @@
 #define BISHOP 4
 #define QUEEN 5
 #define KING 6
+
+#define WHITE 1
+#define BLACK -1
 
 #define FILE_A 0
 #define FILE_H 7
