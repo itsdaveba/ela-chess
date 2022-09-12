@@ -2,6 +2,7 @@
 #include <string.h>
 #include "defs.h"
 #include "data.h"
+#include "protos.h"
 
 bool set_board(char *fen)
 {
@@ -79,8 +80,8 @@ bool set_board(char *fen)
         return FALSE;
     }
 
-    int s = 0;
     char *row = strtok(brd, "/");
+    int s = 0;
     while (row != NULL)
     {
         if (strlen(row) > 8 || FILE(board[s]) != FILE_A)
@@ -152,7 +153,7 @@ char *get_fen()
     static char fen[MAX_FEN_LENGTH];
 
     int c = 0;
-    
+
     for (int s = 0; s < 64; s++)
     {
         if (piece[board[s]] == EMPTY)
@@ -247,4 +248,206 @@ void print_board()
         }
     }
     printf("\n\n");
+}
+
+void add_move(int from, int to, int type)
+{
+    move_t *move_p = &move_list[n_moves];
+
+    if (type & PROMOTION)
+    {
+        for (int prom = ROOK; prom <= QUEEN; prom++)
+        {
+            n_moves++;
+            move_p->from = from;
+            move_p->to = to;
+            move_p->prom = prom;
+            move_p->type = type;
+        }
+    }
+    n_moves++;
+    move_p->from = from;
+    move_p->to = to;
+    move_p->prom = EMPTY;
+    move_p->type = type;
+}
+
+void gen_moves()
+{
+    int type;
+
+    n_moves = 0;
+
+    for (int s = 0; s < 64; s++)
+    {
+        if (color[s] == side)
+        {
+            if (piece[s] == PAWN)
+            {
+                type = PAWN_MOVE;
+                if (side == WHITE)
+                {
+                    if (piece[s + UP] == EMPTY)
+                    {
+                        if (RANK(s) == RANK_7)
+                        {
+                            add_move(s, s + UP, type | PROMOTION);
+                        }
+                        else
+                        {
+                            add_move(s, s + UP, type);
+                        }
+                        if (RANK(s) == RANK_2 && piece[s + DOUBLE_UP] == EMPTY)
+                        {
+                            add_move(s, s + DOUBLE_UP, type | PAWN_DOUBLE_MOVE);
+                        }
+                    }
+                    type |= CAPTURE;
+                    if (FILE(s) != FILE_A && color[s + UP_LEFT] == BLACK)
+                    {
+                        if (RANK(s) == RANK_7)
+                        {
+                            add_move(s, s + UP_LEFT, type | PROMOTION);
+                        }
+                        else
+                        {
+                            add_move(s, s + UP_LEFT, type);
+                        }
+                    }
+                    if (FILE(s) != FILE_H && color[s + UP_RIGHT] == BLACK)
+                    {
+                        if (RANK(s) == RANK_7)
+                        {
+                            add_move(s, s + UP_RIGHT, type | PROMOTION);
+                        }
+                        else
+                        {
+                            add_move(s, s + UP_RIGHT, type);
+                        }
+                    }
+                }
+                else
+                {
+                    if (piece[s + DOWN] == EMPTY)
+                    {
+                        if (RANK(s) == RANK_2)
+                        {
+                            add_move(s, s + DOWN, type | PROMOTION);
+                        }
+                        else
+                        {
+                            add_move(s, s + DOWN, type);
+                        }
+                        if (RANK(s) == RANK_7 && piece[s + DOUBLE_DOWN] == EMPTY)
+                        {
+                            add_move(s, s + DOUBLE_DOWN, type | PAWN_DOUBLE_MOVE);
+                        }
+                    }
+                    type |= CAPTURE;
+                    if (FILE(s) != FILE_A && color[s + DOWN_LEFT] == WHITE)
+                    {
+                        if (RANK(s) == RANK_2)
+                        {
+                            add_move(s, s + DOWN_LEFT, type | PROMOTION);
+                        }
+                        else
+                        {
+                            add_move(s, s + DOWN_LEFT, type);
+                        }
+                    }
+                    if (FILE(s) != FILE_H && color[s + DOWN_RIGHT] == WHITE)
+                    {
+                        if (RANK(s) == RANK_2)
+                        {
+                            add_move(s, s + DOWN_RIGHT, type | PROMOTION);
+                        }
+                        else
+                        {
+                            add_move(s, s + DOWN_RIGHT, type);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                for (int d = 0; d < n_directions[piece[s]]; d++)
+                {
+                    for (int n = s;;)
+                    {
+                        n = mailbox[mailbox64[n] + direction[piece[s]][d]];
+                        if (n == -1)
+                        {
+                            break;
+                        }
+                        if (color[n] != EMPTY)
+                        {
+                            if (color[n] == -side)
+                            {
+                                add_move(s, n, CAPTURE);
+                            }
+                            break;
+                        }
+                        add_move(s, n, 0);
+                        if (!slider[piece[s]])
+                        {
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    if (castling != 0)
+    {
+        if (side == WHITE)
+        {
+            if ((castling & 0b1000) && piece[F1] == EMPTY && piece[G1] == EMPTY)
+            {
+                add_move(E1, G1, CASTLE);
+            }
+            if ((castling & 0b0100) && piece[D1] == EMPTY && piece[C1] == EMPTY && piece[B1] == EMPTY)
+            {
+                add_move(E1, C1, CASTLE);
+            }
+        }
+        else
+        {
+            if ((castling & 0b0010) && piece[F8] == EMPTY && piece[G8] == EMPTY)
+            {
+                add_move(E8, G8, CASTLE);
+            }
+            if ((castling & 0b0001) && piece[D8] == EMPTY && piece[C8] == EMPTY && piece[B8] == EMPTY)
+            {
+                add_move(E8, C8, CASTLE);
+            }
+        }
+    }
+
+    if (passant != -1)
+    {
+        type = PAWN_MOVE | CAPTURE | EP_CAPTURE;
+        if (side == WHITE)
+        {
+            if (FILE(passant) != FILE_A && piece[passant + DOWN_LEFT] == PAWN && color[passant + DOWN_LEFT] == WHITE)
+            {
+                add_move(passant + DOWN_LEFT, passant, type);
+            }
+            if (FILE(passant) != FILE_H && piece[passant + DOWN_RIGHT] == PAWN && color[passant + DOWN_RIGHT] == WHITE)
+            {
+                add_move(passant + DOWN_RIGHT, passant, type);
+            }
+        }
+        else
+        {
+            if (FILE(passant) != FILE_A && piece[passant + UP_LEFT] == PAWN && color[passant + UP_LEFT] == BLACK)
+            {
+                add_move(passant + UP_LEFT, passant, type);
+            }
+            if (FILE(passant) != FILE_H && piece[passant + UP_RIGHT] == PAWN && color[passant + UP_RIGHT] == WHITE)
+            {
+                add_move(passant + UP_RIGHT, passant, type);
+            }
+        }
+    }
 }
