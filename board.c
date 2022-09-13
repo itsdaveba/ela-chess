@@ -7,6 +7,7 @@
 bool set_board(char *fen)
 {
     char copy[MAX_FEN_LENGTH];
+
     strcpy(copy, fen);
 
     char *brd = strtok(copy, " ");
@@ -230,6 +231,7 @@ char *get_fen()
 void print_board()
 {
     char *fen = get_fen();
+
     printf("\n%s\n", fen);
     printf("\n  A B C D E F G H");
     for (int s = 0; s < 64; s++)
