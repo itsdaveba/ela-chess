@@ -26,12 +26,12 @@ bool set_board(char *fen)
     }
 
     char *castl = strtok(NULL, " ");
-    castling = 0;
+    castling = 0b0000;
     if (castl != NULL && strcmp(castl, "-"))
     {
         for (int i = 0; i < strlen(castl); i++)
         {
-            if (castl[i + 1] != '\0' && castl[i] >= castl[i + 1])
+            if (castl[i] <= castl[i - 1])
             {
                 return FALSE;
             }
@@ -62,7 +62,7 @@ bool set_board(char *fen)
     }
     else if (pass[0] >= 'a' && pass[0] <= 'h' && (pass[1] == '3' || pass[1] == '6') && pass[2] == '\0')
     {
-        passant = ((pass[1] - '1') << 3) + pass[0] - 'a';
+        passant = SQUARE(pass[0], pass[1]);
     }
     else
     {
