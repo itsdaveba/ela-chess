@@ -152,16 +152,16 @@ char *get_fen()
 {
     static char fen[MAX_FEN_LENGTH];
 
+    int ctr;
     int c = 0;
 
     for (int s = 0; s < 64; s++)
     {
         if (piece[board[s]] == EMPTY)
         {
-            int ctr;
-            for (ctr = 1; FILE(board[s]) != FILE_H && piece[board[s + 1]] == EMPTY; s++)
+            for (ctr = 1; FILE(board[s]) != FILE_H && piece[board[s + 1]] == EMPTY; ctr++)
             {
-                ctr++;
+                s++;
             }
             fen[c++] = ctr + '0';
         }
