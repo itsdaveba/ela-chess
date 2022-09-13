@@ -281,7 +281,7 @@ void gen_moves()
 {
     int type;
 
-    n_moves = 0;
+    n_moves[ply] = 0;
 
     for (int s = 0; s < 64; s++)
     {
@@ -386,7 +386,7 @@ void gen_moves()
                         }
                         if (color[n] != EMPTY)
                         {
-                            if (color[n] == -side)
+                            if (color[n] == xside)
                             {
                                 add_move(s, n, CAPTURE);
                             }
