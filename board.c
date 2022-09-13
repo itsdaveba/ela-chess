@@ -230,7 +230,6 @@ char *get_fen()
 void print_board()
 {
     char *fen = get_fen();
-
     printf("\n%s\n", fen);
     printf("\n  A B C D E F G H");
     for (int s = 0; s < 64; s++)
