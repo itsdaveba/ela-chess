@@ -455,4 +455,315 @@ void gen_moves()
             }
         }
     }
+    }
+    */
+}
+
+bool attack(int square, int side)
+{
+    for (int s = 0; s < 64; s++)
+    {
+        if (color[s] == side)
+        {
+            if (piece[s] == PAWN)
+            {
+                if (side == WHITE)
+                {
+                    if (FILE(s) != FILE_A && square == s + UP_LEFT)
+                    {
+                        return TRUE;
+                    }
+                    if (FILE(s) != FILE_H && square == s + UP_RIGHT)
+                    {
+                        return TRUE;
+                    }
+                }
+                else
+                {
+                    if (FILE(s) != FILE_A && square == s + DOWN_LEFT)
+                    {
+                        return TRUE;
+                    }
+                    if (FILE(s) != FILE_H && square == s + DOWN_RIGHT)
+                    {
+                        return TRUE;
+                    }
+                }
+            }
+            else
+            {
+                for (int d = 0; d < n_directions[piece[s]]; d++)
+                {
+                    for (int n = s;;)
+                    {
+                        n = mailbox[mailbox64[n] + direction[piece[s]][d]];
+                        if (n == -1 || color[n] != EMPTY || !slider[piece[s]])
+                        {
+                            break;
+                        }
+                        if (square == n)
+                        {
+                            return TRUE;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return FALSE;
+}
+
+bool in_check(int side)
+{
+    for (int s = 0; s < 64; s++)
+    {
+        if (piece[s] == KING && color[s] == side)
+        {
+            if (side == WHITE)
+            {
+                return attack(s, BLACK);
+            }
+            else
+            {
+                return attack(s, WHITE);
+            }
+        }
+    }
+    return FALSE;
+}
+
+bool make_move(move_t move)
+{
+    history[hply].move = move;
+    history[hply].castling = castling;
+    history[hply].passant = passant;
+    history[hply].halfmove = halfmove;
+    history[hply++].capture = piece[move.to];
+
+    if (move.type & PROMOTION)
+    {
+        piece[move.to] = move.prom;
+    }
+    else
+    {
+        piece[move.to] = piece[move.from];
+    }
+    color[move.to] = side;
+    piece[move.from] = EMPTY;
+    color[move.from] = EMPTY;
+
+    if (castling != 0)
+    {
+        castling &= castling_rights[move.from] & castling_rights[move.to];
+    }
+
+    if (move.type & PAWN_DOUBLE_MOVE)
+    {
+        if (side == WHITE)
+        {
+            passant = move.to + DOWN;
+        }
+        else
+        {
+            passant = move.to + UP;
+        }
+    }
+    else if (passant != -1)
+    {
+        passant = -1;
+    }
+
+    if (move.type & (PAWN_MOVE | CAPTURE))
+    {
+        halfmove = 0;
+    }
+    else
+    {
+        halfmove++;
+    }
+
+    if (side == BLACK)
+    {
+        fullmove++;
+    }
+
+    if (move.type & CASTLE)
+    {
+        if (move.to > move.from)
+        {
+            if (side == WHITE)
+            {
+                piece[F1] = piece[H1];
+                color[F1] = WHITE;
+                piece[H1] = EMPTY;
+                color[H1] = EMPTY;
+            }
+            else
+            {
+                piece[F8] = piece[H8];
+                color[F8] = BLACK;
+                piece[H8] = EMPTY;
+                color[H8] = EMPTY;
+            }
+        }
+        else
+        {
+            if (side == WHITE)
+            {
+                piece[D1] = piece[A1];
+                color[D1] = WHITE;
+                piece[A1] = EMPTY;
+                color[A1] = EMPTY;
+            }
+            else
+            {
+                piece[D8] = piece[A8];
+                color[D8] = BLACK;
+                piece[A8] = EMPTY;
+                color[A8] = EMPTY;
+            }
+        }
+    }
+
+    if (move.type & EP_CAPTURE)
+    {
+        if (side == WHITE)
+        {
+            piece[move.to + DOWN] = EMPTY;
+            color[move.to + DOWN] = EMPTY;
+        }
+        else
+        {
+            piece[move.to + UP] = EMPTY;
+            color[move.to + UP] = EMPTY;
+        }
+    }
+
+    side = -side;
+
+    if (in_check(-side))
+    {
+        take_back();
+        return FALSE;
+    }
+
+    return TRUE;
+}
+
+void take_back()
+{
+
+    hist_t hist = history[--hply];
+    --ply;
+
+    side = -side;
+
+    castling = hist.castling;
+    passant = hist.passant;
+    halfmove = hist.halfmove;
+
+    if (side == BLACK)
+    {
+        fullmove--;
+    }
+
+    if (hist.move.type & PROMOTION)
+    {
+        piece[hist.move.from] = PAWN;
+    }
+    else
+    {
+        piece[hist.move.from] = piece[hist.move.to];
+    }
+    color[hist.move.from] = side;
+    if (hist.move.type & CAPTURE)
+    {
+        if (hist.move.type & EP_CAPTURE)
+        {
+            if (side == WHITE)
+            {
+                piece[hist.move.to + DOWN] = PAWN;
+                color[hist.move.to + DOWN] = BLACK;
+            }
+            else
+            {
+                piece[hist.move.to + UP] = PAWN;
+                color[hist.move.to + UP] = WHITE;
+            }
+            piece[hist.move.to] = EMPTY;
+            color[hist.move.to] = EMPTY;
+        }
+        else
+        {
+            piece[hist.move.to] = hist.capture;
+            color[hist.move.to] = -side;
+        }
+    }
+    else
+    {
+        piece[hist.move.to] = EMPTY;
+        color[hist.move.to] = EMPTY;
+    }
+
+    if (hist.move.type & CASTLE)
+    {
+        if (hist.move.to > hist.move.from)
+        {
+            if (side == WHITE)
+            {
+                piece[H1] = piece[F1];
+                color[H1] = WHITE;
+                piece[F1] = EMPTY;
+                color[F1] = EMPTY;
+            }
+            else
+            {
+                piece[H8] = piece[F8];
+                color[H8] = BLACK;
+                piece[F8] = EMPTY;
+                color[F8] = EMPTY;
+            }
+        }
+        else
+        {
+            if (side == WHITE)
+            {
+                piece[A1] = piece[D1];
+                color[A1] = WHITE;
+                piece[D1] = EMPTY;
+                color[D1] = EMPTY;
+            }
+            else
+            {
+                piece[A8] = piece[D8];
+                color[A8] = BLACK;
+                piece[D8] = EMPTY;
+                color[D8] = EMPTY;
+            }
+        }
+    }
+}
+
+u64 perft(int depth)
+{
+
+    if (depth == 0)
+    {
+        return 1ULL;
+    }
+
+    u64 nodes = 0;
+
+    gen_moves();
+
+    for (int m = 0; m < n_moves[ply]; m++)
+    {
+        if (make_move(move_list[ply][m]))
+        {
+            nodes += perft(depth - 1);
+            take_back();
+        }
+    }
+
+    return nodes;
 }
