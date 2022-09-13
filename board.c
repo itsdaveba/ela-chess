@@ -254,24 +254,27 @@ void print_board()
 
 void add_move(int from, int to, int type)
 {
-    move_t *move_p = &move_list[n_moves];
+    move_t *move_p = &move_list[ply][n_moves[ply]];
 
     if (type & PROMOTION)
     {
         for (int prom = ROOK; prom <= QUEEN; prom++)
         {
-            n_moves++;
+            n_moves[ply]++;
             move_p->from = from;
             move_p->to = to;
             move_p->prom = prom;
-            move_p->type = type;
+            move_p++->type = type;
         }
     }
-    n_moves++;
-    move_p->from = from;
-    move_p->to = to;
-    move_p->prom = EMPTY;
-    move_p->type = type;
+    else
+    {
+        n_moves[ply]++;
+        move_p->from = from;
+        move_p->to = to;
+        move_p->prom = EMPTY;
+        move_p->type = type;
+    }
 }
 
 void gen_moves()
