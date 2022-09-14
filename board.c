@@ -523,14 +523,7 @@ bool in_check(int side)
     {
         if (piece[s] == KING && color[s] == side)
         {
-            if (side == WHITE)
-            {
-                return attack(s, BLACK);
-            }
-            else
-            {
-                return attack(s, WHITE);
-            }
+            return attack(s, -side);
         }
     }
     return FALSE;
