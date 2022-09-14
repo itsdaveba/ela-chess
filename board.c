@@ -623,7 +623,7 @@ bool make_move(move_t move)
             to = D8;
             break;
         }
-        piece[to] = piece[from];
+        piece[to] = ROOK;
         color[to] = side;
         piece[from] = EMPTY;
         color[from] = EMPTY;
@@ -656,9 +656,7 @@ bool make_move(move_t move)
 
 void take_back()
 {
-
     hist_t hist = history[--hply];
-    --ply;
 
     side = -side;
 
@@ -680,70 +678,57 @@ void take_back()
         piece[hist.move.from] = piece[hist.move.to];
     }
     color[hist.move.from] = side;
-    if (hist.move.type & CAPTURE)
-    {
-        if (hist.move.type & EP_CAPTURE)
-        {
-            if (side == WHITE)
-            {
-                piece[hist.move.to + DOWN] = PAWN;
-                color[hist.move.to + DOWN] = BLACK;
-            }
-            else
-            {
-                piece[hist.move.to + UP] = PAWN;
-                color[hist.move.to + UP] = WHITE;
-            }
-            piece[hist.move.to] = EMPTY;
-            color[hist.move.to] = EMPTY;
-        }
-        else
-        {
-            piece[hist.move.to] = hist.capture;
-            color[hist.move.to] = -side;
-        }
-    }
-    else
+    if (hist.capture == EMPTY)
     {
         piece[hist.move.to] = EMPTY;
         color[hist.move.to] = EMPTY;
     }
+    else
+    {
+        piece[hist.move.to] = hist.capture;
+        color[hist.move.to] = -side;
+    }
 
     if (hist.move.type & CASTLE)
     {
-        if (hist.move.to > hist.move.from)
+        int from;
+        int to;
+        switch (hist.move.to)
         {
-            if (side == WHITE)
-            {
-                piece[H1] = piece[F1];
-                color[H1] = WHITE;
-                piece[F1] = EMPTY;
-                color[F1] = EMPTY;
-            }
-            else
-            {
-                piece[H8] = piece[F8];
-                color[H8] = BLACK;
-                piece[F8] = EMPTY;
-                color[F8] = EMPTY;
-            }
+        case G1:
+            from = H1;
+            to = F1;
+            break;
+        case C1:
+            from = A1;
+            to = D1;
+            break;
+        case G8:
+            from = H8;
+            to = F8;
+            break;
+        case C8:
+            from = A8;
+            to = D8;
+            break;
+        }
+        piece[from] = ROOK;
+        color[from] = side;
+        piece[to] = EMPTY;
+        color[to] = EMPTY;
+    }
+
+    if (hist.move.type & EP_CAPTURE)
+    {
+        if (side == WHITE)
+        {
+            piece[hist.move.to + DOWN] = PAWN;
+            color[hist.move.to + DOWN] = BLACK;
         }
         else
         {
-            if (side == WHITE)
-            {
-                piece[A1] = piece[D1];
-                color[A1] = WHITE;
-                piece[D1] = EMPTY;
-                color[D1] = EMPTY;
-            }
-            else
-            {
-                piece[A8] = piece[D8];
-                color[A8] = BLACK;
-                piece[D8] = EMPTY;
-                color[D8] = EMPTY;
-            }
+            piece[hist.move.to + UP] = PAWN;
+            color[hist.move.to + UP] = WHITE;
         }
     }
 }
