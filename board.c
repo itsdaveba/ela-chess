@@ -153,13 +153,13 @@ char *get_fen()
 {
     static char fen[MAX_FEN_LENGTH];
 
-    int ctr;
     int c = 0;
 
     for (int s = 0; s < 64; s++)
     {
         if (piece[board[s]] == EMPTY)
         {
+            int ctr;
             for (ctr = 1; FILE(board[s]) != FILE_H && piece[board[s + 1]] == EMPTY; ctr++)
             {
                 s++;
@@ -602,40 +602,31 @@ bool make_move(move_t move)
 
     if (move.type & CASTLE)
     {
-        if (move.to > move.from)
+        int from;
+        int to;
+        switch (move.to)
         {
-            if (side == WHITE)
-            {
-                piece[F1] = piece[H1];
-                color[F1] = WHITE;
-                piece[H1] = EMPTY;
-                color[H1] = EMPTY;
-            }
-            else
-            {
-                piece[F8] = piece[H8];
-                color[F8] = BLACK;
-                piece[H8] = EMPTY;
-                color[H8] = EMPTY;
-            }
+        case G1:
+            from = H1;
+            to = F1;
+            break;
+        case C1:
+            from = A1;
+            to = D1;
+            break;
+        case G8:
+            from = H8;
+            to = F8;
+            break;
+        case C8:
+            from = A8;
+            to = D8;
+            break;
         }
-        else
-        {
-            if (side == WHITE)
-            {
-                piece[D1] = piece[A1];
-                color[D1] = WHITE;
-                piece[A1] = EMPTY;
-                color[A1] = EMPTY;
-            }
-            else
-            {
-                piece[D8] = piece[A8];
-                color[D8] = BLACK;
-                piece[A8] = EMPTY;
-                color[A8] = EMPTY;
-            }
-        }
+        piece[to] = piece[from];
+        color[to] = side;
+        piece[from] = EMPTY;
+        color[from] = EMPTY;
     }
 
     if (move.type & EP_CAPTURE)
