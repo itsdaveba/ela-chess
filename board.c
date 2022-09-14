@@ -497,13 +497,17 @@ bool attack(int square, int side)
                     for (int n = s;;)
                     {
                         n = mailbox[mailbox64[n] + direction[piece[s]][d]];
-                        if (n == -1 || color[n] != EMPTY || !slider[piece[s]])
+                        if (n == -1)
                         {
                             break;
                         }
                         if (square == n)
                         {
                             return TRUE;
+                        }
+                        if (color[n] != EMPTY || !slider[piece[s]])
+                        {
+                            break;
                         }
                     }
                 }
