@@ -407,24 +407,42 @@ void gen_moves()
     {
         if (side == WHITE)
         {
-            if ((castling & 0b1000) && piece[F1] == EMPTY && piece[G1] == EMPTY)
+            if (!attack(E1, BLACK))
             {
-                add_move(E1, G1, CASTLE);
-            }
-            if ((castling & 0b0100) && piece[D1] == EMPTY && piece[C1] == EMPTY && piece[B1] == EMPTY)
-            {
-                add_move(E1, C1, CASTLE);
+                if (castling & 0b1000)
+                {
+                    if (piece[F1] == EMPTY && piece[G1] == EMPTY && !attack(F1, BLACK))
+                    {
+                        add_move(E1, G1, CASTLE);
+                    }
+                }
+                if (castling & 0b0100)
+                {
+                    if (piece[D1] == EMPTY && piece[C1] == EMPTY && piece[B1] == EMPTY && !attack(D1, BLACK))
+                    {
+                        add_move(E1, C1, CASTLE);
+                    }
+                }
             }
         }
         else
         {
-            if ((castling & 0b0010) && piece[F8] == EMPTY && piece[G8] == EMPTY)
+            if (!attack(E8, WHITE))
             {
-                add_move(E8, G8, CASTLE);
-            }
-            if ((castling & 0b0001) && piece[D8] == EMPTY && piece[C8] == EMPTY && piece[B8] == EMPTY)
-            {
-                add_move(E8, C8, CASTLE);
+                if (castling & 0b0010)
+                {
+                    if (piece[F8] == EMPTY && piece[G8] == EMPTY && !attack(F8, WHITE))
+                    {
+                        add_move(E8, G8, CASTLE);
+                    }
+                }
+                if (castling & 0b0001)
+                {
+                    if (piece[D8] == EMPTY && piece[C8] == EMPTY && piece[B8] == EMPTY && !attack(D8, WHITE))
+                    {
+                        add_move(E8, C8, CASTLE);
+                    }
+                }
             }
         }
     }
