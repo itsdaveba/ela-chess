@@ -552,6 +552,7 @@ bool make_move(move_t move)
     history[hply].passant = passant;
     history[hply].halfmove = halfmove;
     history[hply++].capture = piece[move.to];
+    ply++;
 
     if (move.type & PROMOTION)
     {
@@ -657,6 +658,7 @@ bool make_move(move_t move)
 void take_back()
 {
     hist_t hist = history[--hply];
+    --ply;
 
     side = -side;
 
@@ -735,7 +737,6 @@ void take_back()
 
 u64 perft(int depth)
 {
-
     if (depth == 0)
     {
         return 1ULL;
