@@ -386,7 +386,7 @@ void gen_moves()
                         }
                         if (color[n] != EMPTY)
                         {
-                            if (color[n] == xside)
+                            if (color[n] == -side)
                             {
                                 add_move(s, n, CAPTURE);
                             }
@@ -449,14 +449,12 @@ void gen_moves()
             {
                 add_move(passant + UP_LEFT, passant, type);
             }
-            if (FILE(passant) != FILE_H && piece[passant + UP_RIGHT] == PAWN && color[passant + UP_RIGHT] == WHITE)
+            if (FILE(passant) != FILE_H && piece[passant + UP_RIGHT] == PAWN && color[passant + UP_RIGHT] == BLACK)
             {
                 add_move(passant + UP_RIGHT, passant, type);
             }
         }
     }
-    }
-    */
 }
 
 bool attack(int square, int side)
