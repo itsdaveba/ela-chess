@@ -603,8 +603,7 @@ bool make_move(move_t move)
 
     if (move.type & CASTLE)
     {
-        int from;
-        int to;
+        int from, to;
         switch (move.to)
         {
         case G1:
@@ -693,8 +692,7 @@ void take_back()
 
     if (hist.move.type & CASTLE)
     {
-        int from;
-        int to;
+        int from, to;
         switch (hist.move.to)
         {
         case G1:

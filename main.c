@@ -1,22 +1,45 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include "defs.h"
 #include "data.h"
 #include "protos.h"
 
 int main()
 {
-    printf("\nRandom Chess Program\n\n");
+    printf("Random Chess Program\n\n");
+
+    srand(time(NULL));
 
     move_t move;
-    char fen[MAX_FEN_LENGTH];
     char command[MAX_COMMAND_LENGTH];
+    int computer_side = EMPTY;
 
-    set_board("r1b1k1nr/p2p1pNp/n2B4/1p1NP2P/6P1/3P1Q2/P1P1K3/q5b1");
+    set_board(INIT_FEN);
+    hply = 0;
+    ply = 0;
     gen_moves();
 
     while (TRUE)
     {
+        if (side == computer_side)
+        {
+            move = search();
+            if (move.type == NO_MOVE)
+            {
+                printf("No legal moves\n");
+                computer_side = EMPTY;
+                continue;
+            }
+            char *lan = move_to_lan(move);
+            printf("Random move: %s\n", lan);
+            make_move(move);
+            ply = 0;
+            gen_moves();
+            continue;
+        }
+
         printf("random> ");
         scanf("%s", command);
 
