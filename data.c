@@ -15,7 +15,7 @@ int passant;
 int halfmove;
 int fullmove;
 
-const char piece_to_char[7] = {'.', 'P', 'R', 'N', 'B', 'Q', 'K'};
+const char piece_char[7] = {'.', 'P', 'R', 'N', 'B', 'Q', 'K'};
 const char castling_char[4] = {'K', 'Q', 'k', 'q'};
 const int board[64] = {
     56, 57, 58, 59, 60, 61, 62, 63,

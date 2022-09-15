@@ -170,11 +170,11 @@ char *get_fen()
         {
             if (color[board[s]] == WHITE)
             {
-                fen[c++] = piece_to_char[piece[board[s]]];
+                fen[c++] = piece_char[piece[board[s]]];
             }
             else
             {
-                fen[c++] = piece_to_char[piece[board[s]]] | ' ';
+                fen[c++] = piece_char[piece[board[s]]] | ' ';
             }
         }
         if (FILE(board[s]) == FILE_H && s != 63)
@@ -242,11 +242,11 @@ void print_board()
         }
         if (color[board[s]] == BLACK)
         {
-            printf(" %c", piece_to_char[piece[board[s]]] | ' ');
+            printf(" %c", piece_char[piece[board[s]]] | ' ');
         }
         else
         {
-            printf(" %c", piece_to_char[piece[board[s]]]);
+            printf(" %c", piece_char[piece[board[s]]]);
         }
     }
     printf("\n\n");
