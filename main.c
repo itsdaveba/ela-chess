@@ -43,15 +43,30 @@ int main()
         printf("random> ");
         scanf("%s", command);
 
+        if (!strcmp(command, "new"))
+        {
+            computer_side = EMPTY;
+            set_board(INIT_FEN);
+            hply = 0;
+            ply = 0;
+            gen_moves();
+            continue;
+        }
         if (!strcmp(command, "fen"))
         {
+            char fen[MAX_FEN_LENGTH];
+            computer_side = EMPTY;
             getchar();
             fgets(fen, MAX_FEN_LENGTH, stdin);
             fen[strcspn(fen, "\n")] = '\0';
             if (!set_board(fen))
             {
+                set_board(INIT_FEN);
                 printf("Error: wrong FEN format\n");
             }
+            hply = 0;
+            ply = 0;
+            gen_moves();
             continue;
         }
         if (!strcmp(command, "d"))
