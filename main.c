@@ -118,6 +118,20 @@ int main()
         {
             break;
         }
+
+        move = lan_to_move(command);
+        if (move.type == NO_MOVE)
+        {
+            printf("Error: uknown command\n");
+            continue;
+        }
+        if (move.type == ILLEGAL_MOVE || !make_move(move))
+        {
+            printf("Error: illegal move\n");
+            continue;
+        }
+        ply = 0;
+        gen_moves();
     }
 
     return 0;
@@ -135,15 +149,18 @@ char *move_to_lan(move_t move)
 
     if (move.type & PROMOTION)
     {
-        if (color[move.from] == WHITE)
+        if (side == WHITE)
         {
-            lan[4] = piece_to_char[move.prom];
+            lan[4] = piece_char[move.prom];
         }
         else
         {
-            lan[4] = piece_to_char[move.prom] | ' ';
+            lan[4] = piece_char[move.prom] | ' ';
         }
-        lan[5] = '\0';
+        if (lan[5] != '\0')
+        {
+            lan[5] = '\0';
+        }
     }
     else if (lan[4] != '\0')
     {
@@ -151,4 +168,53 @@ char *move_to_lan(move_t move)
     }
 
     return lan;
+}
+
+move_t lan_to_move(char *lan)
+{
+    move_t move;
+
+    if (lan[0] < 'a' || lan[0] > 'h' ||
+        lan[1] < '1' || lan[1] > '8' ||
+        lan[2] < 'a' || lan[2] > 'h' ||
+        lan[3] < '1' || lan[3] > '8')
+    {
+        move.type = NO_MOVE;
+        return move;
+    }
+
+    move.from = SQUARE(lan[0], lan[1]);
+    move.to = SQUARE(lan[2], lan[3]);
+    switch (lan[4] | ' ')
+    {
+    case ' ':
+        move.prom = EMPTY;
+        break;
+    case 'r':
+        move.prom = ROOK;
+        break;
+    case 'n':
+        move.prom = KNIGHT;
+        break;
+    case 'b':
+        move.prom = BISHOP;
+        break;
+    case 'q':
+        move.prom = QUEEN;
+        break;
+    default:
+        move.type = NO_MOVE;
+        return move;
+    }
+
+    for (int m = 0; m < n_moves[0]; m++)
+    {
+        if (move_list[0][m].from == move.from && move_list[0][m].to == move.to && move_list[0][m].prom == move.prom)
+        {
+            return move_list[0][m];
+        }
+    }
+
+    move.type = ILLEGAL_MOVE;
+    return move;
 }

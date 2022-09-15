@@ -27,7 +27,7 @@ void shuffle_moves()
     int i, j;
     move_t temp;
 
-    for (i = n_moves[ply] - 1; i > 0; i--)
+    for (i = n_moves[0] - 1; i > 0; i--)
     {
         j = rand() % (i + 1);
         temp = move_list[0][i];
