@@ -104,9 +104,13 @@ int main()
             computer_side = EMPTY;
             if (scanf("%d", &depth) == 0 || depth < 1)
             {
-            for (int m = 0; m < n_moves; m++)
+                printf("Error: wrong perft depth\n");
+                continue;
+            }
+            for (int d = 1; d <= depth; d++)
             {
-                printf("%s\n", move_to_lan(move_list[m]));
+                nodes = perft(d);
+                printf("perft(%d)= %10llu\n", d, nodes);
             }
             continue;
         }
