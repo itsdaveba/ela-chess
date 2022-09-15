@@ -1,7 +1,11 @@
 #include "defs.h"
 
-int n_moves;
-move_t move_list[MAX_GEN_MOVES];
+int ply;
+int hply;
+hist_t history[MAX_HPLY];
+
+int n_moves[MAX_DEPTH];
+move_t move_list[MAX_DEPTH][MAX_GEN_MOVES];
 
 int piece[64];
 int color[64];
@@ -11,9 +15,9 @@ int passant;
 int halfmove;
 int fullmove;
 
-char piece_to_char[7] = {'.', 'P', 'R', 'N', 'B', 'Q', 'K'};
-char castling_char[4] = {'K', 'Q', 'k', 'q'};
-int board[] = {
+const char piece_to_char[7] = {'.', 'P', 'R', 'N', 'B', 'Q', 'K'};
+const char castling_char[4] = {'K', 'Q', 'k', 'q'};
+const int board[64] = {
     56, 57, 58, 59, 60, 61, 62, 63,
     48, 49, 50, 51, 52, 53, 54, 55,
     40, 41, 42, 43, 44, 45, 46, 47,
@@ -22,10 +26,19 @@ int board[] = {
     16, 17, 18, 19, 20, 21, 22, 23,
      8,  9, 10, 11, 12, 13, 14, 15,
      0,  1,  2,  3,  4,  5,  6,  7};
+const int castling_rights[64] = {
+    11, 15, 15, 15,  3, 15, 15,  7,
+    15, 15, 15, 15, 15, 15, 15, 15,
+    15, 15, 15, 15, 15, 15, 15, 15,
+    15, 15, 15, 15, 15, 15, 15, 15,
+    15, 15, 15, 15, 15, 15, 15, 15,
+    15, 15, 15, 15, 15, 15, 15, 15,
+    15, 15, 15, 15, 15, 15, 15, 15,
+    14, 15, 15, 15, 12, 15, 15, 13};
 
-int slider[7] = {FALSE, FALSE, TRUE, FALSE, TRUE, TRUE, FALSE};
-int n_directions[7] = {0, 0, 4, 8, 4, 8, 8};
-int direction[7][8] = {
+const int slider[7] = {FALSE, FALSE, TRUE, FALSE, TRUE, TRUE, FALSE};
+const int n_directions[7] = {0, 0, 4, 8, 4, 8, 8};
+const int direction[7][8] = {
       0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,
     -10,  -1,   1,  10,   0,   0,   0,   0,
@@ -33,7 +46,7 @@ int direction[7][8] = {
     -11,  -9,   9,  11,   0,   0,   0,   0,
     -11, -10,  -9,  -1,   1,   9,  10,  11,
     -11, -10,  -9,  -1,   1,   9,  10,  11};
-int mailbox[120] = {
+const int mailbox[120] = {
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
     -1,  0,  1,  2,  3,  4,  5,  6,  7, -1,
@@ -46,7 +59,7 @@ int mailbox[120] = {
     -1, 56, 57, 58, 59, 60, 61, 62, 63, -1,
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
-int mailbox64[64] = {
+const int mailbox64[64] = {
     21, 22, 23, 24, 25, 26, 27, 28,
     31, 32, 33, 34, 35, 36, 37, 38,
     41, 42, 43, 44, 45, 46, 47, 48,
