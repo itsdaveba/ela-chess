@@ -13,3 +13,7 @@ bool in_check(int side);
 bool make_move(move_t move);
 void take_back();
 u64 perft(int depth);
+
+// search.c
+move_t search();
+void shuffle_moves(int ply);
