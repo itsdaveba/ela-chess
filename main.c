@@ -74,8 +74,36 @@ int main()
             print_board();
             continue;
         }
-        if (!strcmp(command, "moves"))
+        if (!strcmp(command, "on"))
         {
+            computer_side = side;
+            continue;
+        }
+        if (!strcmp(command, "off"))
+        {
+            computer_side = EMPTY;
+            continue;
+        }
+        if (!strcmp(command, "undo"))
+        {
+            if (hply == 0)
+            {
+                printf("Error: no previous move\n");
+                continue;
+            }
+            computer_side = EMPTY;
+            take_back();
+            ply = 0;
+            gen_moves();
+            continue;
+        }
+        if (!strcmp(command, "perft"))
+        {
+            int depth;
+            u64 nodes;
+            computer_side = EMPTY;
+            if (scanf("%d", &depth) == 0 || depth < 1)
+            {
             for (int m = 0; m < n_moves; m++)
             {
                 printf("%s\n", move_to_lan(move_list[m]));
