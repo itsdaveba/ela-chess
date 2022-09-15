@@ -1,3 +1,5 @@
+#define MAX_HPLY 512
+#define MAX_DEPTH 8
 #define MAX_GEN_MOVES 256
 #define MAX_LAN_LENGTH 6
 #define MAX_FEN_LENGTH 90
@@ -25,26 +27,31 @@
 #define ILLEGAL_MOVE 64
 #define NO_MOVE 128
 
-#define RANK(s) (s >> 3)
 #define FILE(s) (s & 7)
+#define RANK(s) (s >> 3)
+#define SQUARE(f, r) (((r - '1') << 3) + f - 'a')
 
-#define FILE_A 0
-#define FILE_H 7
-#define RANK_2 1
-#define RANK_7 6
-
+#define A1 0
 #define B1 1
 #define C1 2
 #define D1 3
 #define E1 4
 #define F1 5
 #define G1 6
+#define H1 7
+#define A8 56
 #define B8 57
 #define C8 58
 #define D8 59
 #define E8 60
 #define F8 61
 #define G8 62
+#define H8 63
+
+#define FILE_A 0
+#define FILE_H 7
+#define RANK_2 1
+#define RANK_7 6
 
 #define UP 8
 #define DOWN -8
@@ -58,6 +65,7 @@
 #define DOUBLE_UP 16
 #define DOUBLE_DOWN -16
 
+typedef unsigned long long u64;
 typedef enum
 {
     FALSE,
@@ -70,3 +78,11 @@ typedef struct
     int prom;
     int type;
 } move_t;
+typedef struct
+{
+    move_t move;
+    int castling;
+    int passant;
+    int halfmove;
+    int capture;
+} hist_t;
