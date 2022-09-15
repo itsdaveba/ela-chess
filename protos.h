@@ -16,4 +16,4 @@ u64 perft(int depth);
 
 // search.c
 move_t search();
-void shuffle_moves(int ply);
+void shuffle_moves();

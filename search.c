@@ -7,7 +7,7 @@ move_t search()
 {
     move_t move;
 
-    shuffle_moves(0);
+    shuffle_moves();
 
     for (int m = 0; m < n_moves[0]; m++)
     {
@@ -22,7 +22,7 @@ move_t search()
     return move;
 }
 
-void shuffle_moves(int ply)
+void shuffle_moves()
 {
     int i, j;
     move_t temp;
@@ -30,8 +30,8 @@ void shuffle_moves(int ply)
     for (i = n_moves[ply] - 1; i > 0; i--)
     {
         j = rand() % (i + 1);
-        temp = move_list[ply][i];
-        move_list[ply][i] = move_list[ply][j];
-        move_list[ply][j] = temp;
+        temp = move_list[0][i];
+        move_list[0][i] = move_list[0][j];
+        move_list[0][j] = temp;
     }
 }
