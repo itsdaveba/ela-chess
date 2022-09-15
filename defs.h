@@ -27,9 +27,17 @@
 #define ILLEGAL_MOVE 64
 #define NO_MOVE 128
 
-#define FILE(s) (s & 7)
-#define RANK(s) (s >> 3)
-#define SQUARE(f, r) (((r - '1') << 3) + f - 'a')
+#define UP 8
+#define DOWN -8
+#define RIGHT 1
+#define LEFT -1
+
+#define UP_RIGHT 9
+#define UP_LEFT 7
+#define DOWN_RIGHT -7
+#define DOWN_LEFT -9
+#define DOUBLE_UP 16
+#define DOUBLE_DOWN -16
 
 #define A1 0
 #define B1 1
@@ -53,17 +61,9 @@
 #define RANK_2 1
 #define RANK_7 6
 
-#define UP 8
-#define DOWN -8
-#define RIGHT 1
-#define LEFT -1
-
-#define UP_RIGHT 9
-#define UP_LEFT 7
-#define DOWN_RIGHT -7
-#define DOWN_LEFT -9
-#define DOUBLE_UP 16
-#define DOUBLE_DOWN -16
+#define FILE(s) (s & 7)
+#define RANK(s) (s >> 3)
+#define SQUARE(f, r) (((r - '1') << 3) + f - 'a')
 
 typedef unsigned long long u64;
 typedef enum
