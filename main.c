@@ -8,13 +8,13 @@
 
 int main()
 {
-    printf("Random Chess Program\n\n");
-
-    srand(time(NULL));
-
     move_t move;
     char command[MAX_COMMAND_LENGTH];
     int computer_side = EMPTY;
+
+    printf("Random Chess Program\n\n");
+
+    srand(time(NULL));
 
     set_board(INIT_FEN);
     hply = 0;
@@ -113,6 +113,11 @@ int main()
                 printf("perft(%d)= %10llu\n", d, nodes);
             }
             continue;
+        }
+        if (!strcmp(command, "xboard"))
+        {
+            xboard();
+            break;
         }
         if (!strcmp(command, "exit"))
         {

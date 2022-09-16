@@ -17,3 +17,6 @@ u64 perft(int depth);
 // search.c
 move_t search();
 void shuffle_moves();
+
+// xboard.c
+void xboard();
