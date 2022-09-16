@@ -2,7 +2,6 @@ SOURCE_FILES = \
 	main.c \
 	board.c \
 	search.c \
-	xboard.c \
 	data.c
 
 HEADER_FILES = \

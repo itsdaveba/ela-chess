@@ -9,12 +9,16 @@
 int main()
 {
     move_t move;
-    char command[MAX_COMMAND_LENGTH];
+    char *command;
+    char line[MAX_COMMAND_LENGTH];
+    bool xboard = FALSE;
     int computer_side = EMPTY;
 
     printf("Random Chess Program\n\n");
 
     srand(time(NULL));
+    setbuf(stdin, NULL);
+    setbuf(stdout, NULL);
 
     set_board(INIT_FEN);
     hply = 0;
@@ -33,33 +37,55 @@ int main()
                 continue;
             }
             char *lan = move_to_lan(move);
-            printf("Random move: %s\n", lan);
+            if (xboard)
+            {
+                printf("move %s\n", lan);
+            }
+            else
+            {
+                printf("Random move: %s\n", lan);
+            }
             make_move(move);
             ply = 0;
             gen_moves();
             continue;
         }
 
-        printf("random> ");
-        scanf("%s", command);
+        if (!xboard)
+        {
+            printf("random> ");
+        }
+        fgets(line, MAX_COMMAND_LENGTH, stdin);
+        command = strtok(line, " \n");
+        if (command == NULL)
+        {
+            continue;
+        }
 
         if (!strcmp(command, "new"))
         {
-            computer_side = EMPTY;
+            if (xboard)
+            {
+                computer_side = BLACK;
+            }
+            else
+            {
+                computer_side = EMPTY;
+            }
             set_board(INIT_FEN);
             hply = 0;
             ply = 0;
             gen_moves();
             continue;
         }
-        if (!strcmp(command, "fen"))
+        if (!strcmp(command, "fen") || !strcmp(command, "setboard"))
         {
-            char fen[MAX_FEN_LENGTH];
-            computer_side = EMPTY;
-            getchar();
-            fgets(fen, MAX_FEN_LENGTH, stdin);
-            fen[strcspn(fen, "\n")] = '\0';
-            if (!set_board(fen))
+            char *fen = strtok(NULL, "\n");
+            if (!xboard)
+            {
+                computer_side = EMPTY;
+            }
+            if (fen == NULL || !set_board(fen))
             {
                 set_board(INIT_FEN);
                 printf("Error: wrong FEN format\n");
@@ -74,12 +100,12 @@ int main()
             print_board();
             continue;
         }
-        if (!strcmp(command, "on"))
+        if (!strcmp(command, "on") || !strcmp(command, "go"))
         {
             computer_side = side;
             continue;
         }
-        if (!strcmp(command, "off"))
+        if (!strcmp(command, "off") || !strcmp(command, "force"))
         {
             computer_side = EMPTY;
             continue;
@@ -101,8 +127,9 @@ int main()
         {
             int depth;
             u64 nodes;
+            char *temp = strtok(NULL, " \n");
             computer_side = EMPTY;
-            if (scanf("%d", &depth) == 0 || depth < 1)
+            if (temp == NULL || sscanf(temp, "%d", &depth) == 0 || depth < 1)
             {
                 printf("Error: wrong perft depth\n");
                 continue;
@@ -116,10 +143,11 @@ int main()
         }
         if (!strcmp(command, "xboard"))
         {
-            xboard();
-            break;
+            xboard = !xboard;
+            printf("\n");
+            continue;
         }
-        if (!strcmp(command, "exit"))
+        if (!strcmp(command, "exit") || !strcmp(command, "quit"))
         {
             break;
         }
@@ -127,12 +155,26 @@ int main()
         move = lan_to_move(command);
         if (move.type == NO_MOVE)
         {
-            printf("Error: uknown command\n");
+            if (xboard)
+            {
+                printf("Error (unknown command): %s\n", command);
+            }
+            else
+            {
+                printf("Error: uknown command\n");
+            }
             continue;
         }
         if (move.type == ILLEGAL_MOVE || !make_move(move))
         {
-            printf("Error: illegal move\n");
+            if (xboard)
+            {
+                printf("Illegal move: %s\n", command);
+            }
+            else
+            {
+                printf("Error: illegal move\n");
+            }
             continue;
         }
         ply = 0;
