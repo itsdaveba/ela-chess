@@ -117,7 +117,10 @@ int main()
                 printf("Error: no previous move\n");
                 continue;
             }
-            computer_side = EMPTY;
+            if (!xboard)
+            {
+                computer_side = EMPTY;
+            }
             take_back();
             ply = 0;
             gen_moves();
