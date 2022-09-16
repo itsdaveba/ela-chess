@@ -3,7 +3,7 @@
 #define MAX_GEN_MOVES 256
 #define MAX_LAN_LENGTH 6
 #define MAX_FEN_LENGTH 90
-#define MAX_COMMAND_LENGTH 256
+#define MAX_LINE_LENGTH 256
 
 #define INIT_FEN "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 

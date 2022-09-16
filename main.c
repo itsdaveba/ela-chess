@@ -10,7 +10,7 @@ int main()
 {
     move_t move;
     char *command;
-    char line[MAX_COMMAND_LENGTH];
+    char line[MAX_LINE_LENGTH];
     bool xboard = FALSE;
     int computer_side = EMPTY;
 
@@ -55,7 +55,7 @@ int main()
         {
             printf("random> ");
         }
-        fgets(line, MAX_COMMAND_LENGTH, stdin);
+        fgets(line, MAX_LINE_LENGTH, stdin);
         command = strtok(line, " \n");
         if (command == NULL)
         {
