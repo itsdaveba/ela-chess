@@ -32,7 +32,7 @@ int main()
             move = search();
             if (move.type == NO_MOVE)
             {
-                printf("No legal moves\n");
+                printf("Error: no legal moves\n");
                 computer_side = EMPTY;
                 continue;
             }
@@ -48,6 +48,7 @@ int main()
             make_move(move);
             ply = 0;
             gen_moves();
+            print_result();
             continue;
         }
 
@@ -182,6 +183,10 @@ int main()
         }
         ply = 0;
         gen_moves();
+        if (print_result())
+        {
+            computer_side = EMPTY;
+        }
     }
 
     return 0;
@@ -267,4 +272,45 @@ move_t lan_to_move(char *lan)
 
     move.type = ILLEGAL_MOVE;
     return move;
+}
+
+bool print_result()
+{
+    int m;
+
+    for (m = 0; m < n_moves[0]; m++)
+    {
+        if (make_move(move_list[0][m]))
+        {
+            take_back();
+            break;
+        }
+    }
+
+    if (m == n_moves[0])
+    {
+        if (in_check(side))
+        {
+            if (side == WHITE)
+            {
+                printf("0-1 {Black mates}\n");
+            }
+            else
+            {
+                printf("1-0 {White mates}\n");
+            }
+        }
+        else
+        {
+            printf("1/2-1/2 {Stalemate}\n");
+        }
+        return TRUE;
+    }
+    if (halfmove >= 100)
+    {
+        printf("1/2-1/2 {Draw by fifty move rule}\n");
+        return TRUE;
+    }
+
+    return FALSE;
 }
