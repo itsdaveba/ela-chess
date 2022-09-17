@@ -14,7 +14,7 @@ int main()
     bool xboard = FALSE;
     int computer_side = EMPTY;
 
-    printf("Random Chess Program\n\n");
+    printf("Ela Chess Program\n\n");
 
     srand(time(NULL));
     setbuf(stdin, NULL);
@@ -43,7 +43,7 @@ int main()
             }
             else
             {
-                printf("Random move: %s\n", lan);
+                printf("Ela's move: %s\n", lan);
             }
             make_move(move);
             ply = 0;
@@ -54,7 +54,7 @@ int main()
 
         if (!xboard)
         {
-            printf("random> ");
+            printf("ela> ");
         }
         fgets(line, MAX_LINE_LENGTH, stdin);
         command = strtok(line, " \n");

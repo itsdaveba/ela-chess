@@ -9,11 +9,11 @@ HEADER_FILES = \
 	data.h \
 	protos.h
 
-random: $(SOURCE_FILES) $(HEADER_FILES)
-	gcc -O3 -o random $(SOURCE_FILES)
+ela: $(SOURCE_FILES) $(HEADER_FILES)
+	gcc -O3 -o ela $(SOURCE_FILES)
 
-run: random
-	./random
+run: ela
+	./ela
 
 clean:
-	rm -f random
+	rm -f ela
