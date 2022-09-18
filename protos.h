@@ -17,4 +17,8 @@ u64 perft(int depth);
 
 // search.c
 move_t search();
-void shuffle_moves();
+int maxi(int depth);
+int mini(int depth);
+
+// eval.c
+int evaluate();
