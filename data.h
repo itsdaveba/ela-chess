@@ -23,3 +23,6 @@ extern const int n_directions[7];
 extern const int direction[7][8];
 extern const int mailbox[120];
 extern const int mailbox64[64];
+
+extern const int piece_value[7];
+extern const int piece_table[7][64];
