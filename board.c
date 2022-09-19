@@ -4,9 +4,8 @@
 #include "data.h"
 #include "protos.h"
 
-// set board state from FEN
 bool set_board(char *fen) {
-    
+
     char copy[MAX_FEN_LENGTH];
     strcpy(copy, fen);
 
@@ -58,10 +57,7 @@ bool set_board(char *fen) {
         halfmove = 0;
         fullmove = 1;
     }
-    else if(sscanf(hf, "%d %d", &halfmove, &fullmove) < 2) {
-        return FALSE;
-    }
-    else if(halfmove < 0 || fullmove < 1) {
+    else if(sscanf(hf, "%d %d", &halfmove, &fullmove) < 2 || halfmove < 0 || fullmove < 1) {
         return FALSE;
     }
 
@@ -115,7 +111,6 @@ bool set_board(char *fen) {
     return TRUE;
 }
 
-// get FEN from board state
 char *get_fen() {
 
     static char fen[MAX_FEN_LENGTH];
@@ -176,15 +171,17 @@ char *get_fen() {
     fen[c++] = ' ';
 
     sprintf(fen + c, "%d %d", halfmove, fullmove);
-    
+
     return fen;
 }
 
-// print FEN and ASCII board
 void print_board() {
+
     char *fen = get_fen();
+
     printf("\n%s\n", fen);
     printf("\n  A B C D E F G H");
+
     for(int s = 0; s < 64; s++) {
         if(FILE(board[s]) == FILE_A) {
             printf("\n%d", RANK(board[s]) + 1);
@@ -196,12 +193,14 @@ void print_board() {
             printf(" %c", piece_to_char[piece[board[s]]] | ' ');
         }
     }
+
     printf("\n\n");
 }
 
-// add move to move_list
 void add_move(int from, int to, int type) {
+
     move_t *move_p = &move_list[ply][n_moves[ply]];
+
     if(type & PROMOTION) {
         for(int prom = ROOK; prom <= QUEEN; prom++) {
             n_moves[ply]++;
@@ -220,7 +219,6 @@ void add_move(int from, int to, int type) {
     }
 }
 
-// generate pseudo-legal moves
 void gen_moves() {
 
     int type;
@@ -389,11 +387,10 @@ void gen_moves() {
             }
         }
     }
-
 }
 
-// is square attacked by side
 bool attack(int square, int side) {
+
     for(int s = 0; s < 64; s++) {
         if(color[s] == side) {
             if(piece[s] == PAWN) {
@@ -443,11 +440,12 @@ bool attack(int square, int side) {
             }
         }
     }
+
     return FALSE;
 }
 
-// is king's side in check
 bool in_check(int side) {
+
     for(int s = 0; s < 64; s++) {
         if(piece[s] == KING && color[s] == side) {
             if(side == WHITE) {
@@ -458,10 +456,10 @@ bool in_check(int side) {
             }
         }
     }
+
     return FALSE;
 }
 
-// make move if it's legal
 bool make_move(move_t move) {
 
     ply++;
@@ -562,10 +560,10 @@ bool make_move(move_t move) {
     return TRUE;
 }
 
-// take back last move
 void take_back() {
 
     hist_t hist = history[--hply];
+
     --ply;
 
     side = xside;
@@ -639,7 +637,6 @@ void take_back() {
             }
         }
     }
-    
 }
 
 u64 Perft(int depth) {

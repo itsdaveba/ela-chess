@@ -6,12 +6,10 @@
 
 void xboard() {
 
-    char *lan;
     move_t move;
     char line[MAX_COMMAND_LENGTH];
     char command[MAX_COMMAND_LENGTH];
     int computer_side = EMPTY;
-    bool post = FALSE;
 
     setbuf(stdin, NULL);
     setbuf(stdout, NULL);
@@ -20,13 +18,12 @@ void xboard() {
     while(TRUE) {
 
         if(side == computer_side) {
-            move = search(post);
+            move = search();
             if(move.type == NO_MOVE) {
                 computer_side = EMPTY;
                 continue;
             }
-            lan = move_to_lan(move);
-            printf("move %s\n", lan);
+            printf("move %s\n", move_to_lan(move));
             make_move(move);
             ply = 0;
             gen_moves();
@@ -201,7 +198,6 @@ void xboard() {
             continue;
         }
         if(!strcmp(command, "analyze")) {
-            // TODO
             continue;
         }
         if(!strcmp(command, "name")) {

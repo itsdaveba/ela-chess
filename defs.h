@@ -1,10 +1,16 @@
 #define MAX_TIME 30000
 #define MAX_DEPTH 12
 #define MAX_HPLY 512
+#define MAX_QUIESCE 32
 #define MAX_GEN_MOVES 256
 #define MAX_LAN_LENGTH 6
 #define MAX_FEN_LENGTH 90
 #define MAX_COMMAND_LENGTH 256
+
+#define MIN_SCORE -100001
+#define MAX_SCORE 100001
+#define M_SCORE 10605
+#define DRAW_SCORE 0
 
 #define DEFAULT_TIME 600
 #define DEFAULT_DEPTH 8
@@ -31,7 +37,6 @@
 #define EP_CAPTURE 32
 #define ILLEGAL_MOVE 64
 #define NO_MOVE 128
-
 
 #define FILE(s) (s & 7)
 #define RANK(s) (s >> 3)

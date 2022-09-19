@@ -2,19 +2,6 @@
 #include <sys/time.h>
 #include "defs.h"
 
-int ply;
-int hply;
-hist_t history[MAX_HPLY];
-
-int n_moves[MAX_DEPTH + 32];
-move_t move_list[MAX_DEPTH + 32][MAX_GEN_MOVES];
-
-jmp_buf env;
-struct timeval start, now;
-int search_time;
-int search_depth;
-int nodes;
-
 int piece[64];
 int color[64];
 int side;
@@ -24,9 +11,23 @@ int passant;
 int halfmove;
 int fullmove;
 
-char piece_to_char[7] = {'.', 'P', 'R', 'N', 'B', 'Q', 'K'};
-char castling_char[4] = {'K', 'Q', 'k', 'q'};
-int board[64] = {
+int ply;
+int n_moves[MAX_DEPTH + MAX_QUIESCE];
+move_t move_list[MAX_DEPTH + MAX_QUIESCE][MAX_GEN_MOVES];
+
+int hply;
+hist_t history[MAX_HPLY];
+
+int nodes;
+bool post;
+jmp_buf env;
+int search_time;
+int search_depth;
+struct timeval start, now;
+
+const char piece_to_char[7] = {'.', 'P', 'R', 'N', 'B', 'Q', 'K'};
+const char castling_char[4] = {'K', 'Q', 'k', 'q'};
+const int board[64] = {
     56, 57, 58, 59, 60, 61, 62, 63,
     48, 49, 50, 51, 52, 53, 54, 55,
     40, 41, 42, 43, 44, 45, 46, 47,
@@ -34,7 +35,7 @@ int board[64] = {
     24, 25, 26, 27, 28, 29, 30, 31,
     16, 17, 18, 19, 20, 21, 22, 23,
      8,  9, 10, 11, 12, 13, 14, 15,
-     0,  1,  2,  3,  4,  5,  6,  7 
+     0,  1,  2,  3,  4,  5,  6,  7
 };
 const int castling_rights[64] = {
     11, 15, 15, 15,  3, 15, 15,  7,
@@ -83,8 +84,8 @@ const int mailbox64[64] = {
     91, 92, 93, 94, 95, 96, 97, 98
 };
 
-int piece_value[7] = {0, 100, 500, 320, 330, 900, 0};
-int piece_table[7][64] = {
+const int piece_value[7] = {0, 100, 500, 320, 330, 900, 20000};
+const int piece_table[7][64] = {
     {
       0,  0,  0,  0,  0,  0,  0,  0,
       0,  0,  0,  0,  0,  0,  0,  0,
