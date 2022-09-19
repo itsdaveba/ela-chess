@@ -85,7 +85,7 @@ bool set_board(char *fen)
     int s = 0;
     while (row != NULL)
     {
-        if (strlen(row) > 8 || FILE(board[s]) != FILE_A)
+        if (strlen(row) > 8 || FILE(bigend_rank[s]) != FILE_A)
         {
             return FALSE;
         }
@@ -96,31 +96,31 @@ bool set_board(char *fen)
                 if (row[c] & ' ')
                 {
                     row[c] ^= ' ';
-                    color[board[s]] = BLACK;
+                    color[bigend_rank[s]] = BLACK;
                 }
                 else
                 {
-                    color[board[s]] = WHITE;
+                    color[bigend_rank[s]] = WHITE;
                 }
                 switch (row[c])
                 {
                 case 'P':
-                    piece[board[s++]] = PAWN;
+                    piece[bigend_rank[s++]] = PAWN;
                     break;
                 case 'R':
-                    piece[board[s++]] = ROOK;
+                    piece[bigend_rank[s++]] = ROOK;
                     break;
                 case 'N':
-                    piece[board[s++]] = KNIGHT;
+                    piece[bigend_rank[s++]] = KNIGHT;
                     break;
                 case 'B':
-                    piece[board[s++]] = BISHOP;
+                    piece[bigend_rank[s++]] = BISHOP;
                     break;
                 case 'Q':
-                    piece[board[s++]] = QUEEN;
+                    piece[bigend_rank[s++]] = QUEEN;
                     break;
                 case 'K':
-                    piece[board[s++]] = KING;
+                    piece[bigend_rank[s++]] = KING;
                     break;
                 default:
                     return FALSE;
@@ -130,8 +130,8 @@ bool set_board(char *fen)
             {
                 for (int i = 0; i < row[c] - '0'; i++)
                 {
-                    piece[board[s]] = EMPTY;
-                    color[board[s++]] = EMPTY;
+                    piece[bigend_rank[s]] = EMPTY;
+                    color[bigend_rank[s++]] = EMPTY;
                 }
             }
             else
@@ -157,10 +157,10 @@ char *get_fen()
 
     for (int s = 0; s < 64; s++)
     {
-        if (piece[board[s]] == EMPTY)
+        if (piece[bigend_rank[s]] == EMPTY)
         {
             int ctr;
-            for (ctr = 1; FILE(board[s]) != FILE_H && piece[board[s + 1]] == EMPTY; ctr++)
+            for (ctr = 1; FILE(bigend_rank[s]) != FILE_H && piece[bigend_rank[s + 1]] == EMPTY; ctr++)
             {
                 s++;
             }
@@ -168,16 +168,16 @@ char *get_fen()
         }
         else
         {
-            if (color[board[s]] == WHITE)
+            if (color[bigend_rank[s]] == WHITE)
             {
-                fen[c++] = piece_char[piece[board[s]]];
+                fen[c++] = piece_char[piece[bigend_rank[s]]];
             }
             else
             {
-                fen[c++] = piece_char[piece[board[s]]] | ' ';
+                fen[c++] = piece_char[piece[bigend_rank[s]]] | ' ';
             }
         }
-        if (FILE(board[s]) == FILE_H && s != 63)
+        if (FILE(bigend_rank[s]) == FILE_H && s != 63)
         {
             fen[c++] = '/';
         }
@@ -236,17 +236,17 @@ void print_board()
     printf("\n  A B C D E F G H");
     for (int s = 0; s < 64; s++)
     {
-        if (FILE(board[s]) == FILE_A)
+        if (FILE(bigend_rank[s]) == FILE_A)
         {
-            printf("\n%d", RANK(board[s]) + 1);
+            printf("\n%d", RANK(bigend_rank[s]) + 1);
         }
-        if (color[board[s]] == BLACK)
+        if (color[bigend_rank[s]] == BLACK)
         {
-            printf(" %c", piece_char[piece[board[s]]] | ' ');
+            printf(" %c", piece_char[piece[bigend_rank[s]]] | ' ');
         }
         else
         {
-            printf(" %c", piece_char[piece[board[s]]]);
+            printf(" %c", piece_char[piece[bigend_rank[s]]]);
         }
     }
     printf("\n\n");

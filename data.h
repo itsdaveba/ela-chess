@@ -15,7 +15,7 @@ extern int fullmove;
 
 extern const char piece_char[7];
 extern const char castling_char[4];
-extern const int board[64];
+extern const int bigend_rank[64];
 extern const int castling_rights[64];
 
 extern const int slider[7];
