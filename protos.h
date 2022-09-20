@@ -16,7 +16,7 @@ void take_back();
 u64 perft(int depth);
 
 // search.c
-move_t search();
+move_t search(int search_depth);
 void shuffle_moves(int ply);
 int negamax(int alpha, int beta, int depth);
 

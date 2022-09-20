@@ -13,6 +13,7 @@ int main()
     char line[MAX_LINE_LENGTH];
     bool xboard = FALSE;
     int computer_side = EMPTY;
+    int search_depth = 4;
 
     printf("Ela Chess Program\n\n");
 
@@ -29,8 +30,8 @@ int main()
     {
         if (side == computer_side)
         {
-            move = search();
-            if (move.type == NO_MOVE)
+            move = search(search_depth);
+            if (!make_move(move))
             {
                 printf("Error: no legal moves\n");
                 computer_side = EMPTY;
@@ -45,7 +46,6 @@ int main()
             {
                 printf("Ela's move: %s\n", lan);
             }
-            make_move(move);
             ply = 0;
             gen_moves();
             print_result();
@@ -125,6 +125,16 @@ int main()
             take_back();
             ply = 0;
             gen_moves();
+            continue;
+        }
+        if (!strcmp(command, "sd"))
+        {
+            char *temp = strtok(NULL, " \n");
+            if (temp == NULL || sscanf(temp, "%d", &search_depth) == 0 || search_depth < 0)
+            {
+                search_depth = 4;
+                printf("Error: wrong search depth\n");
+            }
             continue;
         }
         if (!strcmp(command, "perft"))

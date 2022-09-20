@@ -3,35 +3,28 @@
 #include "data.h"
 #include "protos.h"
 
-move_t search()
+move_t search(int search_depth)
 {
-    move_t move;
-
-    shuffle_moves(0);
-
     int score;
-    move_t temp;
     int alpha = -10000;
     int beta = 10000;
-    int depth = 4;
 
     for (int m = 0; m < n_moves[0]; m++)
     {
         if (make_move(move_list[0][m]))
         {
-            score = -negamax(-beta, -alpha, depth - 1);
+            score = -negamax(-beta, -alpha, search_depth - 1);
             take_back();
+            if (score >= beta)
+            {
+                return move_list[0][m];
+            }
             if (score > alpha)
             {
                 alpha = score;
                 move_list[0][0] = move_list[0][m];
             }
         }
-    }
-    if (alpha == -10000)
-    {
-        move.type = NO_MOVE;
-        return move;
     }
 
     return move_list[0][0];
