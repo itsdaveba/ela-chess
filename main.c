@@ -14,6 +14,7 @@ int main()
     bool xboard = FALSE;
     int computer_side = EMPTY;
     int search_depth = 4;
+    bool post = FALSE;
 
     printf("Ela Chess Program\n\n");
 
@@ -30,8 +31,9 @@ int main()
     {
         if (side == computer_side)
         {
-            move = search(search_depth);
-            if (!make_move(move))
+            search(search_depth, post);
+            move = pv[0][0];
+            if (move.type == NO_MOVE || !make_move(move))
             {
                 printf("Error: no legal moves\n");
                 computer_side = EMPTY;
@@ -153,6 +155,16 @@ int main()
                 nodes = perft(d);
                 printf("perft(%d)= %10llu\n", d, nodes);
             }
+            continue;
+        }
+        if (!strcmp(command, "post"))
+        {
+            post = TRUE;
+            continue;
+        }
+        if (!strcmp(command, "nopost"))
+        {
+            post = FALSE;
             continue;
         }
         if (!strcmp(command, "xboard"))

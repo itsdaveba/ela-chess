@@ -1,9 +1,13 @@
-extern int ply;
+extern int nodes;
+
 extern int hply;
 extern hist_t history[MAX_HPLY];
 
+extern int ply;
 extern int n_moves[MAX_DEPTH];
 extern move_t move_list[MAX_DEPTH][MAX_GEN_MOVES];
+
+extern move_t pv[MAX_DEPTH][MAX_DEPTH];
 
 extern int piece[64];
 extern int color[64];
