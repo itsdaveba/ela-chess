@@ -12,11 +12,28 @@ move_t search(int search_time, int search_depth, bool post)
 
     ply = 0;
     nodes = 0;
+    pv.best[0].type = NO_MOVE;
+
+    if (search_depth == 0)
+    {
+        int n_moves;
+        move_t move_list[MAX_GEN_MOVES];
+        n_moves = gen_moves(move_list, FALSE);
+        shuffle_moves(n_moves, move_list);
+        for (int m = 0; m < n_moves; m++)
+        {
+            if (make_move(move_list[m]))
+            {
+                take_back();
+                return move_list[m];
+            }
+        }
+    }
 
     for (int depth = 1; depth <= search_depth; depth++)
     {
         score = negamax(MIN_SCORE, MAX_SCORE, depth, &pv);
-        if (post)
+        if (post && (pv.best[0].type & NO_MOVE) == 0)
         {
             printf("%d %d %d %llu", depth, score, 0, nodes);
             for (int d = 0; d < pv.depth; d++)
@@ -68,9 +85,12 @@ int negamax(int alpha, int beta, int depth, line_t *pline)
             if (score > alpha)
             {
                 alpha = score;
-                pline->best[0] = move_list[m];
-                memcpy(pline->best + 1, line.best, MIN(line.depth, MAX_PV_LENGTH - 1) * sizeof(move_t));
-                pline->depth = MIN(line.depth + 1, MAX_PV_LENGTH);
+                if (ply < MAX_PV_LENGTH)
+                {
+                    pline->best[0] = move_list[m];
+                    memcpy(pline->best + 1, line.best, line.depth * sizeof(move_t));
+                    pline->depth = line.depth + 1;
+                }
             }
         }
     }
@@ -125,9 +145,12 @@ int quiesce(int alpha, int beta, line_t *pline)
             if (score > alpha)
             {
                 alpha = score;
-                pline->best[0] = move_list[m];
-                memcpy(pline->best + 1, line.best, line.depth * sizeof(move_t));
-                pline->depth = line.depth + 1;
+                if (ply < MAX_PV_LENGTH)
+                {
+                    pline->best[0] = move_list[m];
+                    memcpy(pline->best + 1, line.best, line.depth * sizeof(move_t));
+                    pline->depth = line.depth + 1;
+                }
             }
         }
     }

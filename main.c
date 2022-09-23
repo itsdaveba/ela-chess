@@ -247,6 +247,7 @@ move_t lan_to_move(char *lan)
 
     move.from = SQUARE(lan[0], lan[1]);
     move.to = SQUARE(lan[2], lan[3]);
+    move.type = ILLEGAL_MOVE;
     switch (lan[4])
     {
     case '\0':
@@ -265,7 +266,6 @@ move_t lan_to_move(char *lan)
         move.prom = QUEEN;
         break;
     default:
-        move.type = ILLEGAL_MOVE;
         return move;
     }
 
@@ -279,7 +279,6 @@ move_t lan_to_move(char *lan)
         }
     }
 
-    move.type = ILLEGAL_MOVE;
     return move;
 }
 
