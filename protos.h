@@ -7,8 +7,8 @@ bool print_result();
 bool set_board(char *fen);
 char *get_fen();
 void print_board();
-void add_move(int from, int to, int type);
-void gen_moves();
+void add_move(int from, int to, int type, int *n_moves, move_t *move_list);
+int gen_moves(move_t *move_list, bool quiesce);
 bool attack(int square, int side);
 bool in_check(int side);
 bool make_move(move_t move);
@@ -16,9 +16,10 @@ void take_back();
 u64 perft(int depth);
 
 // search.c
-void search(int search_depth, bool post);
-void shuffle_moves();
-int negamax(int alpha, int beta, int depth);
+move_t search(int search_time, int search_depth, bool post);
+int negamax(int alpha, int beta, int depth, line_t *pline);
+int quiesce(int alpha, int beta, line_t *pline);
+void shuffle_moves(int n_moves, move_t *move_list);
 
 // eval.c
 int evaluate();

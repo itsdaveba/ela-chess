@@ -252,15 +252,15 @@ void print_board()
     printf("\n\n");
 }
 
-void add_move(int from, int to, int type)
+void add_move(int from, int to, int type, int *n_moves, move_t *move_list)
 {
-    move_t *move_p = &move_list[ply][n_moves[ply]];
+    move_t *move_p = &move_list[*n_moves];
 
     if (type & PROMOTION)
     {
         for (int prom = ROOK; prom <= QUEEN; prom++)
         {
-            n_moves[ply]++;
+            (*n_moves)++;
             move_p->from = from;
             move_p->to = to;
             move_p->prom = prom;
@@ -269,7 +269,7 @@ void add_move(int from, int to, int type)
     }
     else
     {
-        n_moves[ply]++;
+        (*n_moves)++;
         move_p->from = from;
         move_p->to = to;
         move_p->prom = EMPTY;
@@ -277,11 +277,10 @@ void add_move(int from, int to, int type)
     }
 }
 
-void gen_moves()
+int gen_moves(move_t *move_list, bool quiesce)
 {
     int type;
-
-    n_moves[ply] = 0;
+    int n_moves = 0;
 
     for (int s = 0; s < 64; s++)
     {
@@ -292,19 +291,19 @@ void gen_moves()
                 type = PAWN_MOVE;
                 if (side == WHITE)
                 {
-                    if (piece[s + UP] == EMPTY)
+                    if (piece[s + UP] == EMPTY && !quiesce)
                     {
                         if (RANK(s) == RANK_7)
                         {
-                            add_move(s, s + UP, type | PROMOTION);
+                            add_move(s, s + UP, type | PROMOTION, &n_moves, move_list);
                         }
                         else
                         {
-                            add_move(s, s + UP, type);
+                            add_move(s, s + UP, type, &n_moves, move_list);
                         }
                         if (RANK(s) == RANK_2 && piece[s + DOUBLE_UP] == EMPTY)
                         {
-                            add_move(s, s + DOUBLE_UP, type | PAWN_DOUBLE_MOVE);
+                            add_move(s, s + DOUBLE_UP, type | PAWN_DOUBLE_MOVE, &n_moves, move_list);
                         }
                     }
                     type |= CAPTURE;
@@ -312,40 +311,40 @@ void gen_moves()
                     {
                         if (RANK(s) == RANK_7)
                         {
-                            add_move(s, s + UP_LEFT, type | PROMOTION);
+                            add_move(s, s + UP_LEFT, type | PROMOTION, &n_moves, move_list);
                         }
                         else
                         {
-                            add_move(s, s + UP_LEFT, type);
+                            add_move(s, s + UP_LEFT, type, &n_moves, move_list);
                         }
                     }
                     if (FILE(s) != FILE_H && color[s + UP_RIGHT] == BLACK)
                     {
                         if (RANK(s) == RANK_7)
                         {
-                            add_move(s, s + UP_RIGHT, type | PROMOTION);
+                            add_move(s, s + UP_RIGHT, type | PROMOTION, &n_moves, move_list);
                         }
                         else
                         {
-                            add_move(s, s + UP_RIGHT, type);
+                            add_move(s, s + UP_RIGHT, type, &n_moves, move_list);
                         }
                     }
                 }
                 else
                 {
-                    if (piece[s + DOWN] == EMPTY)
+                    if (piece[s + DOWN] == EMPTY && !quiesce)
                     {
                         if (RANK(s) == RANK_2)
                         {
-                            add_move(s, s + DOWN, type | PROMOTION);
+                            add_move(s, s + DOWN, type | PROMOTION, &n_moves, move_list);
                         }
                         else
                         {
-                            add_move(s, s + DOWN, type);
+                            add_move(s, s + DOWN, type, &n_moves, move_list);
                         }
                         if (RANK(s) == RANK_7 && piece[s + DOUBLE_DOWN] == EMPTY)
                         {
-                            add_move(s, s + DOUBLE_DOWN, type | PAWN_DOUBLE_MOVE);
+                            add_move(s, s + DOUBLE_DOWN, type | PAWN_DOUBLE_MOVE, &n_moves, move_list);
                         }
                     }
                     type |= CAPTURE;
@@ -353,22 +352,22 @@ void gen_moves()
                     {
                         if (RANK(s) == RANK_2)
                         {
-                            add_move(s, s + DOWN_LEFT, type | PROMOTION);
+                            add_move(s, s + DOWN_LEFT, type | PROMOTION, &n_moves, move_list);
                         }
                         else
                         {
-                            add_move(s, s + DOWN_LEFT, type);
+                            add_move(s, s + DOWN_LEFT, type, &n_moves, move_list);
                         }
                     }
                     if (FILE(s) != FILE_H && color[s + DOWN_RIGHT] == WHITE)
                     {
                         if (RANK(s) == RANK_2)
                         {
-                            add_move(s, s + DOWN_RIGHT, type | PROMOTION);
+                            add_move(s, s + DOWN_RIGHT, type | PROMOTION, &n_moves, move_list);
                         }
                         else
                         {
-                            add_move(s, s + DOWN_RIGHT, type);
+                            add_move(s, s + DOWN_RIGHT, type, &n_moves, move_list);
                         }
                     }
                 }
@@ -388,11 +387,14 @@ void gen_moves()
                         {
                             if (color[n] == -side)
                             {
-                                add_move(s, n, CAPTURE);
+                                add_move(s, n, CAPTURE, &n_moves, move_list);
                             }
                             break;
                         }
-                        add_move(s, n, 0);
+                        if (!quiesce)
+                        {
+                            add_move(s, n, 0, &n_moves, move_list);
+                        }
                         if (!slider[piece[s]])
                         {
                             break;
@@ -403,7 +405,7 @@ void gen_moves()
         }
     }
 
-    if (castling != 0)
+    if (castling != 0 && !quiesce)
     {
         if (side == WHITE)
         {
@@ -413,14 +415,14 @@ void gen_moves()
                 {
                     if (piece[F1] == EMPTY && piece[G1] == EMPTY && !attack(F1, BLACK))
                     {
-                        add_move(E1, G1, CASTLE);
+                        add_move(E1, G1, CASTLE, &n_moves, move_list);
                     }
                 }
                 if (castling & 0b0100)
                 {
                     if (piece[D1] == EMPTY && piece[C1] == EMPTY && piece[B1] == EMPTY && !attack(D1, BLACK))
                     {
-                        add_move(E1, C1, CASTLE);
+                        add_move(E1, C1, CASTLE, &n_moves, move_list);
                     }
                 }
             }
@@ -433,14 +435,14 @@ void gen_moves()
                 {
                     if (piece[F8] == EMPTY && piece[G8] == EMPTY && !attack(F8, WHITE))
                     {
-                        add_move(E8, G8, CASTLE);
+                        add_move(E8, G8, CASTLE, &n_moves, move_list);
                     }
                 }
                 if (castling & 0b0001)
                 {
                     if (piece[D8] == EMPTY && piece[C8] == EMPTY && piece[B8] == EMPTY && !attack(D8, WHITE))
                     {
-                        add_move(E8, C8, CASTLE);
+                        add_move(E8, C8, CASTLE, &n_moves, move_list);
                     }
                 }
             }
@@ -454,25 +456,27 @@ void gen_moves()
         {
             if (FILE(passant) != FILE_A && piece[passant + DOWN_LEFT] == PAWN && color[passant + DOWN_LEFT] == WHITE)
             {
-                add_move(passant + DOWN_LEFT, passant, type);
+                add_move(passant + DOWN_LEFT, passant, type, &n_moves, move_list);
             }
             if (FILE(passant) != FILE_H && piece[passant + DOWN_RIGHT] == PAWN && color[passant + DOWN_RIGHT] == WHITE)
             {
-                add_move(passant + DOWN_RIGHT, passant, type);
+                add_move(passant + DOWN_RIGHT, passant, type, &n_moves, move_list);
             }
         }
         else
         {
             if (FILE(passant) != FILE_A && piece[passant + UP_LEFT] == PAWN && color[passant + UP_LEFT] == BLACK)
             {
-                add_move(passant + UP_LEFT, passant, type);
+                add_move(passant + UP_LEFT, passant, type, &n_moves, move_list);
             }
             if (FILE(passant) != FILE_H && piece[passant + UP_RIGHT] == PAWN && color[passant + UP_RIGHT] == BLACK)
             {
-                add_move(passant + UP_RIGHT, passant, type);
+                add_move(passant + UP_RIGHT, passant, type, &n_moves, move_list);
             }
         }
     }
+
+    return n_moves;
 }
 
 bool attack(int square, int side)
@@ -530,6 +534,7 @@ bool attack(int square, int side)
             }
         }
     }
+
     return FALSE;
 }
 
@@ -542,6 +547,7 @@ bool in_check(int side)
             return attack(s, -side);
         }
     }
+
     return FALSE;
 }
 
@@ -735,18 +741,21 @@ void take_back()
 
 u64 perft(int depth)
 {
+    u64 nodes;
+    int n_moves;
+    move_t move_list[MAX_GEN_MOVES];
+
     if (depth == 0)
     {
         return 1ULL;
     }
 
-    u64 nodes = 0;
+    nodes = 0;
+    n_moves = gen_moves(move_list, FALSE);
 
-    gen_moves();
-
-    for (int m = 0; m < n_moves[ply]; m++)
+    for (int m = 0; m < n_moves; m++)
     {
-        if (make_move(move_list[ply][m]))
+        if (make_move(move_list[m]))
         {
             nodes += perft(depth - 1);
             take_back();

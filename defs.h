@@ -1,9 +1,17 @@
 #define MAX_HPLY 512
-#define MAX_DEPTH 8
 #define MAX_GEN_MOVES 256
+#define MAX_PV_LENGTH 32
 #define MAX_LAN_LENGTH 6
 #define MAX_FEN_LENGTH 90
-#define MAX_LINE_LENGTH 256
+#define MAX_INPUT_LENGTH 256
+
+#define MIN_SCORE -100000
+#define MAX_SCORE 100000
+#define MATE_THRESHOLD 90000
+#define DRAW_SCORE 0
+
+#define DEFAULT_TIME 5
+#define DEFAULT_DEPTH 4
 
 #define INIT_FEN "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
@@ -25,7 +33,7 @@
 #define CASTLE 16
 #define EP_CAPTURE 32
 #define ILLEGAL_MOVE 64
-#define NO_MOVE 128
+#define NO_MOVE -128
 
 #define UP 8
 #define DOWN -8
@@ -73,11 +81,16 @@ typedef enum
 } bool;
 typedef struct
 {
-    int from;
-    int to;
-    int prom;
-    int type;
+    char from;
+    char to;
+    char prom;
+    char type;
 } move_t;
+typedef struct
+{
+    int depth;
+    move_t best[MAX_PV_LENGTH];
+} line_t;
 typedef struct
 {
     move_t move;

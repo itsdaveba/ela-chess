@@ -10,10 +10,12 @@ int main()
 {
     move_t move;
     char *command;
-    char line[MAX_LINE_LENGTH];
-    bool xboard = FALSE;
+    char input[MAX_INPUT_LENGTH];
+
     int computer_side = EMPTY;
-    int search_depth = 4;
+    int search_time = DEFAULT_TIME;
+    int search_depth = DEFAULT_DEPTH;
+    bool xboard = FALSE;
     bool post = FALSE;
 
     printf("Ela Chess Program\n\n");
@@ -22,21 +24,18 @@ int main()
     setbuf(stdin, NULL);
     setbuf(stdout, NULL);
 
-    set_board(INIT_FEN);
     hply = 0;
-    ply = 0;
-    gen_moves();
+    set_board(INIT_FEN);
 
     while (TRUE)
     {
         if (side == computer_side)
         {
-            search(search_depth, post);
-            move = pv[0][0];
+            move = search(search_time, search_depth, post);
             if (move.type == NO_MOVE || !make_move(move))
             {
-                printf("Error: no legal moves\n");
                 computer_side = EMPTY;
+                printf("Error: no legal moves\n");
                 continue;
             }
             char *lan = move_to_lan(move);
@@ -48,8 +47,6 @@ int main()
             {
                 printf("Ela's move: %s\n", lan);
             }
-            ply = 0;
-            gen_moves();
             print_result();
             continue;
         }
@@ -58,8 +55,8 @@ int main()
         {
             printf("ela> ");
         }
-        fgets(line, MAX_LINE_LENGTH, stdin);
-        command = strtok(line, " \n");
+        fgets(input, MAX_INPUT_LENGTH, stdin);
+        command = strtok(input, " \n");
         if (command == NULL)
         {
             continue;
@@ -70,20 +67,21 @@ int main()
             if (xboard)
             {
                 computer_side = BLACK;
+                search_time = DEFAULT_TIME;
+                search_depth = __INT_MAX__;
             }
             else
             {
                 computer_side = EMPTY;
             }
-            set_board(INIT_FEN);
             hply = 0;
-            ply = 0;
-            gen_moves();
+            set_board(INIT_FEN);
             continue;
         }
         if (!strcmp(command, "fen") || !strcmp(command, "setboard"))
         {
             char *fen = strtok(NULL, "\n");
+            hply = 0;
             if (!xboard)
             {
                 computer_side = EMPTY;
@@ -93,9 +91,6 @@ int main()
                 set_board(INIT_FEN);
                 printf("Error: wrong FEN format\n");
             }
-            hply = 0;
-            ply = 0;
-            gen_moves();
             continue;
         }
         if (!strcmp(command, "d"))
@@ -113,6 +108,16 @@ int main()
             computer_side = EMPTY;
             continue;
         }
+        if (!strcmp(command, "sd"))
+        {
+            char *temp = strtok(NULL, " \n");
+            if (temp == NULL || sscanf(temp, "%d", &search_depth) == 0 || search_depth < 0)
+            {
+                search_depth = DEFAULT_DEPTH;
+                printf("Error: wrong search depth\n");
+            }
+            continue;
+        }
         if (!strcmp(command, "undo"))
         {
             if (hply == 0)
@@ -125,18 +130,16 @@ int main()
                 computer_side = EMPTY;
             }
             take_back();
-            ply = 0;
-            gen_moves();
             continue;
         }
-        if (!strcmp(command, "sd"))
+        if (!strcmp(command, "post"))
         {
-            char *temp = strtok(NULL, " \n");
-            if (temp == NULL || sscanf(temp, "%d", &search_depth) == 0 || search_depth < 0)
-            {
-                search_depth = 4;
-                printf("Error: wrong search depth\n");
-            }
+            post = TRUE;
+            continue;
+        }
+        if (!strcmp(command, "nopost"))
+        {
+            post = FALSE;
             continue;
         }
         if (!strcmp(command, "perft"))
@@ -155,16 +158,6 @@ int main()
                 nodes = perft(d);
                 printf("perft(%d)= %10llu\n", d, nodes);
             }
-            continue;
-        }
-        if (!strcmp(command, "post"))
-        {
-            post = TRUE;
-            continue;
-        }
-        if (!strcmp(command, "nopost"))
-        {
-            post = FALSE;
             continue;
         }
         if (!strcmp(command, "xboard"))
@@ -203,8 +196,6 @@ int main()
             }
             continue;
         }
-        ply = 0;
-        gen_moves();
         if (print_result())
         {
             computer_side = EMPTY;
@@ -216,7 +207,6 @@ int main()
 
 char *move_to_lan(move_t move)
 {
-
     static char lan[MAX_LAN_LENGTH];
 
     lan[0] = FILE(move.from) + 'a';
@@ -226,14 +216,7 @@ char *move_to_lan(move_t move)
 
     if (move.type & PROMOTION)
     {
-        if (side == WHITE)
-        {
-            lan[4] = piece_char[move.prom];
-        }
-        else
-        {
-            lan[4] = piece_char[move.prom] | ' ';
-        }
+        lan[4] = piece_char[move.prom] | ' ';
         if (lan[5] != '\0')
         {
             lan[5] = '\0';
@@ -250,6 +233,8 @@ char *move_to_lan(move_t move)
 move_t lan_to_move(char *lan)
 {
     move_t move;
+    int n_moves;
+    move_t move_list[MAX_GEN_MOVES];
 
     if (lan[0] < 'a' || lan[0] > 'h' ||
         lan[1] < '1' || lan[1] > '8' ||
@@ -262,9 +247,9 @@ move_t lan_to_move(char *lan)
 
     move.from = SQUARE(lan[0], lan[1]);
     move.to = SQUARE(lan[2], lan[3]);
-    switch (lan[4] | ' ')
+    switch (lan[4])
     {
-    case ' ':
+    case '\0':
         move.prom = EMPTY;
         break;
     case 'r':
@@ -280,15 +265,17 @@ move_t lan_to_move(char *lan)
         move.prom = QUEEN;
         break;
     default:
-        move.type = NO_MOVE;
+        move.type = ILLEGAL_MOVE;
         return move;
     }
 
-    for (int m = 0; m < n_moves[0]; m++)
+    n_moves = gen_moves(move_list, FALSE);
+
+    for (int m = 0; m < n_moves; m++)
     {
-        if (move_list[0][m].from == move.from && move_list[0][m].to == move.to && move_list[0][m].prom == move.prom)
+        if (move_list[m].from == move.from && move_list[m].to == move.to && move_list[m].prom == move.prom)
         {
-            return move_list[0][m];
+            return move_list[m];
         }
     }
 
@@ -299,17 +286,21 @@ move_t lan_to_move(char *lan)
 bool print_result()
 {
     int m;
+    int n_moves;
+    move_t move_list[MAX_GEN_MOVES];
 
-    for (m = 0; m < n_moves[0]; m++)
+    n_moves = gen_moves(move_list, FALSE);
+
+    for (m = 0; m < n_moves; m++)
     {
-        if (make_move(move_list[0][m]))
+        if (make_move(move_list[m]))
         {
             take_back();
             break;
         }
     }
 
-    if (m == n_moves[0])
+    if (m == n_moves)
     {
         if (in_check(side))
         {

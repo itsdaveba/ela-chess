@@ -1,15 +1,9 @@
 #include "defs.h"
 
-int nodes;
-
+u64 nodes;
+int ply;
 int hply;
 hist_t history[MAX_HPLY];
-
-int ply;
-int n_moves[MAX_DEPTH];
-move_t move_list[MAX_DEPTH][MAX_GEN_MOVES];
-
-move_t pv[MAX_DEPTH][MAX_DEPTH];
 
 int piece[64];
 int color[64];
