@@ -1,6 +1,14 @@
+#include <setjmp.h>
+#include <sys/time.h>
 #include "defs.h"
 
 u64 nodes;
+jmp_buf env;
+int search_time;
+int search_depth;
+struct timeval start;
+struct timeval now;
+
 int ply;
 int hply;
 hist_t history[MAX_HPLY];

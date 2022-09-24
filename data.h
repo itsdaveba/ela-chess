@@ -1,4 +1,12 @@
+#include <setjmp.h>
+
 extern u64 nodes;
+extern jmp_buf env;
+extern int search_time;
+extern int search_depth;
+extern struct timeval start;
+extern struct timeval now;
+
 extern int ply;
 extern int hply;
 extern hist_t history[MAX_HPLY];

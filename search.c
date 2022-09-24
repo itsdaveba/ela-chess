@@ -1,18 +1,34 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <setjmp.h>
+#include <sys/time.h>
 #include "defs.h"
 #include "data.h"
 #include "protos.h"
 
-move_t search(int search_time, int search_depth, bool post)
+move_t search(bool post)
 {
+    static move_t move;
+
     int score;
     line_t pv;
 
     ply = 0;
     nodes = 0;
     pv.best[0].type = NO_MOVE;
+
+    gettimeofday(&start, NULL);
+
+    bool stop = setjmp(env);
+    if (stop)
+    {
+        while (ply > 0)
+        {
+            take_back();
+        }
+        return move;
+    }
 
     if (search_depth == 0)
     {
@@ -33,6 +49,7 @@ move_t search(int search_time, int search_depth, bool post)
     for (int depth = 1; depth <= search_depth; depth++)
     {
         score = negamax(MIN_SCORE, MAX_SCORE, depth, &pv);
+        move = pv.best[0];
         if (post && (pv.best[0].type & NO_MOVE) == 0)
         {
             printf("%d %d %d %llu", depth, score, 0, nodes);
@@ -118,6 +135,15 @@ int quiesce(int alpha, int beta, line_t *pline)
     move_t move_list[MAX_GEN_MOVES];
 
     nodes++;
+    if ((nodes & 1023) == 0)
+    {
+        gettimeofday(&now, NULL);
+        if ((now.tv_sec - start.tv_sec) * 100 + (now.tv_usec - start.tv_usec) / 10000 >= search_time)
+        {
+            longjmp(env, TRUE);
+        }
+    }
+
     pline->depth = 0;
     score = evaluate();
 

@@ -13,10 +13,11 @@ int main()
     char input[MAX_INPUT_LENGTH];
 
     int computer_side = EMPTY;
-    int search_time = DEFAULT_TIME;
-    int search_depth = DEFAULT_DEPTH;
     bool xboard = FALSE;
     bool post = FALSE;
+
+    search_time = DEFAULT_TIME;
+    search_depth = DEFAULT_DEPTH;
 
     printf("Ela Chess Program\n\n");
 
@@ -108,8 +109,21 @@ int main()
             computer_side = EMPTY;
             continue;
         }
+        if (!strcmp(command, "st"))
+        {
+            char *temp = strtok(NULL, " \n");
+            if (temp == NULL || sscanf(temp, "%d", &search_time) == 0 || search_time < 0)
+            {
+                search_time = DEFAULT_TIME;
+                printf("Error: wrong search time\n");
+                continue;
+            }
+            search_time *= 100;
+            continue;
+        }
         if (!strcmp(command, "sd"))
         {
+            search_time = __INT_MAX__;
             char *temp = strtok(NULL, " \n");
             if (temp == NULL || sscanf(temp, "%d", &search_depth) == 0 || search_depth < 0)
             {

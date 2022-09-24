@@ -16,7 +16,7 @@ void take_back();
 u64 perft(int depth);
 
 // search.c
-move_t search(int search_time, int search_depth, bool post);
+move_t search(bool post);
 int negamax(int alpha, int beta, int depth, line_t *pline);
 int quiesce(int alpha, int beta, line_t *pline);
 void shuffle_moves(int n_moves, move_t *move_list);
