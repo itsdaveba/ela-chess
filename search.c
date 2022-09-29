@@ -135,7 +135,7 @@ int quiesce(int alpha, int beta, line_t *pline)
     move_t move_list[MAX_GEN_MOVES];
 
     nodes++;
-    if ((nodes & 1023) == 0)
+    if ((nodes & 0xFFFF) == 0)
     {
         gettimeofday(&now, NULL);
         if ((now.tv_sec - start.tv_sec) * 100 + (now.tv_usec - start.tv_usec) / 10000 >= search_time)
