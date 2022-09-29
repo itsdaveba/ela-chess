@@ -27,12 +27,16 @@ int main()
 
     hply = 0;
     set_board(INIT_FEN);
+    if (!open_book())
+    {
+        printf("Warning: opening book missing\n");
+    }
 
     while (TRUE)
     {
         if (side == computer_side)
         {
-            move = search(search_time, search_depth, post);
+            move = search(post);
             if (move.type == NO_MOVE || !make_move(move))
             {
                 computer_side = EMPTY;

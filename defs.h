@@ -14,6 +14,7 @@
 #define DEFAULT_DEPTH 4
 
 #define INIT_FEN "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+#define BOOK_FILENAME "book.txt"
 
 #define EMPTY 0
 #define PAWN 1

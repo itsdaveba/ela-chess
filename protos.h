@@ -23,3 +23,7 @@ void shuffle_moves(int n_moves, move_t *move_list);
 
 // eval.c
 int evaluate();
+
+// book.c
+bool open_book();
+void close_book();

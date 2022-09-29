@@ -3,6 +3,7 @@ SOURCE_FILES = \
 	board.c \
 	search.c \
 	eval.c \
+	book.c \
 	data.c
 
 HEADER_FILES = \
