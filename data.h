@@ -1,5 +1,7 @@
+#include <stdio.h>
 #include <setjmp.h>
 
+extern FILE *book_file;
 extern u64 nodes;
 extern jmp_buf env;
 extern int search_time;

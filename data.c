@@ -1,7 +1,9 @@
+#include <stdio.h>
 #include <setjmp.h>
 #include <sys/time.h>
 #include "defs.h"
 
+FILE *book_file;
 u64 nodes;
 jmp_buf env;
 int search_time;

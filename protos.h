@@ -16,7 +16,7 @@ void take_back();
 u64 perft(int depth);
 
 // search.c
-move_t search(bool post);
+move_t search(bool post, bool book);
 int negamax(int alpha, int beta, int depth, line_t *pline);
 int quiesce(int alpha, int beta, line_t *pline);
 void shuffle_moves(int n_moves, move_t *move_list);
@@ -27,3 +27,4 @@ int evaluate();
 // book.c
 bool open_book();
 void close_book();
+move_t book_move();

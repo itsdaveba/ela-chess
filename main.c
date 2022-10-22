@@ -15,9 +15,10 @@ int main()
     int computer_side = EMPTY;
     bool xboard = FALSE;
     bool post = FALSE;
+    bool book = TRUE;
 
     search_time = DEFAULT_TIME;
-    search_depth = DEFAULT_DEPTH;
+    search_depth = __INT_MAX__;
 
     printf("Ela Chess Program\n\n");
 
@@ -36,8 +37,8 @@ int main()
     {
         if (side == computer_side)
         {
-            move = search(post);
-            if (move.type == NO_MOVE || !make_move(move))
+            move = search(post, book);
+            if (move.type & NO_MOVE || !make_move(move))
             {
                 computer_side = EMPTY;
                 printf("Error: no legal moves\n");
@@ -160,6 +161,16 @@ int main()
             post = FALSE;
             continue;
         }
+        if (!strcmp(command, "book"))
+        {
+            book = TRUE;
+            continue;
+        }
+        if (!strcmp(command, "nobook"))
+        {
+            book = FALSE;
+            continue;
+        }
         if (!strcmp(command, "perft"))
         {
             int depth;
@@ -190,7 +201,7 @@ int main()
         }
 
         move = lan_to_move(command);
-        if (move.type == NO_MOVE)
+        if (move.type & NO_MOVE)
         {
             if (xboard)
             {
@@ -202,7 +213,7 @@ int main()
             }
             continue;
         }
-        if (move.type == ILLEGAL_MOVE || !make_move(move))
+        if (move.type & ILLEGAL_MOVE || !make_move(move))
         {
             if (xboard)
             {
@@ -219,6 +230,8 @@ int main()
             computer_side = EMPTY;
         }
     }
+
+    close_book();
 
     return 0;
 }
@@ -268,6 +281,8 @@ move_t lan_to_move(char *lan)
     move.type = ILLEGAL_MOVE;
     switch (lan[4])
     {
+    case ' ':
+    case '\n':
     case '\0':
         move.prom = EMPTY;
         break;

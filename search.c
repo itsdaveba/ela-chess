@@ -7,20 +7,29 @@
 #include "data.h"
 #include "protos.h"
 
-move_t search(bool post)
+move_t search(bool post, bool book)
 {
     static move_t move;
 
     int score;
+    bool stop;
     line_t pv;
+
+    if (book)
+    {
+        move = book_move();
+        if ((move.type & NO_MOVE) == 0)
+        {
+            return move;
+        }
+    }
 
     ply = 0;
     nodes = 0;
     pv.best[0].type = NO_MOVE;
-
     gettimeofday(&start, NULL);
 
-    bool stop = setjmp(env);
+    stop = setjmp(env);
     if (stop)
     {
         while (ply > 0)
@@ -30,7 +39,7 @@ move_t search(bool post)
         return move;
     }
 
-    if (search_depth == 0)
+    if (search_depth == 0 || search_time == 0)
     {
         int n_moves;
         move_t move_list[MAX_GEN_MOVES];
