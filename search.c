@@ -61,7 +61,12 @@ move_t search(bool post, bool book)
         move = pv.best[0];
         if (post && (pv.best[0].type & NO_MOVE) == 0)
         {
-            printf("%d %d %d %llu", depth, score, 0, nodes);
+            gettimeofday(&now, NULL);
+            printf("%d %d %d %llu",
+                   depth,
+                   score,
+                   (now.tv_sec - start.tv_sec) * 100 + (now.tv_usec - start.tv_usec) / 10000,
+                   nodes);
             for (int d = 0; d < pv.depth; d++)
             {
                 printf(" %s", move_to_lan(pv.best[d]));
