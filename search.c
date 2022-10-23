@@ -62,11 +62,7 @@ move_t search(bool post, bool book)
         if (post && (pv.best[0].type & NO_MOVE) == 0)
         {
             gettimeofday(&now, NULL);
-            printf("%d %d %ld %llu",
-                   depth,
-                   score,
-                   (now.tv_sec - start.tv_sec) * 100 + (now.tv_usec - start.tv_usec) / 10000,
-                   nodes);
+            printf("%d %d %d %llu", depth, score, time_diff(start, now), nodes);
             for (int d = 0; d < pv.depth; d++)
             {
                 printf(" %s", move_to_lan(pv.best[d]));
@@ -157,7 +153,7 @@ int quiesce(int alpha, int beta, line_t *pline)
     if ((nodes & 0xFFFF) == 0)
     {
         gettimeofday(&now, NULL);
-        if ((now.tv_sec - start.tv_sec) * 100 + (now.tv_usec - start.tv_usec) / 10000 >= search_time)
+        if (time_diff(start, now) >= search_time)
         {
             longjmp(env, TRUE);
         }
@@ -201,6 +197,13 @@ int quiesce(int alpha, int beta, line_t *pline)
     }
 
     return alpha;
+}
+
+int time_diff(struct timeval start, struct timeval now)
+{
+    int diff_sec = now.tv_sec - start.tv_sec;
+    int diff_usec = now.tv_usec - start.tv_usec;
+    return diff_sec * 100 + diff_usec / 10000;
 }
 
 void shuffle_moves(int n_moves, move_t *move_list)

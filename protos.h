@@ -19,6 +19,7 @@ u64 perft(int depth);
 move_t search(bool post, bool book);
 int negamax(int alpha, int beta, int depth, line_t *pline);
 int quiesce(int alpha, int beta, line_t *pline);
+int time_diff(struct timeval start, struct timeval stop);
 void shuffle_moves(int n_moves, move_t *move_list);
 
 // eval.c
