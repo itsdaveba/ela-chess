@@ -81,6 +81,7 @@ int main()
                 computer_side = EMPTY;
             }
             hply = 0;
+            book = TRUE;
             set_board(INIT_FEN);
             continue;
         }
@@ -88,6 +89,7 @@ int main()
         {
             char *fen = strtok(NULL, "\n");
             hply = 0;
+            book = FALSE;
             if (!xboard)
             {
                 computer_side = EMPTY;
@@ -159,11 +161,6 @@ int main()
         if (!strcmp(command, "nopost"))
         {
             post = FALSE;
-            continue;
-        }
-        if (!strcmp(command, "book"))
-        {
-            book = TRUE;
             continue;
         }
         if (!strcmp(command, "nobook"))

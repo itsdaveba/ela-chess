@@ -62,7 +62,7 @@ move_t search(bool post, bool book)
         if (post && (pv.best[0].type & NO_MOVE) == 0)
         {
             gettimeofday(&now, NULL);
-            printf("%d %d %d %llu",
+            printf("%d %d %ld %llu",
                    depth,
                    score,
                    (now.tv_sec - start.tv_sec) * 100 + (now.tv_usec - start.tv_usec) / 10000,

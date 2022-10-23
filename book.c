@@ -37,7 +37,7 @@ move_t book_move()
 
     move.type = NO_MOVE;
 
-    if (book_file == NULL)
+    if (book_file == NULL || hply > 25)
     {
         return move;
     }
