@@ -94,6 +94,11 @@ int negamax(int alpha, int beta, int depth, line_t *pline)
     legal_move = FALSE;
     n_moves = gen_moves(move_list, FALSE);
 
+    if (ply == 0)
+    {
+        shuffle_moves(n_moves, move_list);
+    }
+
     for (int m = 0; m < n_moves; m++)
     {
         if (make_move(move_list[m]))
