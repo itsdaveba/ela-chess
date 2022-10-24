@@ -17,16 +17,16 @@
 #define INIT_FEN "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 #define BOOK_FILENAME "book.txt"
 
-#define EMPTY 0
-#define PAWN 1
-#define ROOK 2
-#define KNIGHT 3
-#define BISHOP 4
-#define QUEEN 5
-#define KING 6
+#define PAWN 0
+#define ROOK 1
+#define KNIGHT 2
+#define BISHOP 3
+#define QUEEN 4
+#define KING 5
+#define EMPTY 6
 
+#define BLACK 0
 #define WHITE 1
-#define BLACK -1
 
 #define PAWN_MOVE 1
 #define PAWN_DOUBLE_MOVE 2

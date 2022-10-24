@@ -385,7 +385,7 @@ int gen_moves(move_t *move_list, bool quiesce)
                         }
                         if (color[n] != EMPTY)
                         {
-                            if (color[n] == -side)
+                            if (color[n] == side ^ 1)
                             {
                                 add_move(s, n, CAPTURE, &n_moves, move_list);
                             }
@@ -544,7 +544,7 @@ bool in_check(int side)
     {
         if (piece[s] == KING && color[s] == side)
         {
-            return attack(s, -side);
+            return attack(s, side ^ 1);
         }
     }
 
@@ -649,9 +649,9 @@ bool make_move(move_t move)
         }
     }
 
-    side = -side;
+    side = side ^ 1;
 
-    if (in_check(-side))
+    if (in_check(side ^ 1))
     {
         take_back();
         return FALSE;
@@ -665,7 +665,7 @@ void take_back()
     hist_t hist = history[--hply];
     --ply;
 
-    side = -side;
+    side = side ^ 1;
 
     castling = hist.castling;
     passant = hist.passant;
@@ -693,7 +693,7 @@ void take_back()
     else
     {
         piece[hist.move.to] = hist.capture;
-        color[hist.move.to] = -side;
+        color[hist.move.to] = side ^ 1;
     }
 
     if (hist.move.type & CASTLE)

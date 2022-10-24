@@ -25,5 +25,10 @@ int evaluate()
         }
     }
 
-    return side * value;
+    if (side == BLACK)
+    {
+        value = -value;
+    }
+
+    return value;
 }

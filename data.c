@@ -23,7 +23,7 @@ int passant;
 int halfmove;
 int fullmove;
 
-const char piece_char[7] = {'.', 'P', 'R', 'N', 'B', 'Q', 'K'};
+const char piece_char[7] = {'P', 'R', 'N', 'B', 'Q', 'K', '.'};
 const char castling_char[4] = {'K', 'Q', 'k', 'q'};
 const int bigend_rank[64] =
     { 56, 57, 58, 59, 60, 61, 62, 63,
@@ -44,11 +44,10 @@ const int castling_rights[64] =
       15, 15, 15, 15, 15, 15, 15, 15,
       14, 15, 15, 15, 12, 15, 15, 13};
 
-const int slider[7] = {FALSE, FALSE, TRUE, FALSE, TRUE, TRUE, FALSE};
-const int n_directions[7] = {0, 0, 4, 8, 4, 8, 8};
-const int direction[7][8] =
+const int slider[6] = {FALSE, TRUE, FALSE, TRUE, TRUE, FALSE};
+const int n_directions[6] = {0, 4, 8, 4, 8, 8};
+const int direction[6][8] =
     {  0,  0,  0,  0,  0,  0,  0,  0,
-       0,  0,  0,  0,  0,  0,  0,  0,
      -10, -1,  1, 10,  0,  0,  0,  0,
      -21,-19,-12, -8,  8, 12, 19, 21,
      -11, -9,  9, 11,  0,  0,  0,  0,
@@ -77,9 +76,8 @@ const int mailbox64[64] =
       81, 82, 83, 84, 85, 86, 87, 88,
       91, 92, 93, 94, 95, 96, 97, 98};
 
-const int piece_value[7] = {0, 100, 500, 320, 330, 900, 0};
-const int piece_table[7][64] = {
-    {},
+const int piece_value[6] = {100, 500, 320, 330, 900, 0};
+const int piece_table[6][64] = {
     {  0,  0,  0,  0,  0,  0,  0,  0,
        5, 10, 10,-20,-20, 10, 10,  5,
        5, -5,-10,  0,  0,-10, -5,  5,

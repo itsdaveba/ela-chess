@@ -26,11 +26,11 @@ extern const char castling_char[4];
 extern const int bigend_rank[64];
 extern const int castling_rights[64];
 
-extern const int slider[7];
-extern const int n_directions[7];
-extern const int direction[7][8];
+extern const int slider[6];
+extern const int n_directions[6];
+extern const int direction[6][8];
 extern const int mailbox[120];
 extern const int mailbox64[64];
 
-extern const int piece_value[7];
-extern const int piece_table[7][64];
+extern const int piece_value[6];
+extern const int piece_table[6][64];
