@@ -14,6 +14,7 @@ struct timeval now;
 int ply;
 int hply;
 hist_t history[MAX_HPLY];
+int hash_table[64][6][2];
 
 int piece[64];
 int color[64];
@@ -22,6 +23,7 @@ int castling;
 int passant;
 int halfmove;
 int fullmove;
+int hash;
 
 const char piece_char[7] = {'P', 'R', 'N', 'B', 'Q', 'K', '.'};
 const char castling_char[4] = {'K', 'Q', 'k', 'q'};

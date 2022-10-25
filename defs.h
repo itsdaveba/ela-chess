@@ -100,4 +100,5 @@ typedef struct
     int passant;
     int halfmove;
     int capture;
+    int hash;
 } hist_t;

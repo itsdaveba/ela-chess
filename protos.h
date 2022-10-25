@@ -13,6 +13,10 @@ bool attack(int square, int side);
 bool in_check(int side);
 bool make_move(move_t move);
 void take_back();
+int rand_hash();
+void init_hash();
+void set_hash();
+int repetition();
 u64 perft(int depth);
 
 // search.c

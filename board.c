@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include "defs.h"
 #include "data.h"
@@ -557,28 +558,64 @@ bool make_move(move_t move)
     history[hply].castling = castling;
     history[hply].passant = passant;
     history[hply].halfmove = halfmove;
-    history[hply++].capture = piece[move.to];
+    history[hply].capture = piece[move.to];
+    history[hply++].hash = hash;
     ply++;
+
+    if (passant != -1)
+    {
+        if (side == WHITE)
+        {
+            if ((FILE(passant) != FILE_A && piece[passant + DOWN_LEFT] == PAWN && color[passant + DOWN_LEFT] == WHITE) ||
+                (FILE(passant) != FILE_H && piece[passant + DOWN_RIGHT] == PAWN && color[passant + DOWN_RIGHT] == WHITE))
+            {
+                hash ^= hash_table[FILE(passant)][PAWN][WHITE];
+            }
+        }
+        else
+        {
+            if ((FILE(passant) != FILE_A && piece[passant + UP_LEFT] == PAWN && color[passant + UP_LEFT] == BLACK) ||
+                (FILE(passant) != FILE_H && piece[passant + UP_RIGHT] == PAWN && color[passant + UP_RIGHT] == BLACK))
+            {
+                hash ^= hash_table[FILE(passant)][PAWN][WHITE];
+            }
+        }
+    }
+
+    if (piece[move.to] != EMPTY)
+    {
+        hash ^= hash_table[move.to][piece[move.to]][side ^ 1];
+    }
 
     if (move.type & PROMOTION)
     {
+        hash ^= hash_table[move.to][move.prom][side];
         piece[move.to] = move.prom;
     }
     else
     {
+        hash ^= hash_table[move.to][piece[move.from]][side];
         piece[move.to] = piece[move.from];
     }
+    hash ^= hash_table[move.from][piece[move.from]][side];
     color[move.to] = side;
     piece[move.from] = EMPTY;
     color[move.from] = EMPTY;
 
     if (castling != 0)
     {
+        hash ^= hash_table[(castling + A8) & H8][PAWN][BLACK];
         castling &= castling_rights[move.from] & castling_rights[move.to];
+        hash ^= hash_table[(castling + A8) & H8][PAWN][BLACK];
     }
 
     if (move.type & PAWN_DOUBLE_MOVE)
     {
+        if ((FILE(move.to) != FILE_A && piece[move.to + LEFT] == PAWN && color[move.to + LEFT] == side ^ 1) ||
+            (FILE(move.to) != FILE_H && piece[move.to + RIGHT] == PAWN && color[move.to + RIGHT] == side ^ 1))
+        {
+            hash ^= hash_table[FILE(move.to)][PAWN][WHITE];
+        }
         if (side == WHITE)
         {
             passant = move.to + DOWN;
@@ -629,8 +666,10 @@ bool make_move(move_t move)
             to = D8;
             break;
         }
+        hash ^= hash_table[to][ROOK][side];
         piece[to] = ROOK;
         color[to] = side;
+        hash ^= hash_table[from][ROOK][side];
         piece[from] = EMPTY;
         color[from] = EMPTY;
     }
@@ -639,16 +678,19 @@ bool make_move(move_t move)
     {
         if (side == WHITE)
         {
+            hash ^= hash_table[move.to + DOWN][PAWN][BLACK];
             piece[move.to + DOWN] = EMPTY;
             color[move.to + DOWN] = EMPTY;
         }
         else
         {
+            hash ^= hash_table[move.to + UP][PAWN][WHITE];
             piece[move.to + UP] = EMPTY;
             color[move.to + UP] = EMPTY;
         }
     }
 
+    hash ^= hash_table[A8][PAWN][WHITE];
     side = side ^ 1;
 
     if (in_check(side ^ 1))
@@ -670,6 +712,7 @@ void take_back()
     castling = hist.castling;
     passant = hist.passant;
     halfmove = hist.halfmove;
+    hash = hist.hash;
 
     if (side == BLACK)
     {
@@ -737,6 +780,83 @@ void take_back()
             color[hist.move.to + UP] = WHITE;
         }
     }
+}
+
+int rand_hash()
+{
+    int rand_num;
+
+    rand_num = rand() & 0xFFFF;
+    rand_num |= rand() << 16;
+
+    return rand_num;
+}
+
+void init_hash()
+{
+    for (int s = 0; s < 64; s++)
+    {
+        for (int p = PAWN; p <= KING; p++)
+        {
+            hash_table[s][p][BLACK] = rand_hash();
+            hash_table[s][p][WHITE] = rand_hash();
+        }
+    }
+}
+
+void set_hash()
+{
+    hash = 0;
+
+    for (int s = 0; s < 64; s++)
+    {
+        if (piece[s] != EMPTY)
+        {
+            hash ^= hash_table[s][piece[s]][color[s]];
+        }
+    }
+
+    if (side == BLACK)
+    {
+        hash ^= hash_table[A8][PAWN][WHITE];
+    }
+
+    hash ^= hash_table[(castling + A8) & H8][PAWN][BLACK];
+
+    if (passant != -1)
+    {
+        if (side == WHITE)
+        {
+            if ((FILE(passant) != FILE_A && piece[passant + DOWN_LEFT] == PAWN && color[passant + DOWN_LEFT] == WHITE) ||
+                (FILE(passant) != FILE_H && piece[passant + DOWN_RIGHT] == PAWN && color[passant + DOWN_RIGHT] == WHITE))
+            {
+                hash ^= hash_table[FILE(passant)][PAWN][WHITE];
+            }
+        }
+        else
+        {
+            if ((FILE(passant) != FILE_A && piece[passant + UP_LEFT] == PAWN && color[passant + UP_LEFT] == BLACK) ||
+                (FILE(passant) != FILE_H && piece[passant + UP_RIGHT] == PAWN && color[passant + UP_RIGHT] == BLACK))
+            {
+                hash ^= hash_table[FILE(passant)][PAWN][WHITE];
+            }
+        }
+    }
+}
+
+int repetition()
+{
+    int rep = 1;
+
+    for (int h = hply - halfmove; h < hply; h++)
+    {
+        if (hash == history[h].hash)
+        {
+            rep++;
+        }
+    }
+
+    return rep;
 }
 
 u64 perft(int depth)

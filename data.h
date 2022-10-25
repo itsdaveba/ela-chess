@@ -12,6 +12,7 @@ extern struct timeval now;
 extern int ply;
 extern int hply;
 extern hist_t history[MAX_HPLY];
+extern int hash_table[64][6][2];
 
 extern int piece[64];
 extern int color[64];
@@ -20,6 +21,7 @@ extern int castling;
 extern int passant;
 extern int halfmove;
 extern int fullmove;
+extern int hash;
 
 extern const char piece_char[7];
 extern const char castling_char[4];

@@ -23,11 +23,13 @@ int main()
     printf("Ela Chess Program\n\n");
 
     srand(time(NULL));
+    init_hash();
     setbuf(stdin, NULL);
     setbuf(stdout, NULL);
 
     hply = 0;
     set_board(INIT_FEN);
+    set_hash();
     if (!open_book())
     {
         printf("Warning: opening book missing\n");
@@ -83,6 +85,7 @@ int main()
             hply = 0;
             book = TRUE;
             set_board(INIT_FEN);
+            set_hash();
             continue;
         }
         if (!strcmp(command, "fen") || !strcmp(command, "setboard"))
@@ -99,6 +102,7 @@ int main()
                 set_board(INIT_FEN);
                 printf("Error: wrong FEN format\n");
             }
+            set_hash();
             continue;
         }
         if (!strcmp(command, "d"))
@@ -346,6 +350,11 @@ bool print_result()
         {
             printf("1/2-1/2 {Stalemate}\n");
         }
+        return TRUE;
+    }
+    if (repetition() >= 3)
+    {
+        printf("1/2-1/2 {Draw by repetition}\n");
         return TRUE;
     }
     if (halfmove >= 100)
