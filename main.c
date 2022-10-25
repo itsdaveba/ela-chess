@@ -63,7 +63,15 @@ int main()
         {
             printf("ela> ");
         }
-        fgets(input, MAX_INPUT_LENGTH, stdin);
+        if (fgets(input, MAX_INPUT_LENGTH, stdin) == NULL)
+        {
+            printf("\n");
+            exit(0);
+        }
+        if (!strchr(input, '\n'))
+        {
+            while (getchar() != '\n');
+        }
         command = strtok(input, " \n");
         if (command == NULL)
         {
@@ -99,6 +107,7 @@ int main()
             }
             if (fen == NULL || !set_board(fen))
             {
+                book = TRUE;
                 set_board(INIT_FEN);
                 printf("Error: wrong FEN format\n");
             }
