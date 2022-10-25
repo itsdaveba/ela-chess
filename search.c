@@ -26,6 +26,7 @@ move_t search(bool post, bool book)
 
     ply = 0;
     nodes = 0;
+    move.type = NO_MOVE;
     pv.best[0].type = NO_MOVE;
     gettimeofday(&start, NULL);
 
