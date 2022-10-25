@@ -45,11 +45,21 @@ move_t book_move()
     for (int h = 0; h < hply; h++)
     {
         line_length += sprintf(line + line_length, "%s ", move_to_lan(history[h].move));
+        if (line_length >= MAX_INPUT_LENGTH)
+        {
+            printf("Error: max line length reached\n");
+            exit(1);
+        }
     }
 
     rewind(book_file);
     while (fgets(book_line, MAX_INPUT_LENGTH, book_file) != NULL)
     {
+        if (!strchr(book_line, '\n'))
+        {
+            printf("Error: max book line length reached\n");
+            exit(1);
+        }
         if (!strncmp(line, book_line, line_length))
         {
             int m;
@@ -68,6 +78,11 @@ move_t book_move()
             }
             if (m == n_moves)
             {
+                if (m >= MAX_BOOK_MOVES)
+                {
+                    printf("Error: max book moves reached\n");
+                    exit(1);
+                }
                 book_list[m] = move;
                 book_count[m] = 1;
                 n_moves++;

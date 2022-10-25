@@ -9,6 +9,11 @@ bool set_board(char *fen)
 {
     char copy[MAX_FEN_LENGTH];
 
+    if (strlen(fen) >= MAX_FEN_LENGTH)
+    {
+        printf("Error: max fen length reached\n");
+        exit(1);
+    }
     strcpy(copy, fen);
 
     char *brd = strtok(copy, " ");
@@ -226,6 +231,12 @@ char *get_fen()
 
     sprintf(fen + c, "%d %d", halfmove, fullmove);
 
+    if (strlen(fen) >= MAX_FEN_LENGTH)
+    {
+        printf("Error: max fen length reached\n");
+        exit(1);
+    }
+
     return fen;
 }
 
@@ -255,6 +266,11 @@ void print_board()
 
 void add_move(int from, int to, int type, int *n_moves, move_t *move_list)
 {
+    if (*n_moves >= MAX_GEN_MOVES)
+    {
+        printf("Error: max gen moves reached\n");
+        exit(1);
+    }
     move_t *move_p = &move_list[*n_moves];
 
     if (type & PROMOTION)
@@ -554,6 +570,11 @@ bool in_check(int side)
 
 bool make_move(move_t move)
 {
+    if (hply >= MAX_HPLY)
+    {
+        printf("Error: max history ply reached\n");
+        exit(1);
+    }
     history[hply].move = move;
     history[hply].castling = castling;
     history[hply].passant = passant;
