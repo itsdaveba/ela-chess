@@ -87,6 +87,11 @@ int negamax(int alpha, int beta, int depth, line_t *pline)
     int n_moves;
     move_t move_list[MAX_GEN_MOVES];
 
+    if (in_check(side))
+    {
+        depth++;
+    }
+
     if (depth == 0)
     {
         return quiesce(alpha, beta, pline);
