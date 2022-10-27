@@ -86,8 +86,9 @@ int negamax(int alpha, int beta, int depth, line_t *pline)
     bool legal_move;
     int n_moves;
     move_t move_list[MAX_GEN_MOVES];
+    bool check = in_check(side);
 
-    if (in_check(side))
+    if (check)
     {
         depth++;
     }
@@ -135,7 +136,7 @@ int negamax(int alpha, int beta, int depth, line_t *pline)
 
     if (!legal_move)
     {
-        if (in_check(side))
+        if (check)
         {
             return MIN_SCORE + ply;
         }
@@ -151,8 +152,8 @@ int negamax(int alpha, int beta, int depth, line_t *pline)
 int quiesce(int alpha, int beta, line_t *pline)
 {
     int score;
-    int n_moves;
     line_t line;
+    int n_moves;
     move_t move_list[MAX_GEN_MOVES];
 
     nodes++;
