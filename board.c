@@ -278,19 +278,19 @@ void add_move(int from, int to, int type, int *n_moves, move_t *move_list)
         for (int prom = ROOK; prom <= QUEEN; prom++)
         {
             (*n_moves)++;
-            move_p->from = from;
-            move_p->to = to;
-            move_p->prom = prom;
-            move_p++->type = type;
+            move_p->bytes.from = from;
+            move_p->bytes.to = to;
+            move_p->bytes.prom = prom;
+            move_p++->bytes.type = type;
         }
     }
     else
     {
         (*n_moves)++;
-        move_p->from = from;
-        move_p->to = to;
-        move_p->prom = EMPTY;
-        move_p->type = type;
+        move_p->bytes.from = from;
+        move_p->bytes.to = to;
+        move_p->bytes.prom = EMPTY;
+        move_p->bytes.type = type;
     }
 }
 
@@ -579,7 +579,7 @@ bool make_move(move_t move)
     history[hply].castling = castling;
     history[hply].passant = passant;
     history[hply].halfmove = halfmove;
-    history[hply].capture = piece[move.to];
+    history[hply].capture = piece[move.bytes.to];
     history[hply++].hash = hash;
     ply++;
 
@@ -603,47 +603,47 @@ bool make_move(move_t move)
         }
     }
 
-    if (piece[move.to] != EMPTY)
+    if (piece[move.bytes.to] != EMPTY)
     {
-        hash ^= hash_table[move.to][piece[move.to]][side ^ 1];
+        hash ^= hash_table[move.bytes.to][piece[move.bytes.to]][side ^ 1];
     }
 
-    if (move.type & PROMOTION)
+    if (move.bytes.type & PROMOTION)
     {
-        hash ^= hash_table[move.to][move.prom][side];
-        piece[move.to] = move.prom;
+        hash ^= hash_table[move.bytes.to][move.bytes.prom][side];
+        piece[move.bytes.to] = move.bytes.prom;
     }
     else
     {
-        hash ^= hash_table[move.to][piece[move.from]][side];
-        piece[move.to] = piece[move.from];
+        hash ^= hash_table[move.bytes.to][piece[move.bytes.from]][side];
+        piece[move.bytes.to] = piece[move.bytes.from];
     }
-    hash ^= hash_table[move.from][piece[move.from]][side];
-    color[move.to] = side;
-    piece[move.from] = EMPTY;
-    color[move.from] = EMPTY;
+    hash ^= hash_table[move.bytes.from][piece[move.bytes.from]][side];
+    color[move.bytes.to] = side;
+    piece[move.bytes.from] = EMPTY;
+    color[move.bytes.from] = EMPTY;
 
     if (castling != 0)
     {
         hash ^= hash_table[(castling + A8) & H8][PAWN][BLACK];
-        castling &= castling_rights[move.from] & castling_rights[move.to];
+        castling &= castling_rights[move.bytes.from] & castling_rights[move.bytes.to];
         hash ^= hash_table[(castling + A8) & H8][PAWN][BLACK];
     }
 
-    if (move.type & PAWN_DOUBLE_MOVE)
+    if (move.bytes.type & PAWN_DOUBLE_MOVE)
     {
-        if ((FILE(move.to) != FILE_A && piece[move.to + LEFT] == PAWN && color[move.to + LEFT] == side ^ 1) ||
-            (FILE(move.to) != FILE_H && piece[move.to + RIGHT] == PAWN && color[move.to + RIGHT] == side ^ 1))
+        if ((FILE(move.bytes.to) != FILE_A && piece[move.bytes.to + LEFT] == PAWN && color[move.bytes.to + LEFT] == side ^ 1) ||
+            (FILE(move.bytes.to) != FILE_H && piece[move.bytes.to + RIGHT] == PAWN && color[move.bytes.to + RIGHT] == side ^ 1))
         {
-            hash ^= hash_table[FILE(move.to)][PAWN][WHITE];
+            hash ^= hash_table[FILE(move.bytes.to)][PAWN][WHITE];
         }
         if (side == WHITE)
         {
-            passant = move.to + DOWN;
+            passant = move.bytes.to + DOWN;
         }
         else
         {
-            passant = move.to + UP;
+            passant = move.bytes.to + UP;
         }
     }
     else if (passant != -1)
@@ -651,7 +651,7 @@ bool make_move(move_t move)
         passant = -1;
     }
 
-    if (move.type & (PAWN_MOVE | CAPTURE))
+    if (move.bytes.type & (PAWN_MOVE | CAPTURE))
     {
         halfmove = 0;
     }
@@ -665,10 +665,10 @@ bool make_move(move_t move)
         fullmove++;
     }
 
-    if (move.type & CASTLE)
+    if (move.bytes.type & CASTLE)
     {
         int from, to;
-        switch (move.to)
+        switch (move.bytes.to)
         {
         case G1:
             from = H1;
@@ -695,19 +695,19 @@ bool make_move(move_t move)
         color[from] = EMPTY;
     }
 
-    if (move.type & EP_CAPTURE)
+    if (move.bytes.type & EP_CAPTURE)
     {
         if (side == WHITE)
         {
-            hash ^= hash_table[move.to + DOWN][PAWN][BLACK];
-            piece[move.to + DOWN] = EMPTY;
-            color[move.to + DOWN] = EMPTY;
+            hash ^= hash_table[move.bytes.to + DOWN][PAWN][BLACK];
+            piece[move.bytes.to + DOWN] = EMPTY;
+            color[move.bytes.to + DOWN] = EMPTY;
         }
         else
         {
-            hash ^= hash_table[move.to + UP][PAWN][WHITE];
-            piece[move.to + UP] = EMPTY;
-            color[move.to + UP] = EMPTY;
+            hash ^= hash_table[move.bytes.to + UP][PAWN][WHITE];
+            piece[move.bytes.to + UP] = EMPTY;
+            color[move.bytes.to + UP] = EMPTY;
         }
     }
 
@@ -740,30 +740,30 @@ void take_back()
         fullmove--;
     }
 
-    if (hist.move.type & PROMOTION)
+    if (hist.move.bytes.type & PROMOTION)
     {
-        piece[hist.move.from] = PAWN;
+        piece[hist.move.bytes.from] = PAWN;
     }
     else
     {
-        piece[hist.move.from] = piece[hist.move.to];
+        piece[hist.move.bytes.from] = piece[hist.move.bytes.to];
     }
-    color[hist.move.from] = side;
+    color[hist.move.bytes.from] = side;
     if (hist.capture == EMPTY)
     {
-        piece[hist.move.to] = EMPTY;
-        color[hist.move.to] = EMPTY;
+        piece[hist.move.bytes.to] = EMPTY;
+        color[hist.move.bytes.to] = EMPTY;
     }
     else
     {
-        piece[hist.move.to] = hist.capture;
-        color[hist.move.to] = side ^ 1;
+        piece[hist.move.bytes.to] = hist.capture;
+        color[hist.move.bytes.to] = side ^ 1;
     }
 
-    if (hist.move.type & CASTLE)
+    if (hist.move.bytes.type & CASTLE)
     {
         int from, to;
-        switch (hist.move.to)
+        switch (hist.move.bytes.to)
         {
         case G1:
             from = H1;
@@ -788,17 +788,17 @@ void take_back()
         color[to] = EMPTY;
     }
 
-    if (hist.move.type & EP_CAPTURE)
+    if (hist.move.bytes.type & EP_CAPTURE)
     {
         if (side == WHITE)
         {
-            piece[hist.move.to + DOWN] = PAWN;
-            color[hist.move.to + DOWN] = BLACK;
+            piece[hist.move.bytes.to + DOWN] = PAWN;
+            color[hist.move.bytes.to + DOWN] = BLACK;
         }
         else
         {
-            piece[hist.move.to + UP] = PAWN;
-            color[hist.move.to + UP] = WHITE;
+            piece[hist.move.bytes.to + UP] = PAWN;
+            color[hist.move.bytes.to + UP] = WHITE;
         }
     }
 }

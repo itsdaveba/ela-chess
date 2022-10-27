@@ -18,7 +18,7 @@ move_t search(bool post, bool book)
     if (book)
     {
         move = book_move();
-        if ((move.type & NO_MOVE) == 0)
+        if ((move.bytes.type & NO_MOVE) == 0)
         {
             return move;
         }
@@ -26,8 +26,8 @@ move_t search(bool post, bool book)
 
     ply = 0;
     nodes = 0;
-    move.type = NO_MOVE;
-    pv.best[0].type = NO_MOVE;
+    move.bytes.type = NO_MOVE;
+    pv.best[0].bytes.type = NO_MOVE;
     gettimeofday(&start, NULL);
 
     stop = setjmp(env);
@@ -60,7 +60,7 @@ move_t search(bool post, bool book)
     {
         score = negamax(MIN_SCORE, MAX_SCORE, depth, &pv);
         move = pv.best[0];
-        if (post && (pv.best[0].type & NO_MOVE) == 0)
+        if (post && (pv.best[0].bytes.type & NO_MOVE) == 0)
         {
             gettimeofday(&now, NULL);
             printf("%d %d %d %llu", depth, score, time_diff(start, now), nodes);

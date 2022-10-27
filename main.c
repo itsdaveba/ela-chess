@@ -40,7 +40,7 @@ int main()
         if (side == computer_side)
         {
             move = search(post, book);
-            if (move.type & NO_MOVE || !make_move(move))
+            if (move.bytes.type & NO_MOVE || !make_move(move))
             {
                 computer_side = EMPTY;
                 printf("Error: no legal moves\n");
@@ -211,7 +211,7 @@ int main()
         }
 
         move = lan_to_move(command);
-        if (move.type & NO_MOVE)
+        if (move.bytes.type & NO_MOVE)
         {
             if (xboard)
             {
@@ -223,7 +223,7 @@ int main()
             }
             continue;
         }
-        if (move.type & ILLEGAL_MOVE || !make_move(move))
+        if (move.bytes.type & ILLEGAL_MOVE || !make_move(move))
         {
             if (xboard)
             {
@@ -250,14 +250,14 @@ char *move_to_lan(move_t move)
 {
     static char lan[MAX_LAN_LENGTH];
 
-    lan[0] = FILE(move.from) + 'a';
-    lan[1] = RANK(move.from) + '1';
-    lan[2] = FILE(move.to) + 'a';
-    lan[3] = RANK(move.to) + '1';
+    lan[0] = FILE(move.bytes.from) + 'a';
+    lan[1] = RANK(move.bytes.from) + '1';
+    lan[2] = FILE(move.bytes.to) + 'a';
+    lan[3] = RANK(move.bytes.to) + '1';
 
-    if (move.type & PROMOTION)
+    if (move.bytes.type & PROMOTION)
     {
-        lan[4] = piece_char[move.prom] | ' ';
+        lan[4] = piece_char[move.bytes.prom] | ' ';
         if (lan[5] != '\0')
         {
             lan[5] = '\0';
@@ -282,31 +282,31 @@ move_t lan_to_move(char *lan)
         lan[2] < 'a' || lan[2] > 'h' ||
         lan[3] < '1' || lan[3] > '8')
     {
-        move.type = NO_MOVE;
+        move.bytes.type = NO_MOVE;
         return move;
     }
 
-    move.from = SQUARE(lan[0], lan[1]);
-    move.to = SQUARE(lan[2], lan[3]);
-    move.type = ILLEGAL_MOVE;
+    move.bytes.from = SQUARE(lan[0], lan[1]);
+    move.bytes.to = SQUARE(lan[2], lan[3]);
+    move.bytes.type = ILLEGAL_MOVE;
     switch (lan[4])
     {
     case ' ':
     case '\n':
     case '\0':
-        move.prom = EMPTY;
+        move.bytes.prom = EMPTY;
         break;
     case 'r':
-        move.prom = ROOK;
+        move.bytes.prom = ROOK;
         break;
     case 'n':
-        move.prom = KNIGHT;
+        move.bytes.prom = KNIGHT;
         break;
     case 'b':
-        move.prom = BISHOP;
+        move.bytes.prom = BISHOP;
         break;
     case 'q':
-        move.prom = QUEEN;
+        move.bytes.prom = QUEEN;
         break;
     default:
         return move;
@@ -316,7 +316,7 @@ move_t lan_to_move(char *lan)
 
     for (int m = 0; m < n_moves; m++)
     {
-        if (move_list[m].from == move.from && move_list[m].to == move.to && move_list[m].prom == move.prom)
+        if (move_list[m].id == move.id)
         {
             return move_list[m];
         }

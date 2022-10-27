@@ -35,7 +35,7 @@ move_t book_move()
     int n_moves = 0;
     int total_lines = 0;
 
-    move.type = NO_MOVE;
+    move.bytes.type = NO_MOVE;
 
     if (book_file == NULL || hply > 25)
     {
@@ -64,13 +64,13 @@ move_t book_move()
         {
             int m;
             move = lan_to_move(book_line + line_length);
-            if (move.type & (NO_MOVE | ILLEGAL_MOVE))
+            if (move.bytes.type & (NO_MOVE | ILLEGAL_MOVE))
             {
                 continue;
             }
             for (m = 0; m < n_moves; m++)
             {
-                if (book_list[m].from == move.from && book_list[m].to == move.to && book_list[m].prom == move.prom)
+                if (book_list[m].id == move.id)
                 {
                     book_count[m]++;
                     break;

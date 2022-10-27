@@ -87,6 +87,11 @@ typedef struct
     char to;
     char prom;
     char type;
+} move_bytes;
+typedef union
+{
+    int id;
+    move_bytes bytes;
 } move_t;
 typedef struct
 {
