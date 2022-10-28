@@ -402,7 +402,7 @@ int gen_moves(move_t *move_list, bool quiesce)
                         }
                         if (color[n] != EMPTY)
                         {
-                            if (color[n] == side ^ 1)
+                            if (color[n] == (side ^ 1))
                             {
                                 add_move(s, n, CAPTURE, &n_moves, move_list);
                             }
@@ -632,8 +632,8 @@ bool make_move(move_t move)
 
     if (move.bytes.type & PAWN_DOUBLE_MOVE)
     {
-        if ((FILE(move.bytes.to) != FILE_A && piece[move.bytes.to + LEFT] == PAWN && color[move.bytes.to + LEFT] == side ^ 1) ||
-            (FILE(move.bytes.to) != FILE_H && piece[move.bytes.to + RIGHT] == PAWN && color[move.bytes.to + RIGHT] == side ^ 1))
+        if ((FILE(move.bytes.to) != FILE_A && piece[move.bytes.to + LEFT] == PAWN && color[move.bytes.to + LEFT] == (side ^ 1)) ||
+            (FILE(move.bytes.to) != FILE_H && piece[move.bytes.to + RIGHT] == PAWN && color[move.bytes.to + RIGHT] == (side ^ 1)))
         {
             hash ^= hash_table[FILE(move.bytes.to)][PAWN][WHITE];
         }
@@ -803,12 +803,15 @@ void take_back()
     }
 }
 
-int rand_hash()
+u64 rand_hash()
 {
-    int rand_num;
+    u64 rand_num;
 
-    rand_num = rand() & 0xFFFF;
-    rand_num |= rand() << 16;
+    rand_num = rand();
+    rand_num ^= (u64)rand() << 15;
+    rand_num ^= (u64)rand() << 30;
+    rand_num ^= (u64)rand() << 45;
+    rand_num ^= (u64)rand() << 60;
 
     return rand_num;
 }
