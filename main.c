@@ -296,14 +296,14 @@ move_t lan_to_move(char *lan)
     case '\0':
         move.bytes.prom = EMPTY;
         break;
-    case 'r':
-        move.bytes.prom = ROOK;
-        break;
     case 'n':
         move.bytes.prom = KNIGHT;
         break;
     case 'b':
         move.bytes.prom = BISHOP;
+        break;
+    case 'r':
+        move.bytes.prom = ROOK;
         break;
     case 'q':
         move.bytes.prom = QUEEN;

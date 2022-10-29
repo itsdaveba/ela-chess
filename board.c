@@ -113,14 +113,14 @@ bool set_board(char *fen)
                 case 'P':
                     piece[bigend_rank[s++]] = PAWN;
                     break;
-                case 'R':
-                    piece[bigend_rank[s++]] = ROOK;
-                    break;
                 case 'N':
                     piece[bigend_rank[s++]] = KNIGHT;
                     break;
                 case 'B':
                     piece[bigend_rank[s++]] = BISHOP;
+                    break;
+                case 'R':
+                    piece[bigend_rank[s++]] = ROOK;
                     break;
                 case 'Q':
                     piece[bigend_rank[s++]] = QUEEN;
