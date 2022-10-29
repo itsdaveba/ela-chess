@@ -275,7 +275,7 @@ void add_move(int from, int to, int type, int *n_moves, move_t *move_list)
 
     if (type & PROMOTION)
     {
-        for (int prom = ROOK; prom <= QUEEN; prom++)
+        for (int prom = KNIGHT; prom <= QUEEN; prom++)
         {
             (*n_moves)++;
             move_p->bytes.from = from;
