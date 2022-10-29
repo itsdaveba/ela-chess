@@ -107,3 +107,12 @@ typedef struct
     int capture;
     u64 hash;
 } hist_t;
+typedef struct
+{
+    unsigned int hash_high;
+    unsigned char hash_mid;
+    char depth;
+    char node_type;
+    int score;
+    move_t best;
+} transp_t;

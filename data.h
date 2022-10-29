@@ -13,6 +13,7 @@ extern int ply;
 extern int hply;
 extern hist_t history[MAX_HPLY];
 extern u64 hash_table[64][6][2];
+extern transp_t transp_table[TRANSP_SIZE];
 
 extern int piece[64];
 extern int color[64];

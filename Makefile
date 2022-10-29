@@ -4,6 +4,7 @@ SOURCE_FILES = \
 	search.c \
 	eval.c \
 	book.c \
+	hash.c \
 	data.c
 
 HEADER_FILES = \

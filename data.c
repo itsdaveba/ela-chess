@@ -15,6 +15,7 @@ int ply;
 int hply;
 hist_t history[MAX_HPLY];
 u64 hash_table[64][6][2];
+transp_t transp_table[TRANSP_SIZE];
 
 int piece[64];
 int color[64];

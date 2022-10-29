@@ -84,9 +84,13 @@ int negamax(int alpha, int beta, int depth, line_t *pline)
     int score;
     line_t line;
     bool legal_move;
+    int node_type;
     int n_moves;
     move_t move_list[MAX_GEN_MOVES];
     bool check = in_check(side);
+
+    nodes++;
+    check_time();
 
     if (check)
     {
@@ -100,11 +104,29 @@ int negamax(int alpha, int beta, int depth, line_t *pline)
 
     pline->depth = 0;
     legal_move = FALSE;
+    node_type = ALL_NODE;
     n_moves = gen_moves(move_list, FALSE);
 
     if (ply == 0)
     {
         shuffle_moves(n_moves, move_list);
+    }
+
+    move_t best;
+    best.bytes.type = NO_MOVE;
+    score = probe_hash(alpha, beta, depth, &best);
+    if (score != NULL_SCORE)
+    {
+        return score;
+    }
+    for (int m = 0; m < n_moves; m++)
+    {
+        if (move_list[m].id == best.id)
+        {
+            move_t tmp = move_list[0];
+            move_list[0] = move_list[m];
+            move_list[m] = tmp;
+        }
     }
 
     for (int m = 0; m < n_moves; m++)
@@ -119,11 +141,16 @@ int negamax(int alpha, int beta, int depth, line_t *pline)
             take_back();
             if (score >= beta)
             {
+                store_hash(alpha, depth, move_list[m], CUT_NODE);
                 return beta;
             }
             if (score > alpha)
             {
                 alpha = score;
+                if (node_type != PV_NODE)
+                {
+                    node_type = PV_NODE;
+                }
                 if (ply < MAX_PV_LENGTH)
                 {
                     pline->best[0] = move_list[m];
@@ -138,13 +165,15 @@ int negamax(int alpha, int beta, int depth, line_t *pline)
     {
         if (check)
         {
-            return MIN_SCORE + ply;
+            alpha = MIN_SCORE + ply;
         }
         else
         {
-            return DRAW_SCORE;
+            alpha = DRAW_SCORE;
         }
     }
+
+    store_hash(alpha, depth, pline->best[0], node_type);
 
     return alpha;
 }
@@ -157,14 +186,7 @@ int quiesce(int alpha, int beta, line_t *pline)
     move_t move_list[MAX_GEN_MOVES];
 
     nodes++;
-    if ((nodes & 0xFFFF) == 0)
-    {
-        gettimeofday(&now, NULL);
-        if (time_diff(start, now) >= search_time)
-        {
-            longjmp(env, TRUE);
-        }
-    }
+    check_time();
 
     pline->depth = 0;
     score = evaluate();
@@ -211,6 +233,18 @@ int time_diff(struct timeval start, struct timeval now)
     int diff_sec = now.tv_sec - start.tv_sec;
     int diff_usec = now.tv_usec - start.tv_usec;
     return diff_sec * 100 + diff_usec / 10000;
+}
+
+void check_time()
+{
+    if ((nodes & 0xFFFF) == 0)
+    {
+        gettimeofday(&now, NULL);
+        if (time_diff(start, now) >= search_time)
+        {
+            longjmp(env, TRUE);
+        }
+    }
 }
 
 void shuffle_moves(int n_moves, move_t *move_list)

@@ -24,6 +24,7 @@ move_t search(bool post, bool book);
 int negamax(int alpha, int beta, int depth, line_t *pline);
 int quiesce(int alpha, int beta, line_t *pline);
 int time_diff(struct timeval start, struct timeval stop);
+void check_time();
 void shuffle_moves(int n_moves, move_t *move_list);
 
 // eval.c
@@ -33,3 +34,10 @@ int evaluate();
 bool open_book();
 void close_book();
 move_t book_move();
+
+// hashing.c
+u64 rand_hash();
+void init_hash();
+void set_hash();
+int probe_hash(int alpha, int beta, int depth, move_t *best);
+void store_hash(int score, int depth, move_t best, int node_type);

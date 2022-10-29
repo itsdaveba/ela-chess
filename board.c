@@ -803,78 +803,13 @@ void take_back()
     }
 }
 
-u64 rand_hash()
-{
-    u64 rand_num;
-
-    rand_num = rand();
-    rand_num ^= (u64)rand() << 15;
-    rand_num ^= (u64)rand() << 30;
-    rand_num ^= (u64)rand() << 45;
-    rand_num ^= (u64)rand() << 60;
-
-    return rand_num;
-}
-
-void init_hash()
-{
-    for (int s = 0; s < 64; s++)
-    {
-        for (int p = PAWN; p <= KING; p++)
-        {
-            hash_table[s][p][BLACK] = rand_hash();
-            hash_table[s][p][WHITE] = rand_hash();
-        }
-    }
-}
-
-void set_hash()
-{
-    hash = 0;
-
-    for (int s = 0; s < 64; s++)
-    {
-        if (piece[s] != EMPTY)
-        {
-            hash ^= hash_table[s][piece[s]][color[s]];
-        }
-    }
-
-    if (side == BLACK)
-    {
-        hash ^= hash_table[A8][PAWN][WHITE];
-    }
-
-    hash ^= hash_table[(castling + A8) & H8][PAWN][BLACK];
-
-    if (passant != -1)
-    {
-        if (side == WHITE)
-        {
-            if ((FILE(passant) != FILE_A && piece[passant + DOWN_LEFT] == PAWN && color[passant + DOWN_LEFT] == WHITE) ||
-                (FILE(passant) != FILE_H && piece[passant + DOWN_RIGHT] == PAWN && color[passant + DOWN_RIGHT] == WHITE))
-            {
-                hash ^= hash_table[FILE(passant)][PAWN][WHITE];
-            }
-        }
-        else
-        {
-            if ((FILE(passant) != FILE_A && piece[passant + UP_LEFT] == PAWN && color[passant + UP_LEFT] == BLACK) ||
-                (FILE(passant) != FILE_H && piece[passant + UP_RIGHT] == PAWN && color[passant + UP_RIGHT] == BLACK))
-            {
-                hash ^= hash_table[FILE(passant)][PAWN][WHITE];
-            }
-        }
-    }
-}
-
 int repetition()
 {
     int rep = 1;
 
     for (int h = hply - halfmove; h < hply; h++)
     {
-        if (hash == history[h].hash)
+        if (history[h].hash == hash)
         {
             rep++;
         }
