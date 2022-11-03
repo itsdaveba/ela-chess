@@ -1,4 +1,3 @@
-#include <stdio.h> // remove
 #include <stdlib.h>
 #include "defs.h"
 #include "data.h"
@@ -69,6 +68,25 @@ void set_hash()
     }
 }
 
+void store_hash(int score, int depth, int node_type, move_t best)
+{
+    transp_t *transp = &transp_table[hash % TRANSP_SIZE];
+
+    transp->hash_high = hash >> 32;
+    transp->hash_mid = hash >> 24;
+    transp->score = score;
+    transp->depth = depth;
+    transp->node_type = node_type;
+    if (node_type != ALL_NODE)
+    {
+        transp->best = best;
+    }
+    else
+    {
+        transp->best.bytes.type = NO_MOVE;
+    }
+}
+
 int probe_hash(int alpha, int beta, int depth, move_t *best)
 {
     transp_t *transp = &transp_table[hash % TRANSP_SIZE];
@@ -92,17 +110,6 @@ int probe_hash(int alpha, int beta, int depth, move_t *best)
         }
         *best = transp->best;
     }
+
     return NULL_SCORE;
-}
-
-void store_hash(int score, int depth, move_t best, int node_type)
-{
-    transp_t *transp = &transp_table[hash % TRANSP_SIZE];
-
-    transp->hash_high = hash >> 32;
-    transp->hash_mid = hash >> 24;
-    transp->score = score;
-    transp->depth = depth;
-    transp->best = best;
-    transp->node_type = node_type;
 }

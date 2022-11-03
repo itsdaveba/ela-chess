@@ -5,6 +5,7 @@
 #define MAX_LAN_LENGTH 6
 #define MAX_FEN_LENGTH 90
 #define MAX_INPUT_LENGTH 256
+#define TRANSP_SIZE 0x1000000
 
 #define MIN_SCORE -100000
 #define MAX_SCORE 100000
@@ -27,6 +28,10 @@
 
 #define BLACK 0
 #define WHITE 1
+
+#define PV_NODE 0
+#define CUT_NODE 1
+#define ALL_NODE 2
 
 #define PAWN_MOVE 1
 #define PAWN_DOUBLE_MOVE 2
@@ -93,6 +98,11 @@ typedef union
     int id;
     move_bytes bytes;
 } move_t;
+typedef struct
+{
+    int score;
+    move_t move;
+} gen_t;
 typedef struct
 {
     int depth;

@@ -18,7 +18,7 @@ move_t search(bool post, bool book)
     if (book)
     {
         move = book_move();
-        if ((move.bytes.type & NO_MOVE) == 0)
+        if (!(move.bytes.type & NO_MOVE))
         {
             return move;
         }
@@ -43,19 +43,20 @@ move_t search(bool post, bool book)
     if (search_depth == 0 || search_time == 0)
     {
         int n_moves;
-        move_t move_list[MAX_GEN_MOVES];
+        gen_t move_list[MAX_GEN_MOVES];
         n_moves = gen_moves(move_list, FALSE);
         shuffle_moves(n_moves, move_list);
         for (int m = 0; m < n_moves; m++)
         {
-            if (make_move(move_list[m]))
+            if (make_move(move_list[m].move))
             {
                 take_back();
-                return move_list[m];
+                return move_list[m].move;
             }
         }
     }
 
+    memset(heuristic, 0, sizeof(heuristic));
     for (int depth = 1; depth <= search_depth; depth++)
     {
         score = negamax(MIN_SCORE, MAX_SCORE, depth, &pv);
@@ -86,7 +87,7 @@ int negamax(int alpha, int beta, int depth, line_t *pline)
     bool legal_move;
     int node_type;
     int n_moves;
-    move_t move_list[MAX_GEN_MOVES];
+    gen_t move_list[MAX_GEN_MOVES];
     bool check = in_check(side);
 
     nodes++;
@@ -119,19 +120,12 @@ int negamax(int alpha, int beta, int depth, line_t *pline)
     {
         return score;
     }
-    for (int m = 0; m < n_moves; m++)
-    {
-        if (move_list[m].id == best.id)
-        {
-            move_t tmp = move_list[0];
-            move_list[0] = move_list[m];
-            move_list[m] = tmp;
-        }
-    }
+    follow_hash(best, n_moves, move_list);
 
     for (int m = 0; m < n_moves; m++)
     {
-        if (make_move(move_list[m]))
+        sort_move(m, n_moves, move_list);
+        if (make_move(move_list[m].move))
         {
             if (!legal_move)
             {
@@ -141,7 +135,11 @@ int negamax(int alpha, int beta, int depth, line_t *pline)
             take_back();
             if (score >= beta)
             {
-                store_hash(alpha, depth, move_list[m], CUT_NODE);
+                if (!(move_list[m].move.bytes.type & CAPTURE))
+                {
+                    heuristic[move_list[m].move.bytes.from][move_list[m].move.bytes.to] += depth * depth;
+                }
+                store_hash(alpha, depth, CUT_NODE, move_list[m].move);
                 return beta;
             }
             if (score > alpha)
@@ -153,7 +151,7 @@ int negamax(int alpha, int beta, int depth, line_t *pline)
                 }
                 if (ply < MAX_PV_LENGTH)
                 {
-                    pline->best[0] = move_list[m];
+                    pline->best[0] = move_list[m].move;
                     memcpy(pline->best + 1, line.best, line.depth * sizeof(move_t));
                     pline->depth = line.depth + 1;
                 }
@@ -173,8 +171,7 @@ int negamax(int alpha, int beta, int depth, line_t *pline)
         }
     }
 
-    store_hash(alpha, depth, pline->best[0], node_type);
-
+    store_hash(alpha, depth, node_type, pline->best[0]);
     return alpha;
 }
 
@@ -183,7 +180,7 @@ int quiesce(int alpha, int beta, line_t *pline)
     int score;
     line_t line;
     int n_moves;
-    move_t move_list[MAX_GEN_MOVES];
+    gen_t move_list[MAX_GEN_MOVES];
 
     nodes++;
     check_time();
@@ -204,7 +201,7 @@ int quiesce(int alpha, int beta, line_t *pline)
 
     for (int m = 0; m < n_moves; m++)
     {
-        if (make_move(move_list[m]))
+        if (make_move(move_list[m].move))
         {
             score = -quiesce(-beta, -alpha, &line);
             take_back();
@@ -217,7 +214,7 @@ int quiesce(int alpha, int beta, line_t *pline)
                 alpha = score;
                 if (ply < MAX_PV_LENGTH)
                 {
-                    pline->best[0] = move_list[m];
+                    pline->best[0] = move_list[m].move;
                     memcpy(pline->best + 1, line.best, line.depth * sizeof(move_t));
                     pline->depth = line.depth + 1;
                 }
@@ -226,6 +223,21 @@ int quiesce(int alpha, int beta, line_t *pline)
     }
 
     return alpha;
+}
+
+void follow_hash(move_t hash_move, int n_moves, gen_t *move_list)
+{
+    if (!(hash_move.bytes.type & NO_MOVE))
+    {
+        for (int m = 0; m < n_moves; m++)
+        {
+            if (move_list[m].move.id == hash_move.id)
+            {
+                move_list[m].score = __INT_MAX__ - 1;
+                break;
+            }
+        }
+    }
 }
 
 int time_diff(struct timeval start, struct timeval now)
@@ -237,7 +249,7 @@ int time_diff(struct timeval start, struct timeval now)
 
 void check_time()
 {
-    if ((nodes & 0xFFFF) == 0)
+    if (!(nodes & 0xFFFF))
     {
         gettimeofday(&now, NULL);
         if (time_diff(start, now) >= search_time)
@@ -247,16 +259,36 @@ void check_time()
     }
 }
 
-void shuffle_moves(int n_moves, move_t *move_list)
+void swap_moves(gen_t *move_x, gen_t *move_y)
 {
-    int i, j;
-    move_t temp;
+    gen_t temp = *move_x;
+    *move_x = *move_y;
+    *move_y = temp;
+}
 
-    for (i = n_moves - 1; i > 0; i--)
+void shuffle_moves(int n_moves, gen_t *move_list)
+{
+    int x, y;
+
+    for (x = n_moves - 1; x > 0; x--)
     {
-        j = rand() % (i + 1);
-        temp = move_list[i];
-        move_list[i] = move_list[j];
-        move_list[j] = temp;
+        y = rand() % (x + 1);
+        swap_moves(&move_list[x], &move_list[y]);
+    }
+}
+
+void sort_move(int m, int n_moves, gen_t *move_list)
+{
+    int max_i = m;
+    for (int i = m + 1; i < n_moves; i++)
+    {
+        if (move_list[i].score > move_list[max_i].score)
+        {
+            max_i = i;
+        }
+    }
+    if (max_i != m)
+    {
+        swap_moves(&move_list[max_i], &move_list[m]);
     }
 }

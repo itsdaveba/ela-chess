@@ -275,7 +275,7 @@ move_t lan_to_move(char *lan)
 {
     move_t move;
     int n_moves;
-    move_t move_list[MAX_GEN_MOVES];
+    gen_t move_list[MAX_GEN_MOVES];
 
     if (lan[0] < 'a' || lan[0] > 'h' ||
         lan[1] < '1' || lan[1] > '8' ||
@@ -316,9 +316,9 @@ move_t lan_to_move(char *lan)
 
     for (int m = 0; m < n_moves; m++)
     {
-        if (move_list[m].id == move.id)
+        if ((move_list[m].move.id & 0xFFFFFF) == (move.id & 0xFFFFFF))
         {
-            return move_list[m];
+            return move_list[m].move;
         }
     }
 
@@ -329,13 +329,13 @@ bool print_result()
 {
     int m;
     int n_moves;
-    move_t move_list[MAX_GEN_MOVES];
+    gen_t move_list[MAX_GEN_MOVES];
 
     n_moves = gen_moves(move_list, FALSE);
 
     for (m = 0; m < n_moves; m++)
     {
-        if (make_move(move_list[m]))
+        if (make_move(move_list[m].move))
         {
             take_back();
             break;

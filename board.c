@@ -264,37 +264,46 @@ void print_board()
     printf("\n\n");
 }
 
-void add_move(int from, int to, int type, int *n_moves, move_t *move_list)
+void add_move(int from, int to, int type, int *n_moves, gen_t *move_list)
 {
     if (*n_moves >= MAX_GEN_MOVES)
     {
         printf("Error: max gen moves reached\n");
         exit(1);
     }
-    move_t *move_p = &move_list[*n_moves];
+    gen_t *gen_p = &move_list[*n_moves];
 
     if (type & PROMOTION)
     {
         for (int prom = KNIGHT; prom <= QUEEN; prom++)
         {
             (*n_moves)++;
-            move_p->bytes.from = from;
-            move_p->bytes.to = to;
-            move_p->bytes.prom = prom;
-            move_p++->bytes.type = type;
+            gen_p->move.bytes.from = from;
+            gen_p->move.bytes.to = to;
+            gen_p->move.bytes.prom = prom;
+            gen_p++->move.bytes.type = type;
+            gen_p->score = (MAX_SCORE >> 1) + prom;
         }
     }
     else
     {
         (*n_moves)++;
-        move_p->bytes.from = from;
-        move_p->bytes.to = to;
-        move_p->bytes.prom = EMPTY;
-        move_p->bytes.type = type;
+        gen_p->move.bytes.from = from;
+        gen_p->move.bytes.to = to;
+        gen_p->move.bytes.prom = EMPTY;
+        gen_p->move.bytes.type = type;
+        if (piece[to] != EMPTY)
+        {
+            gen_p->score = __INT_MAX__ - 26 + 6 * piece[to] - piece[from];
+        }
+        else
+        {
+            gen_p->score = heuristic[from][to];
+        }
     }
 }
 
-int gen_moves(move_t *move_list, bool quiesce)
+int gen_moves(gen_t *move_list, bool quiesce)
 {
     int type;
     int n_moves = 0;
@@ -822,7 +831,7 @@ u64 perft(int depth)
 {
     u64 nodes;
     int n_moves;
-    move_t move_list[MAX_GEN_MOVES];
+    gen_t move_list[MAX_GEN_MOVES];
 
     if (depth == 0)
     {
@@ -834,7 +843,7 @@ u64 perft(int depth)
 
     for (int m = 0; m < n_moves; m++)
     {
-        if (make_move(move_list[m]))
+        if (make_move(move_list[m].move))
         {
             nodes += perft(depth - 1);
             take_back();

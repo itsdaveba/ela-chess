@@ -12,6 +12,7 @@ extern struct timeval now;
 extern int ply;
 extern int hply;
 extern hist_t history[MAX_HPLY];
+extern int heuristic[64][64];
 extern u64 hash_table[64][6][2];
 extern transp_t transp_table[TRANSP_SIZE];
 
