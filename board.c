@@ -282,7 +282,7 @@ void add_move(int from, int to, int type, int *n_moves, gen_t *move_list)
             gen_p->move.bytes.to = to;
             gen_p->move.bytes.prom = prom;
             gen_p++->move.bytes.type = type;
-            gen_p->score = (MAX_SCORE >> 1) + prom;
+            gen_p->score = __INT_MAX__ - 26 + 6 * prom;
         }
     }
     else
@@ -292,9 +292,16 @@ void add_move(int from, int to, int type, int *n_moves, gen_t *move_list)
         gen_p->move.bytes.to = to;
         gen_p->move.bytes.prom = EMPTY;
         gen_p->move.bytes.type = type;
-        if (piece[to] != EMPTY)
+        if (type & CAPTURE)
         {
-            gen_p->score = __INT_MAX__ - 26 + 6 * piece[to] - piece[from];
+            if (type & EP_CAPTURE)
+            {
+                gen_p->score = __INT_MAX__ - 26;
+            }
+            else
+            {
+                gen_p->score = __INT_MAX__ - 26 + 6 * piece[to] - piece[from];
+            }
         }
         else
         {
