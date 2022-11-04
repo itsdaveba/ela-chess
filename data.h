@@ -13,6 +13,8 @@ extern int ply;
 extern int hply;
 extern hist_t history[MAX_HPLY];
 extern int heuristic[64][64];
+extern move_t pv[MAX_PV_LENGTH][MAX_PV_LENGTH];
+extern int pv_length[MAX_PV_LENGTH];
 extern u64 hash_table[64][6][2];
 extern transp_t transp_table[TRANSP_SIZE];
 

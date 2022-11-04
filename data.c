@@ -14,6 +14,8 @@ struct timeval now;
 int ply;
 int hply;
 hist_t history[MAX_HPLY];
+move_t pv[MAX_PV_LENGTH][MAX_PV_LENGTH];
+int pv_length[MAX_PV_LENGTH];
 int heuristic[64][64];
 u64 hash_table[64][6][2];
 transp_t transp_table[TRANSP_SIZE];

@@ -21,8 +21,8 @@ u64 perft(int depth);
 
 // search.c
 move_t search(bool post, bool book);
-int negamax(int alpha, int beta, int depth, line_t *pline);
-int quiesce(int alpha, int beta, line_t *pline);
+int negamax(int alpha, int beta, int depth);
+int quiesce(int alpha, int beta);
 void follow_hash(move_t hash_move, int n_moves, gen_t *move_list);
 int time_diff(struct timeval start, struct timeval stop);
 void check_time();

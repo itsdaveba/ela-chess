@@ -13,7 +13,6 @@ move_t search(bool post, bool book)
 
     int score;
     bool stop;
-    line_t pv;
 
     if (book)
     {
@@ -27,7 +26,7 @@ move_t search(bool post, bool book)
     ply = 0;
     nodes = 0;
     move.bytes.type = NO_MOVE;
-    pv.best[0].bytes.type = NO_MOVE;
+    pv[0][0].bytes.type = NO_MOVE;
     gettimeofday(&start, NULL);
 
     stop = setjmp(env);
@@ -59,15 +58,15 @@ move_t search(bool post, bool book)
     memset(heuristic, 0, sizeof(heuristic));
     for (int depth = 1; depth <= search_depth; depth++)
     {
-        score = negamax(MIN_SCORE, MAX_SCORE, depth, &pv);
-        move = pv.best[0];
-        if (post && (pv.best[0].bytes.type & NO_MOVE) == 0)
+        score = negamax(MIN_SCORE, MAX_SCORE, depth);
+        move = pv[0][0];
+        if (post && !(pv[0][0].bytes.type & NO_MOVE))
         {
             gettimeofday(&now, NULL);
             printf("%d %d %d %llu", depth, score, time_diff(start, now), nodes);
-            for (int d = 0; d < pv.depth; d++)
+            for (int d = 0; d < pv_length[0]; d++)
             {
-                printf(" %s", move_to_lan(pv.best[d]));
+                printf(" %s", move_to_lan(pv[0][d]));
             }
             printf("\n");
         }
@@ -77,13 +76,12 @@ move_t search(bool post, bool book)
         }
     }
 
-    return pv.best[0];
+    return pv[0][0];
 }
 
-int negamax(int alpha, int beta, int depth, line_t *pline)
+int negamax(int alpha, int beta, int depth)
 {
     int score;
-    line_t line;
     bool legal_move;
     int node_type;
     int n_moves;
@@ -100,10 +98,13 @@ int negamax(int alpha, int beta, int depth, line_t *pline)
 
     if (depth == 0)
     {
-        return quiesce(alpha, beta, pline);
+        return quiesce(alpha, beta);
     }
 
-    pline->depth = 0;
+    if (ply < MAX_PV_LENGTH)
+    {
+        pv_length[ply] = ply;
+    }
     legal_move = FALSE;
     node_type = ALL_NODE;
     n_moves = gen_moves(move_list, FALSE);
@@ -131,7 +132,7 @@ int negamax(int alpha, int beta, int depth, line_t *pline)
             {
                 legal_move = TRUE;
             }
-            score = -negamax(-beta, -alpha, depth - 1, &line);
+            score = -negamax(-beta, -alpha, depth - 1);
             take_back();
             if (score >= beta)
             {
@@ -151,9 +152,19 @@ int negamax(int alpha, int beta, int depth, line_t *pline)
                 }
                 if (ply < MAX_PV_LENGTH)
                 {
-                    pline->best[0] = move_list[m].move;
-                    memcpy(pline->best + 1, line.best, line.depth * sizeof(move_t));
-                    pline->depth = line.depth + 1;
+                    pv[ply][ply] = move_list[m].move;
+                    if (ply + 1 < MAX_PV_LENGTH)
+                    {
+                        for (int p = ply + 1; p < pv_length[ply + 1]; p++)
+                        {
+                            pv[ply][p] = pv[ply + 1][p];
+                        }
+                        pv_length[ply] = pv_length[ply + 1];
+                    }
+                    else
+                    {
+                        pv_length[ply] = MAX_PV_LENGTH;
+                    }
                 }
             }
         }
@@ -171,21 +182,23 @@ int negamax(int alpha, int beta, int depth, line_t *pline)
         }
     }
 
-    store_hash(alpha, depth, node_type, pline->best[0]);
+    store_hash(alpha, depth, node_type, pv[ply][ply]);
     return alpha;
 }
 
-int quiesce(int alpha, int beta, line_t *pline)
+int quiesce(int alpha, int beta)
 {
     int score;
-    line_t line;
     int n_moves;
     gen_t move_list[MAX_GEN_MOVES];
 
     nodes++;
     check_time();
 
-    pline->depth = 0;
+    if (ply < MAX_PV_LENGTH)
+    {
+        pv_length[ply] = ply;
+    }
     score = evaluate();
 
     if (score >= beta)
@@ -203,7 +216,7 @@ int quiesce(int alpha, int beta, line_t *pline)
     {
         if (make_move(move_list[m].move))
         {
-            score = -quiesce(-beta, -alpha, &line);
+            score = -quiesce(-beta, -alpha);
             take_back();
             if (score >= beta)
             {
@@ -214,9 +227,19 @@ int quiesce(int alpha, int beta, line_t *pline)
                 alpha = score;
                 if (ply < MAX_PV_LENGTH)
                 {
-                    pline->best[0] = move_list[m].move;
-                    memcpy(pline->best + 1, line.best, line.depth * sizeof(move_t));
-                    pline->depth = line.depth + 1;
+                    pv[ply][ply] = move_list[m].move;
+                    if (ply + 1 < MAX_PV_LENGTH)
+                    {
+                        for (int p = ply + 1; p < pv_length[ply + 1]; p++)
+                        {
+                            pv[ply][p] = pv[ply + 1][p];
+                        }
+                        pv_length[ply] = pv_length[ply + 1];
+                    }
+                    else
+                    {
+                        pv_length[ply] = MAX_PV_LENGTH;
+                    }
                 }
             }
         }

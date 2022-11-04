@@ -105,11 +105,6 @@ typedef struct
 } gen_t;
 typedef struct
 {
-    int depth;
-    move_t best[MAX_PV_LENGTH];
-} line_t;
-typedef struct
-{
     move_t move;
     int castling;
     int passant;
