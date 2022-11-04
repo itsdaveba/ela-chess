@@ -68,7 +68,7 @@ void set_hash()
     }
 }
 
-void store_hash(int score, int depth, int node_type, move_t best)
+void store_hash(int score, int depth, int node_type, move_t best_move)
 {
     transp_t *transp = &transp_table[hash % TRANSP_SIZE];
 
@@ -79,15 +79,15 @@ void store_hash(int score, int depth, int node_type, move_t best)
     transp->node_type = node_type;
     if (node_type != ALL_NODE)
     {
-        transp->best = best;
+        transp->best_move = best_move;
     }
     else
     {
-        transp->best.bytes.type = NO_MOVE;
+        transp->best_move.bytes.type = NO_MOVE;
     }
 }
 
-int probe_hash(int alpha, int beta, int depth, move_t *best)
+int probe_hash(int alpha, int beta, int depth, move_t *best_move)
 {
     transp_t *transp = &transp_table[hash % TRANSP_SIZE];
 
@@ -108,7 +108,7 @@ int probe_hash(int alpha, int beta, int depth, move_t *best)
                 return alpha;
             }
         }
-        *best = transp->best;
+        *best_move = transp->best_move;
     }
 
     return NULL_SCORE;

@@ -119,5 +119,5 @@ typedef struct
     char depth;
     char node_type;
     int score;
-    move_t best;
+    move_t best_move;
 } transp_t;

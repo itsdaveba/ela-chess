@@ -84,6 +84,7 @@ int negamax(int alpha, int beta, int depth)
     int score;
     bool legal_move;
     int node_type;
+    move_t best_move;
     int n_moves;
     gen_t move_list[MAX_GEN_MOVES];
     bool check = in_check(side);
@@ -101,27 +102,36 @@ int negamax(int alpha, int beta, int depth)
         return quiesce(alpha, beta);
     }
 
-    if (ply < MAX_PV_LENGTH)
-    {
-        pv_length[ply] = ply;
-    }
     legal_move = FALSE;
     node_type = ALL_NODE;
+    best_move.bytes.type = NO_MOVE;
     n_moves = gen_moves(move_list, FALSE);
 
     if (ply == 0)
     {
+        pv_moves = pv_length[0];
         shuffle_moves(n_moves, move_list);
     }
 
-    move_t best;
-    best.bytes.type = NO_MOVE;
-    score = probe_hash(alpha, beta, depth, &best);
+    if (ply < MAX_PV_LENGTH)
+    {
+        pv_length[ply] = ply;
+    }
+
+    score = probe_hash(alpha, beta, depth, &best_move);
     if (score != NULL_SCORE)
     {
         return score;
     }
-    follow_hash(best, n_moves, move_list);
+    if (pv_moves > 0)
+    {
+        score_move(pv[0][ply], __INT_MAX__, n_moves, move_list);
+        pv_moves--;
+    }
+    if (!(best_move.bytes.type & NO_MOVE))
+    {
+        score_move(best_move, __INT_MAX__ - 1, n_moves, move_list);
+    }
 
     for (int m = 0; m < n_moves; m++)
     {
@@ -150,7 +160,7 @@ int negamax(int alpha, int beta, int depth)
                 {
                     node_type = PV_NODE;
                 }
-                best = move_list[m].move;
+                best_move = move_list[m].move;
                 if (ply < MAX_PV_LENGTH)
                 {
                     pv[ply][ply] = move_list[m].move;
@@ -183,7 +193,7 @@ int negamax(int alpha, int beta, int depth)
         }
     }
 
-    store_hash(alpha, depth, node_type, best);
+    store_hash(alpha, depth, node_type, best_move);
     return alpha;
 }
 
@@ -250,17 +260,14 @@ int quiesce(int alpha, int beta)
     return alpha;
 }
 
-void follow_hash(move_t hash_move, int n_moves, gen_t *move_list)
+void score_move(move_t move, int score, int n_moves, gen_t *move_list)
 {
-    if (!(hash_move.bytes.type & NO_MOVE))
+    for (int m = 0; m < n_moves; m++)
     {
-        for (int m = 0; m < n_moves; m++)
+        if (move_list[m].move.id == move.id)
         {
-            if (move_list[m].move.id == hash_move.id)
-            {
-                move_list[m].score = __INT_MAX__ - 1;
-                break;
-            }
+            move_list[m].score = score;
+            break;
         }
     }
 }
