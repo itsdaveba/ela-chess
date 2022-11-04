@@ -150,7 +150,7 @@ int negamax(int alpha, int beta, int depth)
                 {
                     heuristic[move_list[m].move.bytes.from][move_list[m].move.bytes.to] += depth * depth;
                 }
-                store_hash(alpha, depth, CUT_NODE, move_list[m].move);
+                store_hash(beta, depth, CUT_NODE, move_list[m].move);
                 return beta;
             }
             if (score > alpha)
