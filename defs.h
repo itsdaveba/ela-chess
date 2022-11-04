@@ -1,7 +1,7 @@
 #define MAX_HPLY 512
 #define MAX_GEN_MOVES 256
 #define MAX_BOOK_MOVES 32
-#define MAX_PV_LENGTH 16
+#define MAX_PV_LENGTH 32
 #define MAX_LAN_LENGTH 6
 #define MAX_FEN_LENGTH 90
 #define MAX_INPUT_LENGTH 256

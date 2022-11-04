@@ -150,6 +150,7 @@ int negamax(int alpha, int beta, int depth)
                 {
                     node_type = PV_NODE;
                 }
+                best = move_list[m].move;
                 if (ply < MAX_PV_LENGTH)
                 {
                     pv[ply][ply] = move_list[m].move;
@@ -182,7 +183,7 @@ int negamax(int alpha, int beta, int depth)
         }
     }
 
-    store_hash(alpha, depth, node_type, pv[ply][ply]);
+    store_hash(alpha, depth, node_type, best);
     return alpha;
 }
 
@@ -214,6 +215,7 @@ int quiesce(int alpha, int beta)
 
     for (int m = 0; m < n_moves; m++)
     {
+        sort_move(m, n_moves, move_list);
         if (make_move(move_list[m].move))
         {
             score = -quiesce(-beta, -alpha);
