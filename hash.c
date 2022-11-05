@@ -89,26 +89,26 @@ void store_hash(int score, int depth, int node_type, move_t best_move)
 
 int probe_hash(int alpha, int beta, int depth, move_t *best_move)
 {
-    transp_t *transp = &transp_table[hash % TRANSP_SIZE];
+    transp_t transp = transp_table[hash % TRANSP_SIZE];
 
-    if ((((u64)transp->hash_high << 8) | transp->hash_mid) == hash >> 24)
+    if ((((u64)transp.hash_high << 8) | transp.hash_mid) == hash >> 24)
     {
-        if (transp->depth >= depth)
+        if (transp.depth >= depth)
         {
-            if (transp->node_type == PV_NODE)
+            if (transp.node_type == PV_NODE)
             {
-                return transp->score;
+                return transp.score;
             }
-            if (transp->node_type == CUT_NODE && transp->score >= beta)
+            if (transp.node_type == CUT_NODE && transp.score >= beta)
             {
                 return beta;
             }
-            if (transp->node_type == ALL_NODE && transp->score <= alpha)
+            if (transp.node_type == ALL_NODE && transp.score <= alpha)
             {
                 return alpha;
             }
         }
-        *best_move = transp->best_move;
+        *best_move = transp.best_move;
     }
 
     return NULL_SCORE;
