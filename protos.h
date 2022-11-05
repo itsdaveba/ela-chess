@@ -42,5 +42,5 @@ move_t book_move();
 u64 rand_hash();
 void init_hash();
 void set_hash();
-int probe_hash(int alpha, int beta, int depth, move_t *best_move);
+bool probe_hash(int alpha, int beta, int depth, int *score, move_t *best_move);
 void store_hash(int score, int depth, int node_type, move_t best_move);

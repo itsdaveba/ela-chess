@@ -112,14 +112,11 @@ int negamax(int alpha, int beta, int depth)
         pv_moves = pv_length[0];
         shuffle_moves(n_moves, move_list);
     }
-
     if (ply < MAX_PV_LENGTH)
     {
         pv_length[ply] = ply;
     }
-
-    score = probe_hash(alpha, beta, depth, &best_move);
-    if (score != NULL_SCORE)
+    if (probe_hash(alpha, beta, depth, &score, &best_move))
     {
         return score;
     }

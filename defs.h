@@ -12,8 +12,8 @@
 #define MATE_THRESHOLD 90000
 #define DRAW_SCORE 0
 
-#define DEFAULT_TIME 500
-#define DEFAULT_DEPTH 4
+#define DEFAULT_TIME 600
+#define DEFAULT_DEPTH 8
 
 #define INIT_FEN "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 #define BOOK_FILENAME "book.txt"
