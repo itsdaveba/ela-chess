@@ -442,18 +442,18 @@ int gen_moves(gen_t *move_list, bool quiesce)
     {
         if (side == WHITE)
         {
-            if (!attack(E1, BLACK))
+            if (attacker(E1, BLACK) == EMPTY)
             {
                 if (castling & 0b1000)
                 {
-                    if (piece[F1] == EMPTY && piece[G1] == EMPTY && !attack(F1, BLACK))
+                    if (piece[F1] == EMPTY && piece[G1] == EMPTY && attacker(F1, BLACK) == EMPTY)
                     {
                         add_move(E1, G1, CASTLE, &n_moves, move_list);
                     }
                 }
                 if (castling & 0b0100)
                 {
-                    if (piece[D1] == EMPTY && piece[C1] == EMPTY && piece[B1] == EMPTY && !attack(D1, BLACK))
+                    if (piece[D1] == EMPTY && piece[C1] == EMPTY && piece[B1] == EMPTY && attacker(D1, BLACK) == EMPTY)
                     {
                         add_move(E1, C1, CASTLE, &n_moves, move_list);
                     }
@@ -462,18 +462,18 @@ int gen_moves(gen_t *move_list, bool quiesce)
         }
         else
         {
-            if (!attack(E8, WHITE))
+            if (attacker(E8, WHITE) == EMPTY)
             {
                 if (castling & 0b0010)
                 {
-                    if (piece[F8] == EMPTY && piece[G8] == EMPTY && !attack(F8, WHITE))
+                    if (piece[F8] == EMPTY && piece[G8] == EMPTY && attacker(F8, WHITE) == EMPTY)
                     {
                         add_move(E8, G8, CASTLE, &n_moves, move_list);
                     }
                 }
                 if (castling & 0b0001)
                 {
-                    if (piece[D8] == EMPTY && piece[C8] == EMPTY && piece[B8] == EMPTY && !attack(D8, WHITE))
+                    if (piece[D8] == EMPTY && piece[C8] == EMPTY && piece[B8] == EMPTY && attacker(D8, WHITE) == EMPTY)
                     {
                         add_move(E8, C8, CASTLE, &n_moves, move_list);
                     }
@@ -512,63 +512,55 @@ int gen_moves(gen_t *move_list, bool quiesce)
     return n_moves;
 }
 
-bool attack(int square, int side)
+int attacker(int square, int side)
 {
-    for (int s = 0; s < 64; s++)
+    if (side == WHITE)
     {
-        if (color[s] == side)
+        if (FILE(square) != FILE_A && piece[square + DOWN_LEFT] == PAWN && color[square + DOWN_LEFT] == WHITE)
         {
-            if (piece[s] == PAWN)
+            return PAWN;
+        }
+        if (FILE(square) != FILE_H && piece[square + DOWN_RIGHT] == PAWN && color[square + DOWN_RIGHT] == WHITE)
+        {
+            return PAWN;
+        }
+    }
+    else
+    {
+        if (FILE(square) != FILE_A && piece[square + UP_LEFT] == PAWN && color[square + UP_LEFT] == BLACK)
+        {
+            return PAWN;
+        }
+        if (FILE(square) != FILE_H && piece[square + UP_RIGHT] == PAWN && color[square + UP_RIGHT] == BLACK)
+        {
+            return PAWN;
+        }
+    }
+
+    for (int p = KNIGHT; p <= KING; p++)
+    {
+        for (int d = 0; d < n_directions[p]; d++)
+        {
+            for (int n = square;;)
             {
-                if (side == WHITE)
+                n = mailbox[mailbox64[n] + direction[p][d]];
+                if (n == -1)
                 {
-                    if (FILE(s) != FILE_A && square == s + UP_LEFT)
-                    {
-                        return TRUE;
-                    }
-                    if (FILE(s) != FILE_H && square == s + UP_RIGHT)
-                    {
-                        return TRUE;
-                    }
+                    break;
                 }
-                else
+                if (piece[n] == p && color[n] == side)
                 {
-                    if (FILE(s) != FILE_A && square == s + DOWN_LEFT)
-                    {
-                        return TRUE;
-                    }
-                    if (FILE(s) != FILE_H && square == s + DOWN_RIGHT)
-                    {
-                        return TRUE;
-                    }
+                    return p;
                 }
-            }
-            else
-            {
-                for (int d = 0; d < n_directions[piece[s]]; d++)
+                if (color[n] != EMPTY || !slider[p])
                 {
-                    for (int n = s;;)
-                    {
-                        n = mailbox[mailbox64[n] + direction[piece[s]][d]];
-                        if (n == -1)
-                        {
-                            break;
-                        }
-                        if (square == n)
-                        {
-                            return TRUE;
-                        }
-                        if (color[n] != EMPTY || !slider[piece[s]])
-                        {
-                            break;
-                        }
-                    }
+                    break;
                 }
             }
         }
     }
 
-    return FALSE;
+    return EMPTY;
 }
 
 bool in_check(int side)
@@ -577,7 +569,11 @@ bool in_check(int side)
     {
         if (piece[s] == KING && color[s] == side)
         {
-            return attack(s, side ^ 1);
+            if (attacker(s, side ^ 1) != EMPTY)
+            {
+                return TRUE;
+            }
+            break;
         }
     }
 

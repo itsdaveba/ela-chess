@@ -9,7 +9,7 @@ char *get_fen();
 void print_board();
 void add_move(int from, int to, int type, int *n_moves, gen_t *move_list);
 int gen_moves(gen_t *move_list, bool quiesce);
-bool attack(int square, int side);
+int attacker(int square, int side);
 bool in_check(int side);
 bool make_move(move_t move);
 void take_back();
