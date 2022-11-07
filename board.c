@@ -281,8 +281,8 @@ void add_move(int from, int to, int type, int *n_moves, gen_t *move_list)
             gen_p->move.bytes.from = from;
             gen_p->move.bytes.to = to;
             gen_p->move.bytes.prom = prom;
-            gen_p++->move.bytes.type = type;
-            gen_p->score = __INT_MAX__ - 26 + 6 * prom;
+            gen_p->move.bytes.type = type;
+            gen_p++->score = __INT_MAX__ - 26 + 6 * prom;
         }
     }
     else
@@ -442,18 +442,18 @@ int gen_moves(gen_t *move_list, bool quiesce)
     {
         if (side == WHITE)
         {
-            if (attacker(E1, BLACK) == EMPTY)
+            if (attacker(E1, BLACK) == -1)
             {
                 if (castling & 0b1000)
                 {
-                    if (piece[F1] == EMPTY && piece[G1] == EMPTY && attacker(F1, BLACK) == EMPTY)
+                    if (piece[F1] == EMPTY && piece[G1] == EMPTY && attacker(F1, BLACK) == -1)
                     {
                         add_move(E1, G1, CASTLE, &n_moves, move_list);
                     }
                 }
                 if (castling & 0b0100)
                 {
-                    if (piece[D1] == EMPTY && piece[C1] == EMPTY && piece[B1] == EMPTY && attacker(D1, BLACK) == EMPTY)
+                    if (piece[D1] == EMPTY && piece[C1] == EMPTY && piece[B1] == EMPTY && attacker(D1, BLACK) == -1)
                     {
                         add_move(E1, C1, CASTLE, &n_moves, move_list);
                     }
@@ -462,18 +462,18 @@ int gen_moves(gen_t *move_list, bool quiesce)
         }
         else
         {
-            if (attacker(E8, WHITE) == EMPTY)
+            if (attacker(E8, WHITE) == -1)
             {
                 if (castling & 0b0010)
                 {
-                    if (piece[F8] == EMPTY && piece[G8] == EMPTY && attacker(F8, WHITE) == EMPTY)
+                    if (piece[F8] == EMPTY && piece[G8] == EMPTY && attacker(F8, WHITE) == -1)
                     {
                         add_move(E8, G8, CASTLE, &n_moves, move_list);
                     }
                 }
                 if (castling & 0b0001)
                 {
-                    if (piece[D8] == EMPTY && piece[C8] == EMPTY && piece[B8] == EMPTY && attacker(D8, WHITE) == EMPTY)
+                    if (piece[D8] == EMPTY && piece[C8] == EMPTY && piece[B8] == EMPTY && attacker(D8, WHITE) == -1)
                     {
                         add_move(E8, C8, CASTLE, &n_moves, move_list);
                     }
@@ -518,22 +518,22 @@ int attacker(int square, int side)
     {
         if (FILE(square) != FILE_A && piece[square + DOWN_LEFT] == PAWN && color[square + DOWN_LEFT] == WHITE)
         {
-            return PAWN;
+            return square + DOWN_LEFT;
         }
         if (FILE(square) != FILE_H && piece[square + DOWN_RIGHT] == PAWN && color[square + DOWN_RIGHT] == WHITE)
         {
-            return PAWN;
+            return square + DOWN_RIGHT;
         }
     }
     else
     {
         if (FILE(square) != FILE_A && piece[square + UP_LEFT] == PAWN && color[square + UP_LEFT] == BLACK)
         {
-            return PAWN;
+            return square + UP_LEFT;
         }
         if (FILE(square) != FILE_H && piece[square + UP_RIGHT] == PAWN && color[square + UP_RIGHT] == BLACK)
         {
-            return PAWN;
+            return square + UP_RIGHT;
         }
     }
 
@@ -550,7 +550,7 @@ int attacker(int square, int side)
                 }
                 if (piece[n] == p && color[n] == side)
                 {
-                    return p;
+                    return n;
                 }
                 if (color[n] != EMPTY || !slider[p])
                 {
@@ -560,7 +560,7 @@ int attacker(int square, int side)
         }
     }
 
-    return EMPTY;
+    return -1;
 }
 
 bool in_check(int side)
@@ -569,7 +569,7 @@ bool in_check(int side)
     {
         if (piece[s] == KING && color[s] == side)
         {
-            if (attacker(s, side ^ 1) != EMPTY)
+            if (attacker(s, side ^ 1) != -1)
             {
                 return TRUE;
             }
