@@ -282,7 +282,7 @@ void add_move(int from, int to, int type, int *n_moves, gen_t *move_list)
             gen_p->move.bytes.to = to;
             gen_p->move.bytes.prom = prom;
             gen_p->move.bytes.type = type;
-            gen_p++->score = __INT_MAX__ - 26 + 6 * prom;
+            gen_p++->score = __INT_MAX__ - piece_value[QUEEN] - piece_value[PAWN] + piece_value[prom];
         }
     }
     else
@@ -294,13 +294,10 @@ void add_move(int from, int to, int type, int *n_moves, gen_t *move_list)
         gen_p->move.bytes.type = type;
         if (type & CAPTURE)
         {
-            if (type & EP_CAPTURE)
+            gen_p->score = see_capture(gen_p->move);
+            if (gen_p->score > -piece_value[PAWN])
             {
-                gen_p->score = __INT_MAX__ - 26;
-            }
-            else
-            {
-                gen_p->score = __INT_MAX__ - 26 + 6 * piece[to] - piece[from];
+                gen_p->score += __INT_MAX__ - piece_value[QUEEN] - piece_value[PAWN];
             }
         }
         else
@@ -442,18 +439,18 @@ int gen_moves(gen_t *move_list, bool quiesce)
     {
         if (side == WHITE)
         {
-            if (attacker(E1, BLACK) == -1)
+            if (attacker(E1, BLACK, 0) == -1)
             {
                 if (castling & 0b1000)
                 {
-                    if (piece[F1] == EMPTY && piece[G1] == EMPTY && attacker(F1, BLACK) == -1)
+                    if (piece[F1] == EMPTY && piece[G1] == EMPTY && attacker(F1, BLACK, 0) == -1)
                     {
                         add_move(E1, G1, CASTLE, &n_moves, move_list);
                     }
                 }
                 if (castling & 0b0100)
                 {
-                    if (piece[D1] == EMPTY && piece[C1] == EMPTY && piece[B1] == EMPTY && attacker(D1, BLACK) == -1)
+                    if (piece[D1] == EMPTY && piece[C1] == EMPTY && piece[B1] == EMPTY && attacker(D1, BLACK, 0) == -1)
                     {
                         add_move(E1, C1, CASTLE, &n_moves, move_list);
                     }
@@ -462,18 +459,18 @@ int gen_moves(gen_t *move_list, bool quiesce)
         }
         else
         {
-            if (attacker(E8, WHITE) == -1)
+            if (attacker(E8, WHITE, 0) == -1)
             {
                 if (castling & 0b0010)
                 {
-                    if (piece[F8] == EMPTY && piece[G8] == EMPTY && attacker(F8, WHITE) == -1)
+                    if (piece[F8] == EMPTY && piece[G8] == EMPTY && attacker(F8, WHITE, 0) == -1)
                     {
                         add_move(E8, G8, CASTLE, &n_moves, move_list);
                     }
                 }
                 if (castling & 0b0001)
                 {
-                    if (piece[D8] == EMPTY && piece[C8] == EMPTY && piece[B8] == EMPTY && attacker(D8, WHITE) == -1)
+                    if (piece[D8] == EMPTY && piece[C8] == EMPTY && piece[B8] == EMPTY && attacker(D8, WHITE, 0) == -1)
                     {
                         add_move(E8, C8, CASTLE, &n_moves, move_list);
                     }
@@ -512,28 +509,67 @@ int gen_moves(gen_t *move_list, bool quiesce)
     return n_moves;
 }
 
-int attacker(int square, int side)
+move_t gen_capture(int from, int to, int prom)
 {
-    if (side == WHITE)
+    move_t move;
+
+    move.bytes.from = from;
+    move.bytes.to = to;
+    move.bytes.prom = EMPTY;
+    move.bytes.type = CAPTURE;
+
+    if (piece[from] == PAWN)
+    {
+        move.bytes.type |= PAWN_MOVE;
+        if ((side == WHITE && RANK(from) == RANK_7) || (side == BLACK && RANK(from) == RANK_2))
+        {
+            move.bytes.prom = prom;
+            move.bytes.type |= PROMOTION;
+        }
+    }
+
+    if (passant == to)
+    {
+        move.bytes.type |= EP_CAPTURE;
+    }
+
+    return move;
+}
+
+int attacker(int square, int side, int skip)
+{
+    if (side == WHITE && RANK(square) > RANK_2)
     {
         if (FILE(square) != FILE_A && piece[square + DOWN_LEFT] == PAWN && color[square + DOWN_LEFT] == WHITE)
         {
-            return square + DOWN_LEFT;
+            if (skip-- <= 0)
+            {
+                return square + DOWN_LEFT;
+            }
         }
         if (FILE(square) != FILE_H && piece[square + DOWN_RIGHT] == PAWN && color[square + DOWN_RIGHT] == WHITE)
         {
-            return square + DOWN_RIGHT;
+            if (skip-- <= 0)
+            {
+                return square + DOWN_RIGHT;
+            }
         }
     }
-    else
+    else if (side == BLACK && RANK(square) < RANK_7)
     {
         if (FILE(square) != FILE_A && piece[square + UP_LEFT] == PAWN && color[square + UP_LEFT] == BLACK)
         {
-            return square + UP_LEFT;
+            if (skip-- <= 0)
+            {
+                return square + UP_LEFT;
+            }
         }
         if (FILE(square) != FILE_H && piece[square + UP_RIGHT] == PAWN && color[square + UP_RIGHT] == BLACK)
         {
-            return square + UP_RIGHT;
+            if (skip-- <= 0)
+            {
+                return square + UP_RIGHT;
+            }
         }
     }
 
@@ -550,7 +586,10 @@ int attacker(int square, int side)
                 }
                 if (piece[n] == p && color[n] == side)
                 {
-                    return n;
+                    if (skip-- <= 0)
+                    {
+                        return n;
+                    }
                 }
                 if (color[n] != EMPTY || !slider[p])
                 {
@@ -569,7 +608,7 @@ bool in_check(int side)
     {
         if (piece[s] == KING && color[s] == side)
         {
-            if (attacker(s, side ^ 1) != -1)
+            if (attacker(s, side ^ 1, 0) != -1)
             {
                 return TRUE;
             }

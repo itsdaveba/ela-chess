@@ -9,7 +9,8 @@ char *get_fen();
 void print_board();
 void add_move(int from, int to, int type, int *n_moves, gen_t *move_list);
 int gen_moves(gen_t *move_list, bool quiesce);
-int attacker(int square, int side);
+move_t gen_capture(int from, int to, int prom);
+int attacker(int square, int side, int skip);
 bool in_check(int side);
 bool make_move(move_t move);
 void take_back();
@@ -32,6 +33,8 @@ void shuffle_moves(int n_moves, gen_t *move_list);
 
 // eval.c
 int evaluate();
+int see(int square, int side);
+int see_capture(move_t move);
 
 // book.c
 bool open_book();

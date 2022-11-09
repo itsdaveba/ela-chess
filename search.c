@@ -89,9 +89,6 @@ int negamax(int alpha, int beta, int depth)
     gen_t move_list[MAX_GEN_MOVES];
     bool check = in_check(side);
 
-    nodes++;
-    check_time();
-
     if (check)
     {
         depth++;
@@ -101,6 +98,9 @@ int negamax(int alpha, int beta, int depth)
     {
         return quiesce(alpha, beta);
     }
+
+    nodes++;
+    check_time();
 
     legal_move = FALSE;
     node_type = ALL_NODE;
