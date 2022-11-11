@@ -14,9 +14,6 @@ int attacker(int square, int side, int skip);
 bool in_check(int side);
 bool make_move(move_t move);
 void take_back();
-u64 rand_hash();
-void init_hash();
-void set_hash();
 int repetition();
 u64 perft(int depth);
 
@@ -24,12 +21,13 @@ u64 perft(int depth);
 move_t search(bool post, bool book);
 int negamax(int alpha, int beta, int depth);
 int quiesce(int alpha, int beta);
-void score_move(move_t move, int score, int n_moves, gen_t *move_list);
+void print_pv();
 int time_diff(struct timeval start, struct timeval stop);
 void check_time();
+void score_move(move_t move, int score, int n_moves, gen_t *move_list);
 void swap_moves(gen_t *move_x, gen_t *move_y);
-void sort_move(int m, int n_moves, gen_t *move_list);
 void shuffle_moves(int n_moves, gen_t *move_list);
+void sort_move(int m, int n_moves, gen_t *move_list);
 
 // eval.c
 int evaluate();
@@ -41,9 +39,9 @@ bool open_book();
 void close_book();
 move_t book_move();
 
-// hashing.c
+// hash.c
 u64 rand_hash();
 void init_hash();
 void set_hash();
-bool probe_hash(int alpha, int beta, int depth, int *score, move_t *best_move);
 void store_hash(int score, int depth, int node_type, move_t best_move);
+bool probe_hash(int alpha, int beta, int depth, int *score, move_t *best_move);

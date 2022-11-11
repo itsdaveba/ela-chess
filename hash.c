@@ -3,6 +3,7 @@
 #include "data.h"
 #include "protos.h"
 
+// Generate a 64 bit random number
 u64 rand_hash()
 {
     u64 rand_num;
@@ -16,6 +17,7 @@ u64 rand_hash()
     return rand_num;
 }
 
+// Initialize hash table
 void init_hash()
 {
     for (int s = 0; s < 64; s++)
@@ -28,6 +30,7 @@ void init_hash()
     }
 }
 
+// Set the hash for the current board state
 void set_hash()
 {
     hash = 0;
@@ -68,6 +71,7 @@ void set_hash()
     }
 }
 
+// Store search information in transposition table
 void store_hash(int score, int depth, int node_type, move_t best_move)
 {
     transp_t *transp = &transp_table[hash % TRANSP_SIZE];
@@ -87,6 +91,7 @@ void store_hash(int score, int depth, int node_type, move_t best_move)
     }
 }
 
+// Probe search information from transposition table
 bool probe_hash(int alpha, int beta, int depth, int *score, move_t *best_move)
 {
     transp_t transp = transp_table[hash % TRANSP_SIZE];

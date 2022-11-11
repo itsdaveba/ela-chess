@@ -5,6 +5,7 @@
 #include "data.h"
 #include "protos.h"
 
+// Open book file
 bool open_book()
 {
     book_file = fopen(BOOK_FILENAME, "r");
@@ -15,6 +16,7 @@ bool open_book()
     return TRUE;
 }
 
+// Close book file
 void close_book()
 {
     if (book_file != NULL)
@@ -24,6 +26,7 @@ void close_book()
     }
 }
 
+// Get book move
 move_t book_move()
 {
     move_t move;

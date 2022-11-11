@@ -7,11 +7,14 @@
 #include "data.h"
 #include "protos.h"
 
+// Search root
 move_t search(bool post, bool book)
 {
     static move_t move;
 
     int score;
+    int alpha;
+    int beta;
     bool stop;
 
     if (book)
@@ -25,8 +28,9 @@ move_t search(bool post, bool book)
 
     ply = 0;
     nodes = 0;
+    alpha = MIN_SCORE;
+    beta = MAX_SCORE;
     move.bytes.type = NO_MOVE;
-    pv[0][0].bytes.type = NO_MOVE;
     gettimeofday(&start, NULL);
 
     stop = setjmp(env);
@@ -56,29 +60,41 @@ move_t search(bool post, bool book)
     }
 
     memset(heuristic, 0, sizeof(heuristic));
-    for (int depth = 1; depth <= search_depth; depth++)
+
+    for (int depth = 1; depth <= search_depth;)
     {
-        score = negamax(MIN_SCORE, MAX_SCORE, depth);
+        score = negamax(alpha, beta, depth);
         move = transp_table[hash % TRANSP_SIZE].best_move;
-        if (post && !(pv[0][0].bytes.type & NO_MOVE))
+        if (score <= alpha && score != MIN_SCORE)
+        {
+            alpha = MIN_SCORE;
+            continue;
+        }
+        if (score >= beta && score != MAX_SCORE)
+        {
+            beta = MAX_SCORE;
+            continue;
+        }
+        alpha = score - 50;
+        beta = score + 50;
+        if (post && (move.bytes.type & NO_MOVE) == 0)
         {
             gettimeofday(&now, NULL);
             printf("%d %d %d %llu", depth, score, time_diff(start, now), nodes);
-            for (int d = 0; d < pv_length[0]; d++)
-            {
-                printf(" %s", move_to_lan(pv[0][d]));
-            }
+            print_pv();
             printf("\n");
         }
         if (abs(score) > MATE_THRESHOLD)
         {
             break;
         }
+        depth++;
     }
 
-    return pv[0][0];
+    return move;
 }
 
+// Negamax search node
 int negamax(int alpha, int beta, int depth)
 {
     int score;
@@ -94,6 +110,12 @@ int negamax(int alpha, int beta, int depth)
         depth++;
     }
 
+    best_move.bytes.type = NO_MOVE;
+    if (probe_hash(alpha, beta, depth, &score, &best_move))
+    {
+        return score;
+    }
+
     if (depth == 0)
     {
         return quiesce(alpha, beta);
@@ -104,30 +126,16 @@ int negamax(int alpha, int beta, int depth)
 
     legal_move = FALSE;
     node_type = ALL_NODE;
-    best_move.bytes.type = NO_MOVE;
     n_moves = gen_moves(move_list, FALSE);
 
     if (ply == 0)
     {
-        pv_moves = pv_length[0];
         shuffle_moves(n_moves, move_list);
     }
-    if (ply < MAX_PV_LENGTH)
-    {
-        pv_length[ply] = ply;
-    }
-    if (probe_hash(alpha, beta, depth, &score, &best_move))
-    {
-        return score;
-    }
-    if (pv_moves > 0)
-    {
-        score_move(pv[0][ply], __INT_MAX__, n_moves, move_list);
-        pv_moves--;
-    }
+
     if (!(best_move.bytes.type & NO_MOVE))
     {
-        score_move(best_move, __INT_MAX__ - 1, n_moves, move_list);
+        score_move(best_move, __INT_MAX__, n_moves, move_list);
     }
 
     for (int m = 0; m < n_moves; m++)
@@ -143,11 +151,12 @@ int negamax(int alpha, int beta, int depth)
             take_back();
             if (score >= beta)
             {
-                if (!(move_list[m].move.bytes.type & CAPTURE))
+                best_move = move_list[m].move;
+                if (!(best_move.bytes.type & CAPTURE))
                 {
-                    heuristic[move_list[m].move.bytes.from][move_list[m].move.bytes.to] += depth * depth;
+                    heuristic[best_move.bytes.from][best_move.bytes.to] += depth * depth;
                 }
-                store_hash(beta, depth, CUT_NODE, move_list[m].move);
+                store_hash(beta, depth, CUT_NODE, best_move);
                 return beta;
             }
             if (score > alpha)
@@ -158,22 +167,6 @@ int negamax(int alpha, int beta, int depth)
                     node_type = PV_NODE;
                 }
                 best_move = move_list[m].move;
-                if (ply < MAX_PV_LENGTH)
-                {
-                    pv[ply][ply] = move_list[m].move;
-                    if (ply + 1 < MAX_PV_LENGTH)
-                    {
-                        for (int p = ply + 1; p < pv_length[ply + 1]; p++)
-                        {
-                            pv[ply][p] = pv[ply + 1][p];
-                        }
-                        pv_length[ply] = pv_length[ply + 1];
-                    }
-                    else
-                    {
-                        pv_length[ply] = MAX_PV_LENGTH;
-                    }
-                }
             }
         }
     }
@@ -194,7 +187,8 @@ int negamax(int alpha, int beta, int depth)
     return alpha;
 }
 
-int quiesce(int alpha, int beta)
+// Quiesce search node
+int quiesce(int alpha, int beta) // TODO: transposition table for quiesce search
 {
     int score;
     int n_moves;
@@ -203,10 +197,6 @@ int quiesce(int alpha, int beta)
     nodes++;
     check_time();
 
-    if (ply < MAX_PV_LENGTH)
-    {
-        pv_length[ply] = ply;
-    }
     score = evaluate();
 
     if (score >= beta)
@@ -234,22 +224,6 @@ int quiesce(int alpha, int beta)
             if (score > alpha)
             {
                 alpha = score;
-                if (ply < MAX_PV_LENGTH)
-                {
-                    pv[ply][ply] = move_list[m].move;
-                    if (ply + 1 < MAX_PV_LENGTH)
-                    {
-                        for (int p = ply + 1; p < pv_length[ply + 1]; p++)
-                        {
-                            pv[ply][p] = pv[ply + 1][p];
-                        }
-                        pv_length[ply] = pv_length[ply + 1];
-                    }
-                    else
-                    {
-                        pv_length[ply] = MAX_PV_LENGTH;
-                    }
-                }
             }
         }
     }
@@ -257,18 +231,26 @@ int quiesce(int alpha, int beta)
     return alpha;
 }
 
-void score_move(move_t move, int score, int n_moves, gen_t *move_list)
+// Print principal variation
+void print_pv()
 {
-    for (int m = 0; m < n_moves; m++)
+    transp_t *transp = &transp_table[hash % TRANSP_SIZE];
+
+    if (repetition() < 3)
     {
-        if (move_list[m].move.id == move.id)
+        if ((((u64)transp->hash_high << 8) | transp->hash_mid) == hash >> 24)
         {
-            move_list[m].score = score;
-            break;
+            if (transp->node_type == PV_NODE && make_move(transp->best_move))
+            {
+                printf(" %s", move_to_lan(transp->best_move));
+                print_pv();
+                take_back();
+            }
         }
     }
 }
 
+// Get time from start of search
 int time_diff(struct timeval start, struct timeval now)
 {
     int diff_sec = now.tv_sec - start.tv_sec;
@@ -276,6 +258,7 @@ int time_diff(struct timeval start, struct timeval now)
     return diff_sec * 100 + diff_usec / 10000;
 }
 
+// Check when time is up
 void check_time()
 {
     if (!(nodes & 0xFFFF))
@@ -288,6 +271,20 @@ void check_time()
     }
 }
 
+// Score single move
+void score_move(move_t move, int score, int n_moves, gen_t *move_list)
+{
+    for (int m = 0; m < n_moves; m++)
+    {
+        if (move_list[m].move.id == move.id)
+        {
+            move_list[m].score = score;
+            break;
+        }
+    }
+}
+
+// Swap two moves
 void swap_moves(gen_t *move_x, gen_t *move_y)
 {
     gen_t temp = *move_x;
@@ -295,6 +292,7 @@ void swap_moves(gen_t *move_x, gen_t *move_y)
     *move_y = temp;
 }
 
+// Shuffle moves randomly
 void shuffle_moves(int n_moves, gen_t *move_list)
 {
     int x, y;
@@ -306,6 +304,7 @@ void shuffle_moves(int n_moves, gen_t *move_list)
     }
 }
 
+// Insertion sort from best to worst
 void sort_move(int m, int n_moves, gen_t *move_list)
 {
     int max_i = m;

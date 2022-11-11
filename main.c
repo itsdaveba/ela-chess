@@ -72,7 +72,7 @@ int main()
         {
             while (getchar() != '\n');
         }
-        command = strtok(input, " \n");
+        command = strtok(input, " \n"); // TODO: ? command
         if (command == NULL)
         {
             continue;
@@ -246,6 +246,7 @@ int main()
     return 0;
 }
 
+// Move to LAN
 char *move_to_lan(move_t move)
 {
     static char lan[MAX_LAN_LENGTH];
@@ -271,6 +272,7 @@ char *move_to_lan(move_t move)
     return lan;
 }
 
+// LAN to pseudo-legal move
 move_t lan_to_move(char *lan)
 {
     move_t move;
@@ -325,6 +327,7 @@ move_t lan_to_move(char *lan)
     return move;
 }
 
+// Print result at end of game
 bool print_result()
 {
     int m;

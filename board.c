@@ -5,6 +5,7 @@
 #include "data.h"
 #include "protos.h"
 
+// Set board state form FEN
 bool set_board(char *fen)
 {
     char copy[MAX_FEN_LENGTH];
@@ -155,6 +156,7 @@ bool set_board(char *fen)
     return TRUE;
 }
 
+// Get FEN from board state
 char *get_fen()
 {
     static char fen[MAX_FEN_LENGTH];
@@ -240,6 +242,7 @@ char *get_fen()
     return fen;
 }
 
+// Print FEN and ASCII board
 void print_board()
 {
     char *fen = get_fen();
@@ -264,6 +267,7 @@ void print_board()
     printf("\n\n");
 }
 
+// Add move to move list
 void add_move(int from, int to, int type, int *n_moves, gen_t *move_list)
 {
     if (*n_moves >= MAX_GEN_MOVES)
@@ -307,6 +311,7 @@ void add_move(int from, int to, int type, int *n_moves, gen_t *move_list)
     }
 }
 
+// Generate all moves or only captures
 int gen_moves(gen_t *move_list, bool quiesce)
 {
     int type;
@@ -509,6 +514,7 @@ int gen_moves(gen_t *move_list, bool quiesce)
     return n_moves;
 }
 
+// Generate capture
 move_t gen_capture(int from, int to, int prom)
 {
     move_t move;
@@ -536,6 +542,7 @@ move_t gen_capture(int from, int to, int prom)
     return move;
 }
 
+// Get smallest attacker after skip
 int attacker(int square, int side, int skip)
 {
     if (side == WHITE && RANK(square) > RANK_2)
@@ -602,9 +609,10 @@ int attacker(int square, int side, int skip)
     return -1;
 }
 
+// Side in check
 bool in_check(int side)
 {
-    for (int s = 0; s < 64; s++)
+    for (int s = 0; s < 64; s++) // TODO: implement piece list
     {
         if (piece[s] == KING && color[s] == side)
         {
@@ -619,6 +627,7 @@ bool in_check(int side)
     return FALSE;
 }
 
+// Make move and update hash
 bool make_move(move_t move)
 {
     if (hply >= MAX_HPLY)
@@ -774,6 +783,7 @@ bool make_move(move_t move)
     return TRUE;
 }
 
+// Take back last move and restore hash
 void take_back()
 {
     hist_t hist = history[--hply];
@@ -854,6 +864,7 @@ void take_back()
     }
 }
 
+// Detect repetion of positions
 int repetition()
 {
     int rep = 1;
@@ -869,6 +880,7 @@ int repetition()
     return rep;
 }
 
+// Perft test
 u64 perft(int depth)
 {
     u64 nodes;

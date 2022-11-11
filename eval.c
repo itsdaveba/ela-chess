@@ -2,6 +2,7 @@
 #include "data.h"
 #include "protos.h"
 
+// Evaluation with piece-tables
 int evaluate()
 {
     int value = 0;
@@ -34,6 +35,7 @@ int evaluate()
     return value;
 }
 
+// Static exchage evaluation
 int see(int square, int side)
 {
     int score;
@@ -70,6 +72,7 @@ int see(int square, int side)
     return value;
 }
 
+// Static exchange evaluation for a capture
 int see_capture(move_t move)
 {
     int capture;
