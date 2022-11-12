@@ -64,7 +64,6 @@ move_t search(bool post, bool book)
     for (int depth = 1; depth <= search_depth;)
     {
         score = negamax(alpha, beta, depth);
-        move = transp_table[hash % TRANSP_SIZE].best_move;
         if (score <= alpha && score != MIN_SCORE)
         {
             alpha = MIN_SCORE;
@@ -77,6 +76,7 @@ move_t search(bool post, bool book)
         }
         alpha = score - 50;
         beta = score + 50;
+        move = transp_table[hash % TRANSP_SIZE].best_move;
         if (post && (move.bytes.type & NO_MOVE) == 0)
         {
             gettimeofday(&now, NULL);
