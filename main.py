@@ -1,23 +1,40 @@
+from enum import Enum
+
 # The game of chess is played between two opponents who move their pieces alternately on a square board called a ‘chessboard’.
 player1 = "White"
 player2 = "Black"
 
+
+# At the beginning of the game one player has 16 light-coloured pieces (the ‘white’ pieces);
+# the other has 16 dark-coloured pieces (the ‘black’ pieces).
+class Piece(Enum):
+    WHITE_KING = 1
+    WHITE_QUEEN = 2
+    WHITE_ROOK = 3
+    WHITE_BISHOP = 4
+    WHITE_KNIGHT = 5
+    WHITE_PAWN = 6
+
+    BLACK_KING = 7
+    BLACK_QUEEN = 8
+    BLACK_ROOK = 9
+    BLACK_BISHOP = 10
+    BLACK_KNIGHT = 11
+    BLACK_PAWN = 12
+
+
 # The chessboard is composed of an 8 x 8 grid of 64 equal squares.
-board = [[None] * 8] * 8
-
-WHITE_KING = 1
-WHITE_QUEEN = 2
-WHITE_ROOK = 3
-WHITE_BISHOP = 4
-WHITE_KNIGHTS = 5
-WHITE_PAWN = 6
-
-BLACK_KING = 1
-BLACK_QUEEN = 2
-BLACK_ROOK = 3
-BLACK_BISHOP = 4
-BLACK_KNIGHTS = 5
-BLACK_PAWN = 6
+# The initial position of the pieces on the chessboard is as follows:
+board = [
+    [Piece.BLACK_ROOK, Piece.BLACK_KNIGHT, Piece.BLACK_BISHOP, Piece.BLACK_QUEEN, Piece.BLACK_KING, Piece.BLACK_BISHOP, Piece.BLACK_KNIGHT, Piece.BLACK_ROOK],
+    [Piece.BLACK_PAWN] * 8,
+    [None] * 8,
+    [None] * 8,
+    [None] * 8,
+    [None] * 8,
+    [Piece.WHITE_PAWN] * 8,
+    [Piece.WHITE_ROOK, Piece.WHITE_KNIGHT, Piece.WHITE_BISHOP, Piece.WHITE_QUEEN, Piece.WHITE_KING, Piece.WHITE_BISHOP, Piece.WHITE_KNIGHT, Piece.WHITE_ROOK]
+]
 
 
 def display_board(board):
@@ -25,6 +42,18 @@ def display_board(board):
         for square in row:
             if square is None:
                 print(".", end=" ")
+                continue
+            color, type = square.name.split("_")
+            if color == "WHITE":
+                if type == "KNIGHT":
+                    print("N", end=" ")
+                else:
+                    print(type[0], end=" ")
+            else:
+                if type == "KNIGHT":
+                    print("n", end=" ")
+                else:
+                    print(type[0].lower(), end=" ")
         print()
 
 
@@ -68,7 +97,7 @@ def capturing_opponent_king(board, turn) -> bool:
 
 # If the position is such that neither player can possibly checkmate, the game is drawn.
 def no_possible_checkmate(board) -> bool:
-    return True
+    return False
 
 
 # The opponent whose king has been checkmated has lost the game.
