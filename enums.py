@@ -4,7 +4,7 @@ from enum import Enum
 from dataclasses import dataclass
 
 
-# The game of chess is played between two opponents who move their pieces alternately on a square board called a ‘chessboard’.
+# The game of chess is played between two opponents
 class Player(Enum):
     NONE = 0
 

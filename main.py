@@ -1,4 +1,4 @@
-from board import Board
+from board import Board, Move
 
 
 if __name__ == "__main__":
@@ -7,7 +7,10 @@ if __name__ == "__main__":
         # A player is said to ‘have the move’, when his opponent’s move has been ‘made’.
         print("Turn:", board.player)
         print(board)
-        move = input("Move: ")
+        move = Move(input("Move: "))
+        if not move.parsed:
+            print("Error parsing move")
+            continue
         if not board.make_move(move):
             print("Invalid move")
             continue
