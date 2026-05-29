@@ -1,4 +1,5 @@
-from board import Board, Move
+from board import Board, Move, Square
+from enums import Piece, Rank, File
 
 
 if __name__ == "__main__":

@@ -39,14 +39,14 @@ class PieceType(Enum):
         return self.name[0]
 
 
-# At the beginning of the game one player has 16 light-coloured pieces (the ‘white’ pieces);
-# the other has 16 dark-coloured pieces (the ‘black’ pieces).
 @dataclass
 class PieceDataClass:
     player: Player
     type: PieceType
 
 
+# At the beginning of the game one player has 16 light-coloured pieces (the ‘white’ pieces);
+# the other has 16 dark-coloured pieces (the ‘black’ pieces).
 class Piece(PieceDataClass, Enum):
     NONE = Player.NONE, PieceType.NONE
 
@@ -70,3 +70,49 @@ class Piece(PieceDataClass, Enum):
         if self.player == Player.BLACK:
             ret = ret.lower()
         return ret
+
+
+# The eight vertical columns of squares are called ‘files’.
+class File(int, Enum):
+    F0 = 0
+    F1 = 1
+    F2 = 2
+    F3 = 3
+    F4 = 4
+    F5 = 5
+    F6 = 6
+    F7 = 7
+
+
+#  The eight horizontal rows of squares are called ‘ranks’.
+class Rank(int, Enum):
+    R0 = 0
+    R1 = 1
+    R2 = 2
+    R3 = 3
+    R4 = 4
+    R5 = 5
+    R6 = 6
+    R7 = 7
+
+
+# A straight line of squares of the same colour,
+# running from one edge of the board to an adjacent edge, is called a ‘diagonal’.
+
+
+@dataclass
+class DirectionDataClass:
+    rank_diff: int
+    file_diff: int
+
+
+class Direction(DirectionDataClass, Enum):
+    UP = -1, 0
+    DOWN = 1, 0
+    RIGHT = 0, 1
+    LEFT = 0, -1
+
+    UP_RIGHT = -1, 1
+    UP_LEFT = -1, -1
+    DOWN_RIGHT = 1, 1
+    DOWN_LEFT = 1, -1
