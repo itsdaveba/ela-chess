@@ -38,8 +38,8 @@ board = [
 
 
 def display_board(board):
-    for row in board:
-        for square in row:
+    for rank in board:
+        for square in rank:
             if square is None:
                 print(".", end=" ")
                 continue
