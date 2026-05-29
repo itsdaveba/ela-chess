@@ -13,15 +13,58 @@ turn = player1
 
 
 # A player is said to ‘have the move’, when his opponent’s move has been ‘made’.
-def have_the_move():
+def have_the_move(turn):
     return turn
 
 
+# The objective of each player is to place the opponent’s king ‘under attack’
+def opponent_king_under_attack(board, turn) -> bool:
+    return False
+
+
+# in such a way that the opponent has no legal move.
+def opponent_no_legal_move(board, turn) -> bool:
+    return False
+
+
+# Leaving one’s own king under attack
+def own_king_under_attack(board, turn) -> bool:
+    return True
+
+
+# exposing one’s own king to attack
+def exposing_own_king_to_attack(board, turn) -> bool:
+    return False
+
+
+# and also ’capturing’ the opponent’s king are not allowed.
+def capturing_opponent_king(board, turn) -> bool:
+    return False
+
+
+# The opponent whose king has been checkmated has lost the game.
 if __name__ == "__main__":
     while True:
-        print("Turn:", have_the_move())
+        print("Turn:", have_the_move(turn))
         move = input("Move: ")
         make_move(board, move)
+        if own_king_under_attack(board, turn):
+            print("Cannot leave own king under attack")
+            continue
+        if exposing_own_king_to_attack(board, turn):
+            print("Cannot expose own king to attack")
+            continue
+        if capturing_opponent_king(board, turn):
+            print("Cannot capture opponent's king")
+            continue
+        if opponent_king_under_attack(board, turn):
+            print("Oponent king under attack")
+            if opponent_no_legal_move(board, turn):
+                print("Opponent has no legal moves")
+                # The player who achieves this goal is said to have ‘checkmated’ the opponent’s king and to have won the game.
+                print("Checkmate")
+                print("Winner:", turn)
+                break
         if turn == player1:
             turn = player2
         else:
