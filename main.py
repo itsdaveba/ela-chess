@@ -5,6 +5,28 @@ player2 = "Black"
 # The chessboard is composed of an 8 x 8 grid of 64 equal squares.
 board = [[None] * 8] * 8
 
+WHITE_KING = 1
+WHITE_QUEEN = 2
+WHITE_ROOK = 3
+WHITE_BISHOP = 4
+WHITE_KNIGHTS = 5
+WHITE_PAWN = 6
+
+BLACK_KING = 1
+BLACK_QUEEN = 2
+BLACK_ROOK = 3
+BLACK_BISHOP = 4
+BLACK_KNIGHTS = 5
+BLACK_PAWN = 6
+
+
+def display_board(board):
+    for row in board:
+        for square in row:
+            if square is None:
+                print(".", end=" ")
+        print()
+
 
 def make_move(board, move):
     pass
@@ -53,6 +75,7 @@ def no_possible_checkmate(board) -> bool:
 if __name__ == "__main__":
     while True:
         print("Turn:", have_the_move(turn))
+        display_board(board)
         move = input("Move: ")
         make_move(board, move)
         if own_king_under_attack(board, turn):
