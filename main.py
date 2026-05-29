@@ -1,7 +1,9 @@
 # The game of chess is played between two opponents who move their pieces alternately on a square board called a ‘chessboard’.
 player1 = "White"
 player2 = "Black"
-board = None  # square board
+
+# The chessboard is composed of an 8 x 8 grid of 64 equal squares.
+board = [[None] * 8] * 8
 
 
 def make_move(board, move):
