@@ -29,7 +29,7 @@ def opponent_no_legal_move(board, turn) -> bool:
 
 # Leaving one’s own king under attack
 def own_king_under_attack(board, turn) -> bool:
-    return True
+    return False
 
 
 # exposing one’s own king to attack
@@ -40,6 +40,11 @@ def exposing_own_king_to_attack(board, turn) -> bool:
 # and also ’capturing’ the opponent’s king are not allowed.
 def capturing_opponent_king(board, turn) -> bool:
     return False
+
+
+# If the position is such that neither player can possibly checkmate, the game is drawn.
+def no_possible_checkmate(board) -> bool:
+    return True
 
 
 # The opponent whose king has been checkmated has lost the game.
@@ -65,6 +70,10 @@ if __name__ == "__main__":
                 print("Checkmate")
                 print("Winner:", turn)
                 break
+        if no_possible_checkmate(board):
+            print("No possible to checkmate")
+            print("Draw")
+            break
         if turn == player1:
             turn = player2
         else:
