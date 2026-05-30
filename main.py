@@ -1,5 +1,5 @@
-from board import Board, Move, Square
-from enums import Piece, Rank, File
+from board import Board
+from utils import parse_move
 
 
 if __name__ == "__main__":
@@ -8,14 +8,14 @@ if __name__ == "__main__":
         # A player is said to ‘have the move’, when his opponent’s move has been ‘made’.
         print("Turn:", board.player)
         print(board)
-        move = Move(input("Move: "))
-        if not move.parsed:
+        move = parse_move(input("Move: "))
+        if move is None:
             print("Error parsing move")
             continue
         if not board.make_move(move):
             print("Invalid move")
             continue
-        if board.king_under_attack():
+        if board.player_king_under_attack():
             print(f"{board.player} king under attack")
             if board.no_legal_move():
                 print(f"{board.player} has no legal moves")

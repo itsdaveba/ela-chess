@@ -13,9 +13,9 @@ class Player(Enum):
 
     @property
     def opponent(self) -> Player:
-        if self == Player.WHITE:
+        if self is Player.WHITE:
             return Player.BLACK
-        if self == Player.BLACK:
+        if self is Player.BLACK:
             return Player.WHITE
         raise ValueError
 
@@ -32,22 +32,16 @@ class PieceType(Enum):
 
     @property
     def chr(self) -> str:
-        if self == PieceType.NONE:
+        if self is PieceType.NONE:
             return "."
-        if self == PieceType.KNIGHT:
+        if self is PieceType.KNIGHT:
             return "N"
         return self.name[0]
 
 
-@dataclass
-class PieceDataClass:
-    player: Player
-    type: PieceType
-
-
 # At the beginning of the game one player has 16 light-coloured pieces (the ‘white’ pieces);
 # the other has 16 dark-coloured pieces (the ‘black’ pieces).
-class Piece(PieceDataClass, Enum):
+class Piece(Enum):
     NONE = Player.NONE, PieceType.NONE
 
     WHITE_KING = Player.WHITE, PieceType.KING
@@ -64,12 +58,16 @@ class Piece(PieceDataClass, Enum):
     BLACK_KNIGHT = Player.BLACK, PieceType.KNIGHT
     BLACK_PAWN = Player.BLACK, PieceType.PAWN
 
+    def __init__(self, player: Player, type: PieceType) -> None:
+        self.player = player
+        self.type = type
+
     @property
     def chr(self) -> str:
-        ret = self.type.chr
-        if self.player == Player.BLACK:
-            ret = ret.lower()
-        return ret
+        chr = self.type.chr
+        if self.player is Player.BLACK:
+            return chr.lower()
+        return chr
 
 
 # The eight vertical columns of squares are called ‘files’.
@@ -100,13 +98,7 @@ class Rank(int, Enum):
 # running from one edge of the board to an adjacent edge, is called a ‘diagonal’.
 
 
-@dataclass
-class DirectionDataClass:
-    rank_diff: int
-    file_diff: int
-
-
-class Direction(DirectionDataClass, Enum):
+class Direction(Enum):
     UP = -1, 0
     DOWN = 1, 0
     RIGHT = 0, 1
@@ -116,3 +108,25 @@ class Direction(DirectionDataClass, Enum):
     UP_LEFT = -1, -1
     DOWN_RIGHT = 1, 1
     DOWN_LEFT = 1, -1
+
+    def __init__(self, rank_offset: int, file_offset: int) -> None:
+        self.rank_offset = rank_offset
+        self.file_offset = file_offset
+
+
+@dataclass
+class Move:
+    src: Square
+    dst: Square
+
+
+@dataclass(frozen=True)
+class Square:
+    rank: int
+    file: int
+
+    def __add__(self, direction: Direction) -> Square:
+        return Square(self.rank + direction.rank_offset, self.file + direction.file_offset)
+
+    def is_valid(self) -> bool:
+        return Rank.R0 <= self.rank <= Rank.R7 and File.F0 <= self.file <= File.F7
