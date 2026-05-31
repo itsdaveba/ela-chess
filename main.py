@@ -15,7 +15,7 @@ if __name__ == "__main__":
         if not board.make_move(move):
             print("Invalid move")
             continue
-        if board.player_king_under_attack():
+        if board.king_under_attack(board.player):
             print(f"{board.player} king under attack")
             if board.no_legal_move():
                 print(f"{board.player} has no legal moves")

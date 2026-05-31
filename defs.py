@@ -113,11 +113,14 @@ class Direction(Enum):
         self.rank_offset = rank_offset
         self.file_offset = file_offset
 
+    def __mul__(self, value: int) -> Square:
+        return Square(self.rank_offset * value, self.file_offset * value)
+
 
 @dataclass
 class Move:
-    src: Square
-    dst: Square
+    source: Square
+    target: Square
 
 
 @dataclass(frozen=True)
@@ -125,8 +128,10 @@ class Square:
     rank: int
     file: int
 
-    def __add__(self, direction: Direction) -> Square:
-        return Square(self.rank + direction.rank_offset, self.file + direction.file_offset)
+    def __add__(self, offset: Direction | Square) -> Square:
+        if isinstance(offset, Direction):
+            return Square(self.rank + offset.rank_offset, self.file + offset.file_offset)
+        return Square(self.rank + offset.rank, self.file + offset.file)
 
     def is_valid(self) -> bool:
         return Rank.R0 <= self.rank <= Rank.R7 and File.F0 <= self.file <= File.F7
