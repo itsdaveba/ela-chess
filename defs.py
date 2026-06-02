@@ -21,26 +21,23 @@ class Player(Enum):
 
 
 class PieceType(Enum):
-    NONE = 0
+    NONE = ".", False
 
-    KING = 1
-    QUEEN = 2
-    ROOK = 3
-    BISHOP = 4
-    KNIGHT = 5
-    PAWN = 6
+    KING = "K", False
+    QUEEN = "Q", True
+    ROOK = "R", True
+    BISHOP = "B", True
+    KNIGHT = "N", False
+    PAWN = "P", False
 
-    @property
-    def chr(self) -> str:
-        if self is PieceType.NONE:
-            return "."
-        if self is PieceType.KNIGHT:
-            return "N"
-        return self.name[0]
+    def __init__(self, chr: str, is_sliding: bool):
+        self.chr = chr
+        self.is_sliding = is_sliding
 
 
 # At the beginning of the game one player has 16 light-coloured pieces (the ‘white’ pieces);
 # the other has 16 dark-coloured pieces (the ‘black’ pieces).
+# TODO add move_type?
 class Piece(Enum):
     NONE = Player.NONE, PieceType.NONE
 
@@ -61,13 +58,7 @@ class Piece(Enum):
     def __init__(self, player: Player, type: PieceType) -> None:
         self.player = player
         self.type = type
-
-    @property
-    def chr(self) -> str:
-        chr = self.type.chr
-        if self.player is Player.BLACK:
-            return chr.lower()
-        return chr
+        self.chr = type.chr if player is Player.WHITE else type.chr.lower()
 
 
 # The eight vertical columns of squares are called ‘files’.
@@ -109,12 +100,18 @@ class Direction(Enum):
     DOWN_RIGHT = 1, 1
     DOWN_LEFT = 1, -1
 
+    UP_UP_RIGHT = -2, 1
+    UP_UP_LEFT = -2, -1
+    RIGHT_RIGHT_UP = -1, 2
+    LEFT_LEFT_UP = -1, -2
+    RIGHT_RIGHT_DOWN = 1, 2
+    LEFT_LEFT_DOWN = 1, -2
+    DOWN_DOWN_RIGHT = 2, 1
+    DOWN_DOWN_LEFT = 2, -1
+
     def __init__(self, rank_offset: int, file_offset: int) -> None:
         self.rank_offset = rank_offset
         self.file_offset = file_offset
-
-    def __mul__(self, value: int) -> Square:
-        return Square(self.rank_offset * value, self.file_offset * value)
 
 
 @dataclass
@@ -128,10 +125,8 @@ class Square:
     rank: int
     file: int
 
-    def __add__(self, offset: Direction | Square) -> Square:
-        if isinstance(offset, Direction):
-            return Square(self.rank + offset.rank_offset, self.file + offset.file_offset)
-        return Square(self.rank + offset.rank, self.file + offset.file)
+    def __add__(self, offset: Direction) -> Square:
+        return Square(self.rank + offset.rank_offset, self.file + offset.file_offset)
 
     def is_valid(self) -> bool:
         return Rank.R0 <= self.rank <= Rank.R7 and File.F0 <= self.file <= File.F7

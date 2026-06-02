@@ -9,10 +9,34 @@ piece_movement: dict[PieceType, list[Direction]] = {
     # The rook may move to any square along the file or the rank on which it stands.
     PieceType.ROOK: [Direction.RIGHT, Direction.UP, Direction.LEFT, Direction.DOWN],
     # The queen may move to any square along the file, the rank or a diagonal on which it stands.
-    PieceType.QUEEN: [Direction.UP_RIGHT, Direction.UP_LEFT, Direction.DOWN_LEFT, Direction.DOWN_RIGHT,
-                      Direction.RIGHT, Direction.UP, Direction.LEFT, Direction.DOWN],
+    PieceType.QUEEN: [Direction.RIGHT, Direction.UP_RIGHT, Direction.UP, Direction.UP_LEFT,
+                      Direction.LEFT, Direction.DOWN_LEFT, Direction.DOWN, Direction.DOWN_RIGHT],
+    # The knight may move to one of the squares nearest to that on which it stands but not on the same rank, file or diagonal.
+    PieceType.KNIGHT: [Direction.RIGHT_RIGHT_UP, Direction.UP_UP_RIGHT,
+                       Direction.UP_UP_LEFT, Direction.LEFT_LEFT_UP,
+                       Direction.LEFT_LEFT_DOWN, Direction.DOWN_DOWN_LEFT,
+                       Direction.DOWN_DOWN_RIGHT, Direction.RIGHT_RIGHT_DOWN],
     PieceType.KING: []
 }
+
+attack_table: dict[tuple[PieceType, Square], set[Square]] = defaultdict(set)
+attack_sliding_table: dict[tuple[PieceType, Square, Direction], list[Square]] = defaultdict(list)
+
+for piece_type in PieceType:
+    if piece_type in (PieceType.NONE, PieceType.PAWN):
+        continue
+    for r in range(8):
+        for f in range(8):
+            square = Square(r, f)
+            for direction in piece_movement[piece_type]:
+                sqr = square + direction
+                while sqr.is_valid():
+                    if piece_type.is_sliding:
+                        attack_sliding_table[piece_type, square, direction].append(sqr)
+                    else:
+                        attack_table[piece_type, square].add(sqr)
+                        break
+                    sqr += direction
 
 
 class Board:
@@ -20,16 +44,16 @@ class Board:
         # The chessboard is composed of an 8 x 8 grid of 64 equal squares.
         # The initial position of the pieces on the chessboard is as follows:
         chessboard: list[list[Piece]] = [
-            [Piece.BLACK_ROOK, Piece.NONE, Piece.BLACK_BISHOP, Piece.BLACK_QUEEN,
-             Piece.BLACK_KING, Piece.BLACK_BISHOP, Piece.NONE, Piece.BLACK_ROOK],
+            [Piece.BLACK_ROOK, Piece.BLACK_KNIGHT, Piece.BLACK_BISHOP, Piece.BLACK_QUEEN,
+             Piece.BLACK_KING, Piece.BLACK_BISHOP, Piece.BLACK_KNIGHT, Piece.BLACK_ROOK],
             [Piece.NONE] * 8,
             [Piece.NONE] * 8,
             [Piece.NONE] * 8,
             [Piece.NONE] * 8,
             [Piece.NONE] * 8,
             [Piece.NONE] * 8,
-            [Piece.WHITE_ROOK, Piece.NONE, Piece.WHITE_BISHOP, Piece.WHITE_QUEEN,
-             Piece.WHITE_KING, Piece.WHITE_BISHOP, Piece.NONE, Piece.WHITE_ROOK]
+            [Piece.WHITE_ROOK, Piece.WHITE_KNIGHT, Piece.WHITE_BISHOP, Piece.WHITE_QUEEN,
+             Piece.WHITE_KING, Piece.WHITE_BISHOP, Piece.WHITE_KNIGHT, Piece.WHITE_ROOK]
         ]
         self.chessboard: dict[Square, Piece] = {}
         for r, rank in enumerate(chessboard):
@@ -39,15 +63,16 @@ class Board:
         # The player with the white pieces commences the game.
         self.player: Player = Player.WHITE
 
-        # TODO join attack and target_squares
         # A piece is considered to attack a square, even if such a piece is constrained from moving
         # to that square because it would then leave or place the king of its own colour under attack.
         # A piece is said to attack an opponent’s piece if the piece could
         # make a capture on that squareaccording to the Articles 3.2 to 3.8.
-        self.attack: dict[Piece, dict[Square, dict[Direction, list[Square]]]] = \
+        self.attack: dict[Piece, dict[Square, set[Square]]] = defaultdict(lambda: defaultdict(set))
+        self.attack_sliding: dict[Piece, dict[Square, dict[Direction, list[Square]]]] = \
             defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
-        self.target_squares: dict[Piece, dict[Square, set[Square]]] = defaultdict(lambda: defaultdict(set))
-        self.attacked_by: dict[Square, set[tuple[Piece, Square, Direction]]] = defaultdict(set)
+        self.attacked_by: dict[Square, dict[Player, set[tuple[PieceType, Square]]]] = defaultdict(lambda: defaultdict(set))
+        self.attacked_by_sliding: dict[Square, dict[Player, set[tuple[PieceType, Square, Direction]]]] = \
+            defaultdict(lambda: defaultdict(set))
 
         for square, piece in self.chessboard.items():
             if piece is Piece.NONE:
@@ -73,10 +98,9 @@ class Board:
             print("Not permitted to move to same square")
             return False
 
-        if source_piece.type in (PieceType.BISHOP, PieceType.ROOK, PieceType.QUEEN):
-            if move.target not in self.target_squares[source_piece][move.source]:
-                print(f"{move.target} not reachable by {source_piece} at {move.source}")
-                return False
+        if move.target not in self.attack[source_piece][move.source]:
+            print(f"{move.target} not reachable by {source_piece} at {move.source}")
+            return False
 
         # It is not permitted to move a piece to a square occupied by a piece of the same colour.
         if target_piece.player is self.player:
@@ -94,16 +118,13 @@ class Board:
         self.chessboard[move.target] = source_piece
         self.chessboard[move.source] = Piece.NONE
 
-        attack, target_squares = self.remove_piece(source_piece, move.source)
-        added_from, added_squares = self.add_attack(move.source)
+        self.remove_piece(source_piece, move.source)
+        self.add_slide_attack(move.source)
         self.add_piece(source_piece, move.target)
         if target_piece is Piece.NONE:
-            captured_attack = {}
-            captured_target_squares = set()
-            removed_squares = self.remove_attack(move.target)
+            self.remove_slide_attack(move.target)
         else:
-            removed_squares = {}
-            captured_attack, captured_target_squares = self.remove_piece(target_piece, move.target)
+            self.remove_piece(target_piece, move.target)
 
         if self.king_under_attack(self.player):
             # Leaving one’s own king under attack
@@ -119,11 +140,11 @@ class Board:
 
             self.remove_piece(source_piece, move.target)
             if target_piece is Piece.NONE:
-                self.add_attack(move.target, removed_squares)
+                self.add_slide_attack(move.target)
             else:
-                self.add_piece(target_piece, move.target, captured_attack, captured_target_squares)
-            self.add_piece(source_piece, move.source, attack, target_squares)
-            self.remove_attack(move.source, added_from, added_squares)
+                self.add_piece(target_piece, move.target)
+            self.add_piece(source_piece, move.source)
+            self.remove_slide_attack(move.source)
 
             return False
 
@@ -133,11 +154,9 @@ class Board:
     # The objective of each player is to place the opponent’s king ‘under attack’
     def king_under_attack(self, player: Player) -> bool:
         square = next(iter(self.attack[Piece((player, PieceType.KING))]))
-        # TODO separate by player
-        for piece, _, _ in self.attacked_by[square]:
-            if piece.player is player.opponent:
-                return True
-        return False
+        if self.attacked_by_sliding[square][player.opponent]:
+            return True
+        return bool(self.attacked_by[square][player.opponent])
 
     # in such a way that the opponent has no legal move.
     def no_legal_move(self) -> bool:
@@ -148,85 +167,52 @@ class Board:
     def no_possible_checkmate(self) -> bool:
         return False
 
-    def attack_squares(self, square: Square, direction: Direction, init_step: int = 1) -> list[Square]:
-        squares = []
-        square += direction * init_step
-        while square.is_valid():
-            squares.append(square)
-            if self.chessboard[square] is not Piece.NONE:
-                break
-            square += direction
-        return squares
-
-    # TODO make return type a class type
-    def remove_piece(self, piece: Piece, square: Square) -> tuple[dict[Direction, list[Square]], set[Square]]:
+    def remove_piece(self, piece: Piece, square: Square) -> None:
         attack = self.attack[piece].pop(square)
-        target_squares = self.target_squares[piece].pop(square)
-        for direction, squares in attack.items():
-            for sqr in squares:
-                self.attacked_by[sqr].remove((piece, square, direction))
-        return attack, target_squares
-
-    def add_piece(self, piece: Piece, square: Square,
-                  attack: dict[Direction, list[Square]] = {}, target_squares: set[Square] = set()) -> None:
-        if attack and target_squares:
-            self.attack[piece][square] = attack
-            self.target_squares[piece][square] = target_squares
-            for direction, squares in attack.items():
+        if piece.type.is_sliding:
+            for direction, squares in self.attack_sliding[piece].pop(square).items():
                 for sqr in squares:
-                    self.attacked_by[sqr].add((piece, square, direction))
+                    self.attacked_by_sliding[sqr][piece.player].remove((piece.type, square, direction))
             return
-        for direction in piece_movement[piece.type]:
-            squares = self.attack_squares(square, direction)
-            self.attack[piece][square][direction] = squares
-            self.target_squares[piece][square].update(squares)
-            for sqr in squares:
-                self.attacked_by[sqr].add((piece, square, direction))
+        for sqr in attack:
+            self.attacked_by[sqr][piece.player].remove((piece.type, square))
 
-    def remove_attack(self, square: Square,
-                      added_from: dict[tuple[Piece, Square, Direction], int] = {},
-                      added_squares: dict[tuple[Piece, Square, Direction], list[Square]] = {}
-                      ) -> dict[tuple[Piece, Square, Direction], list[Square]]:
-        removed_squares: dict[tuple[Piece, Square, Direction], list[Square]] = {}
-        if added_from and added_squares:
-            for piece, sqr, direction in self.attacked_by[square]:
-                remove_from = added_from[piece, sqr, direction]
-                remove_squares = added_squares[piece, sqr, direction]
-                self.attack[piece][sqr][direction] = self.attack[piece][sqr][direction][:remove_from]
-                self.target_squares[piece][sqr].difference_update(remove_squares)
+    def add_piece(self, piece: Piece, square: Square) -> None:
+        if piece.type.is_sliding:
+            for direction in piece_movement[piece.type]:
+                for sqr in attack_sliding_table[piece.type, square, direction]:
+                    self.attack_sliding[piece][square][direction].append(sqr)
+                    self.attack[piece][square].add(sqr)
+                    self.attacked_by_sliding[sqr][piece.player].add((piece.type, square, direction))
+                    if self.chessboard[sqr] is not Piece.NONE:
+                        break
+            return
+        if piece.type is PieceType.KING:  # TODO remove
+            self.attack[piece][square]
+        for sqr in attack_table[piece.type, square]:
+            self.attack[piece][square].add(sqr)
+            self.attacked_by[sqr][piece.player].add((piece.type, square))
+
+    def remove_slide_attack(self, square: Square) -> None:
+        for player, attacked_by_sliding in self.attacked_by_sliding[square].items():
+            for type, sqr, direction in attacked_by_sliding:
+                piece = Piece((player, type))
+                index = self.attack_sliding[piece][sqr][direction].index(square)
+                remove_squares = self.attack_sliding[piece][sqr][direction][index + 1:]
+                self.attack_sliding[piece][sqr][direction] = self.attack_sliding[piece][sqr][direction][:index + 1]
+                self.attack[piece][sqr].difference_update(remove_squares)
                 for s in remove_squares:
-                    self.attacked_by[s].remove((piece, sqr, direction))
-            return removed_squares
-        for piece, sqr, direction in self.attacked_by[square]:
-            index = self.attack[piece][sqr][direction].index(square)
-            remove_squares = self.attack[piece][sqr][direction][index + 1:]
-            self.attack[piece][sqr][direction] = self.attack[piece][sqr][direction][:index + 1]
-            self.target_squares[piece][sqr].difference_update(remove_squares)
-            for s in remove_squares:
-                self.attacked_by[s].remove((piece, sqr, direction))
-            removed_squares[piece, sqr, direction] = remove_squares
-        return removed_squares
+                    self.attacked_by_sliding[s][player].remove((type, sqr, direction))
 
-    def add_attack(self, square: Square, removed_squares: dict[tuple[Piece, Square, Direction], list[Square]] = {}
-                   ) -> tuple[dict[tuple[Piece, Square, Direction], int],
-                              dict[tuple[Piece, Square, Direction], list[Square]]]:
-        added_from: dict[tuple[Piece, Square, Direction], int] = {}
-        added_squares: dict[tuple[Piece, Square, Direction], list[Square]] = {}
-        if removed_squares:
-            for piece, sqr, direction in self.attacked_by[square]:
-                add_squares = removed_squares[piece, sqr, direction]
-                self.attack[piece][sqr][direction].extend(add_squares)
-                self.target_squares[piece][sqr].update(add_squares)
+    def add_slide_attack(self, square: Square) -> None:
+        for player, attacked_by_sliding in self.attacked_by_sliding[square].items():
+            for type, sqr, direction in attacked_by_sliding:
+                piece = Piece((player, type))
+                add_from = len(self.attack_sliding[piece][sqr][direction])
+                add_squares = attack_sliding_table[type, sqr, direction][add_from:]
+                if not add_squares:
+                    continue
+                self.attack_sliding[piece][sqr][direction].extend(add_squares)
+                self.attack[piece][sqr].update(add_squares)
                 for s in add_squares:
-                    self.attacked_by[s].add((piece, sqr, direction))
-            return added_from, added_squares
-        for piece, sqr, direction in self.attacked_by[square]:
-            add_from = len(self.attack[piece][sqr][direction])
-            add_squares = self.attack_squares(sqr, direction, add_from + 1)
-            self.attack[piece][sqr][direction].extend(add_squares)
-            self.target_squares[piece][sqr].update(add_squares)
-            for s in add_squares:
-                self.attacked_by[s].add((piece, sqr, direction))
-            added_from[piece, sqr, direction] = add_from
-            added_squares[piece, sqr, direction] = add_squares
-        return added_from, added_squares
+                    self.attacked_by_sliding[s][player].add((type, sqr, direction))
