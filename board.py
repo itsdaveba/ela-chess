@@ -3,7 +3,7 @@ from collections import defaultdict
 from defs import Piece, PieceType, Player, Direction, Square, Move, Rank, File
 
 
-piece_movement: dict[PieceType, list[Direction]] = {
+piece_attack: dict[PieceType, list[Direction]] = {
     # The bishop may move to any square along a diagonal on which it stands.
     PieceType.BISHOP: [Direction.UP_RIGHT, Direction.UP_LEFT, Direction.DOWN_LEFT, Direction.DOWN_RIGHT],
     # The rook may move to any square along the file or the rank on which it stands.
@@ -20,21 +20,35 @@ piece_movement: dict[PieceType, list[Direction]] = {
 }
 
 attack_table: dict[tuple[PieceType, Square], set[Square]] = defaultdict(set)
+attack_pawn_table: dict[tuple[Player, Square], set[Square]] = defaultdict(set)
 attack_sliding_table: dict[tuple[PieceType, Square, Direction], list[Square]] = defaultdict(list)
 
-for piece_type in PieceType:
-    if piece_type in (PieceType.NONE, PieceType.PAWN):
+for type in PieceType:
+    if type is PieceType.NONE:
         continue
     for r in range(8):
         for f in range(8):
             square = Square(r, f)
-            for direction in piece_movement[piece_type]:
+            if type is PieceType.PAWN:
+                if square.file == File.F0:
+                    attack_pawn_table[Player.WHITE, square].add(square + Direction.UP_RIGHT)
+                    attack_pawn_table[Player.BLACK, square].add(square + Direction.DOWN_RIGHT)
+                elif square.file == File.F7:
+                    attack_pawn_table[Player.WHITE, square].add(square + Direction.UP_LEFT)
+                    attack_pawn_table[Player.BLACK, square].add(square + Direction.DOWN_LEFT)
+                else:
+                    attack_pawn_table[Player.WHITE, square].add(square + Direction.UP_RIGHT)
+                    attack_pawn_table[Player.BLACK, square].add(square + Direction.DOWN_RIGHT)
+                    attack_pawn_table[Player.WHITE, square].add(square + Direction.UP_LEFT)
+                    attack_pawn_table[Player.BLACK, square].add(square + Direction.DOWN_LEFT)
+                continue
+            for direction in piece_attack[type]:
                 sqr = square + direction
                 while sqr.is_valid():
-                    if piece_type.is_sliding:
-                        attack_sliding_table[piece_type, square, direction].append(sqr)
+                    if type.is_sliding:
+                        attack_sliding_table[type, square, direction].append(sqr)
                     else:
-                        attack_table[piece_type, square].add(sqr)
+                        attack_table[type, square].add(sqr)
                         break
                     sqr += direction
 
@@ -46,12 +60,12 @@ class Board:
         chessboard: list[list[Piece]] = [
             [Piece.BLACK_ROOK, Piece.BLACK_KNIGHT, Piece.BLACK_BISHOP, Piece.BLACK_QUEEN,
              Piece.BLACK_KING, Piece.BLACK_BISHOP, Piece.BLACK_KNIGHT, Piece.BLACK_ROOK],
+            [Piece.BLACK_PAWN] * 8,
             [Piece.NONE] * 8,
             [Piece.NONE] * 8,
             [Piece.NONE] * 8,
             [Piece.NONE] * 8,
-            [Piece.NONE] * 8,
-            [Piece.NONE] * 8,
+            [Piece.WHITE_PAWN] * 8,
             [Piece.WHITE_ROOK, Piece.WHITE_KNIGHT, Piece.WHITE_BISHOP, Piece.WHITE_QUEEN,
              Piece.WHITE_KING, Piece.WHITE_BISHOP, Piece.WHITE_KNIGHT, Piece.WHITE_ROOK]
         ]
@@ -62,6 +76,7 @@ class Board:
 
         # The player with the white pieces commences the game.
         self.player: Player = Player.WHITE
+        self.ep_square: Square | None = None  # TODO update to Square.NONE
 
         # A piece is considered to attack a square, even if such a piece is constrained from moving
         # to that square because it would then leave or place the king of its own colour under attack.
@@ -81,6 +96,8 @@ class Board:
 
         assert len(self.attack[Piece.WHITE_KING]) == 1
         assert len(self.attack[Piece.BLACK_KING]) == 1
+        assert all([square.rank != Rank.R0 and square.rank != Rank.R7 for square in self.attack[Piece.WHITE_PAWN]])
+        assert all([square.rank != Rank.R0 and square.rank != Rank.R7 for square in self.attack[Piece.BLACK_PAWN]])
         assert not self.king_under_attack(self.player.opponent)
 
     def __str__(self) -> str:
@@ -91,6 +108,15 @@ class Board:
         source_piece = self.chessboard[move.source]
         target_piece = self.chessboard[move.target]
 
+        prev_ep_square = self.ep_square
+        ep_square = None
+        ep_capture = False
+        ep_capture_square = None  # TODO update
+        ep_capture_piece = Piece.NONE
+
+        promotion = False
+        promotion_piece = Piece.NONE
+
         if source_piece.player is not self.player:
             print(f"Player {self.player} needs to move its own piece")
             return False
@@ -98,9 +124,56 @@ class Board:
             print("Not permitted to move to same square")
             return False
 
-        if move.target not in self.attack[source_piece][move.source]:
-            print(f"{move.target} not reachable by {source_piece} at {move.source}")
-            return False
+        if move.promotion is not PieceType.NONE:
+            if source_piece.type is not PieceType.PAWN:
+                print("Only pawns can promote")
+                return False
+            last_rank = Rank.R0 if self.player is Player.WHITE else Rank.R7
+            if move.target.rank != last_rank:
+                print("Can't promote")
+                return False
+            promotion = True
+            promotion_piece = Piece((self.player, move.promotion))
+
+        if source_piece.type is PieceType.PAWN and move.target.file == move.source.file:
+            # The pawn may move forward to the unoccupied square immediately in front of it on the same file, or
+            first_move = move.source.rank == Rank.R6 if self.player is Player.WHITE else move.source.rank == Rank.R1
+            direction = Direction.UP if self.player is Player.WHITE else Direction.DOWN
+            single = move.source + direction
+            if self.chessboard[single] is not Piece.NONE:
+                print(f"{move.target} not reachable by {source_piece} at {move.source}")
+                return False
+            if first_move:
+                # on its first move the pawn may move as in 3.7.a or alternatively it may
+                # advance two squares along the same file provided both squares are unoccupied, or
+                double = single + direction
+                if move.target != single and move.target != double:
+                    print(f"{move.target} not reachable by {source_piece} at {move.source}")
+                    return False
+                if move.target == double:
+                    if self.chessboard[double] is not Piece.NONE:
+                        print(f"{move.target} not reachable by {source_piece} at {move.source}")
+                        return False
+                    ep_square = single
+            elif move.target != single:
+                print(f"{move.target} not reachable by {source_piece} at {move.source}")
+                return False
+        else:
+            if move.target not in self.attack[source_piece][move.source]:
+                print(f"{move.target} not reachable by {source_piece} at {move.source}")
+                return False
+            if source_piece.type is PieceType.PAWN:
+                # the pawn may move to a square occupied by an opponent’s piece, which
+                # is diagonally in front of it on an adjacent file, capturing that piece.
+                if target_piece is Piece.NONE:
+                    # A pawn attacking a square crossed by an opponent’s pawn which has advanced two squares
+                    # in one move from its original square may capture this opponent’s pawn as though the latter
+                    # had been moved only one square. This capture is only legal on the move following this advance
+                    # and is called an ‘en passant’ capture.
+                    if move.target != self.ep_square:
+                        print(f"{move.target} not reachable by {source_piece} at {move.source}")
+                        return False
+                    ep_capture = True
 
         # It is not permitted to move a piece to a square occupied by a piece of the same colour.
         if target_piece.player is self.player:
@@ -113,14 +186,30 @@ class Board:
 
         king_was_under_attack = self.king_under_attack(self.player)
 
-        # If a piece moves to a square occupied by an opponent’s piece
-        # the latter is captured and removed from the chessboard as part of the same move.
-        self.chessboard[move.target] = source_piece
+        if promotion:
+            # When a pawn reaches the rank furthest from its starting position it must be
+            # exchanged as part of the same move on the same square for a new queen, rook,
+            # bishop or knight of the same colour. The player’s choice is not restricted to pieces
+            # that have been captured previously. This exchange of a pawn for another piece is
+            # called ‘promotion’ and the effect of the new piece is immediate
+            self.chessboard[move.target] = promotion_piece
+        else:
+            # If a piece moves to a square occupied by an opponent’s piece
+            # the latter is captured and removed from the chessboard as part of the same move.
+            self.chessboard[move.target] = source_piece
         self.chessboard[move.source] = Piece.NONE
+        if ep_capture:
+            ep_capture_piece = Piece.BLACK_PAWN if self.player is Player.WHITE else Piece.WHITE_PAWN
+            ep_capture_square = move.target + Direction.DOWN if self.player is Player.WHITE else move.target + Direction.UP
+            self.chessboard[ep_capture_square] = Piece.NONE
+            self.remove_piece(ep_capture_piece, ep_capture_square)
+            self.add_slide_attack(ep_capture_square)
+
+        self.ep_square = ep_square
 
         self.remove_piece(source_piece, move.source)
         self.add_slide_attack(move.source)
-        self.add_piece(source_piece, move.target)
+        self.add_piece(promotion_piece if promotion else source_piece, move.target)
         if target_piece is Piece.NONE:
             self.remove_slide_attack(move.target)
         else:
@@ -137,8 +226,14 @@ class Board:
             # unmake move
             self.chessboard[move.source] = source_piece
             self.chessboard[move.target] = target_piece
+            if ep_capture:
+                self.chessboard[ep_capture_square] = ep_capture_piece
+                self.add_piece(ep_capture_piece, ep_capture_square)
+                self.remove_slide_attack(ep_capture_square)
 
-            self.remove_piece(source_piece, move.target)
+            self.ep_square = prev_ep_square
+
+            self.remove_piece(promotion_piece if promotion else source_piece, move.target)
             if target_piece is Piece.NONE:
                 self.add_slide_attack(move.target)
             else:
@@ -179,16 +274,21 @@ class Board:
 
     def add_piece(self, piece: Piece, square: Square) -> None:
         if piece.type.is_sliding:
-            for direction in piece_movement[piece.type]:
+            for direction in piece_attack[piece.type]:
                 for sqr in attack_sliding_table[piece.type, square, direction]:
-                    self.attack_sliding[piece][square][direction].append(sqr)
                     self.attack[piece][square].add(sqr)
+                    self.attack_sliding[piece][square][direction].append(sqr)
                     self.attacked_by_sliding[sqr][piece.player].add((piece.type, square, direction))
                     if self.chessboard[sqr] is not Piece.NONE:
                         break
             return
         if piece.type is PieceType.KING:  # TODO remove
             self.attack[piece][square]
+        elif piece.type is PieceType.PAWN:
+            for sqr in attack_pawn_table[piece.player, square]:
+                self.attack[piece][square].add(sqr)
+                self.attacked_by[sqr][piece.player].add((piece.type, square))
+            return
         for sqr in attack_table[piece.type, square]:
             self.attack[piece][square].add(sqr)
             self.attacked_by[sqr][piece.player].add((piece.type, square))
@@ -210,9 +310,9 @@ class Board:
                 piece = Piece((player, type))
                 add_from = len(self.attack_sliding[piece][sqr][direction])
                 add_squares = attack_sliding_table[type, sqr, direction][add_from:]
-                if not add_squares:
-                    continue
-                self.attack_sliding[piece][sqr][direction].extend(add_squares)
-                self.attack[piece][sqr].update(add_squares)
                 for s in add_squares:
+                    self.attack[piece][sqr].add(s)
+                    self.attack_sliding[piece][sqr][direction].append(s)
                     self.attacked_by_sliding[s][player].add((type, sqr, direction))
+                    if self.chessboard[s] is not Piece.NONE:
+                        break

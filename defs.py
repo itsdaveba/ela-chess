@@ -118,6 +118,7 @@ class Direction(Enum):
 class Move:
     source: Square
     target: Square
+    promotion: PieceType
 
 
 @dataclass(frozen=True)
