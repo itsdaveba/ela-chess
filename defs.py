@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from enum import Enum
+from enum import Enum, Flag
 from dataclasses import dataclass
 
 
@@ -95,6 +95,9 @@ class Direction(Enum):
     RIGHT = 0, 1
     LEFT = 0, -1
 
+    DOUBLE_RIGHT = 0, 2
+    DOUBLE_LEFT = 0, -2
+
     UP_RIGHT = -1, 1
     UP_LEFT = -1, -1
     DOWN_RIGHT = 1, 1
@@ -131,3 +134,12 @@ class Square:
 
     def is_valid(self) -> bool:
         return Rank.R0 <= self.rank <= Rank.R7 and File.F0 <= self.file <= File.F7
+
+
+class Castle(Flag):
+    NONE = 0
+    WHITE_KINGSIDE = 1
+    WHITE_QUEENSIDE = 2
+    BLACK_KINGSIDE = 4
+    BLACK_QUEENSIDE = 8
+    ALL_RIGHTS = 15
