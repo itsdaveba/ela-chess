@@ -16,6 +16,11 @@ class Color:
     def __repr__(self) -> str:
         return f"Color.{self.name}"
 
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Color):
+            return False
+        return self.white == other.white
+
     @property
     def char(self) -> str:
         return "w" if self.white else "b"
