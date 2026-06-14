@@ -1,4 +1,5 @@
 from .square import Square
+from .history import History
 from .castling import Castling
 from .piece import Piece, ROOK, KING
 from .board import Board, pawn_directions
@@ -18,7 +19,7 @@ class Position:
         self.epsquare: Square | None
         self.halfmove: int
         self.fullmove: int
-        self.history: list[tuple[Move, Piece | None, int, Square | None, int]]  # TODO add class
+        self.history: History
         self._move_list: list[Move]
 
         self.fen = fen
@@ -63,7 +64,7 @@ class Position:
             raise ValueError(f"invalid fen fullmove: {fen_elements[5]}")
         self.fullmove = int(fen_elements[5])
 
-        self.history = []
+        self.history = History()
         self._move_list = []
 
     def reset(self) -> None:
@@ -97,7 +98,7 @@ class Position:
             self.board.undo_move(self.white, move, capture)
             return False
 
-        self.history.append((move, capture, self.castling.rights, self.epsquare, self.halfmove))
+        self.history.append(move, capture, self.castling.rights, self.epsquare, self.halfmove)
 
         piece = self.board[move.target]
         assert piece is not None
