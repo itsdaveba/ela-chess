@@ -1,6 +1,6 @@
 import pytest
 
-from chess import PieceType, Piece, Color
+from chess import PieceType, Piece
 
 
 def test_piece_type():
@@ -44,14 +44,14 @@ def test_piece():
 
     piece = Piece('K')
     assert repr(piece) == "Piece.WHITE_KING"
-    assert piece.color == Color(True)
+    assert piece.white is True
     assert piece.type == 5
     assert piece.name == "WHITE_KING"
     assert piece.char == 'K'
 
-    piece = Piece(Color(False), PieceType('N'))
+    piece = Piece(False, PieceType('N'))
     assert repr(piece) == "Piece.BLACK_KNIGHT"
-    assert piece.color == Color(False)
+    assert piece.white is False
     assert piece.type == 1
     assert piece.name == "BLACK_KNIGHT"
     assert piece.char == 'n'

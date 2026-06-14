@@ -1,4 +1,3 @@
-from .color import Color
 from .square import Square
 from .castling import Castling
 from .piece import Piece, ROOK, KING
@@ -14,12 +13,12 @@ castling_rook_info = [("kq", ["h8", "a8"]), ("KQ", ["h1", "a1"])]
 class Position:
     def __init__(self, fen: str = INITIAL_FEN) -> None:
         self.board: Board
-        self.side: Color
+        self.white: bool
         self.castling: Castling
         self.epsquare: Square | None
         self.halfmove: int
         self.fullmove: int
-        self.history: list[tuple[Move, Piece | None, int, Square | None, int]]
+        self.history: list[tuple[Move, Piece | None, int, Square | None, int]]  # TODO add class
         self._move_list: list[Move]
 
         self.fen = fen
@@ -30,13 +29,13 @@ class Position:
     @property
     def move_list(self) -> list[Move]:
         if not self._move_list:
-            self._move_list = self.board.generate_moves(self.side, self.castling, self.epsquare)
+            self._move_list = self.board.generate_moves(self.white, self.castling, self.epsquare)
         return self._move_list
 
     @property
     def fen(self) -> str:
         fen_elements = [self.board.string]
-        fen_elements.append(self.side.char)
+        fen_elements.append("bw"[self.white])
         fen_elements.append(self.castling.string)
         fen_elements.append("-" if self.epsquare is None else self.epsquare.string)
         fen_elements.append(str(self.halfmove))
@@ -52,10 +51,16 @@ class Position:
 
         self.board = Board()
         self.board.string = fen_elements[0]
-        self.side = Color(fen_elements[1])
+        if len(fen_elements[1]) != 1 or fen_elements[1] not in "bw":
+            raise ValueError(f"invalid fen color: {fen_elements[1]}")
+        self.white = bool("bw".index(fen_elements[1]))
         self.castling = Castling(fen_elements[2])
         self.epsquare = None if fen_elements[3] == "-" else Square(fen_elements[3])
+        if not fen_elements[4].isdigit():
+            raise ValueError(f"invalid fen halfmove: {fen_elements[4]}")
         self.halfmove = int(fen_elements[4])
+        if not fen_elements[5].isdigit() or int(fen_elements[5]) < 1:
+            raise ValueError(f"invalid fen fullmove: {fen_elements[5]}")
         self.fullmove = int(fen_elements[5])
 
         self.history = []
@@ -66,15 +71,15 @@ class Position:
 
     def _update_castling(self, piece: Piece, capture: Piece | None, move: Move) -> None:
         if piece.type == KING:
-            self.castling.clear(castling_rook_info[piece.color.white][0])
+            self.castling.clear(castling_rook_info[piece.white][0])
 
         elif piece.type == ROOK:
-            for flag, sqr_str in zip(*castling_rook_info[piece.color.white]):
+            for flag, sqr_str in zip(*castling_rook_info[piece.white]):
                 if self.castling & flag and move.source == sqr_str:
                     self.castling.clear(flag)
 
         if capture is not None and capture.type == ROOK:
-            for flag, sqr_str in zip(*castling_rook_info[capture.color.white]):
+            for flag, sqr_str in zip(*castling_rook_info[capture.white]):
                 if self.castling & flag and move.target == sqr_str:
                     self.castling.clear(flag)
 
@@ -86,10 +91,10 @@ class Position:
             return False
 
         move = self.move_list[self.move_list.index(move)]
-        capture = self.board.make_move(self.side, move)
+        capture = self.board.make_move(self.white, move)
 
-        if self.board.in_check(self.side):
-            self.board.undo_move(self.side, move, capture)
+        if self.board.in_check(self.white):
+            self.board.undo_move(self.white, move, capture)
             return False
 
         self.history.append((move, capture, self.castling.rights, self.epsquare, self.halfmove))
@@ -98,11 +103,11 @@ class Position:
         assert piece is not None
         self._update_castling(piece, capture, move)
 
-        self.epsquare = move.target + pawn_directions[not self.side.white] if move.type & PAWN_DOUBLE_MOVE else None
+        self.epsquare = move.target + pawn_directions[not self.white] if move.type & PAWN_DOUBLE_MOVE else None
         self.halfmove = 0 if move.type & (PAWN_MOVE | CAPTURE) else self.halfmove + 1
-        if not self.side.white:
+        if not self.white:
             self.fullmove += 1
-        self.side = self.side.opponent
+        self.white = not self.white
         self._move_list = []
 
         return True
@@ -112,9 +117,9 @@ class Position:
             raise ValueError("no previous moves")
 
         move, capture, self.castling.rights, self.epsquare, self.halfmove = self.history.pop()
-        self.side = self.side.opponent
+        self.white = not self.white
 
-        self.board.undo_move(self.side, move, capture)
-        if not self.side.white:
+        self.board.undo_move(self.white, move, capture)
+        if not self.white:
             self.fullmove -= 1
         self._move_list = []

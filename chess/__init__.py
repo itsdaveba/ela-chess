@@ -1,4 +1,3 @@
-from .color import Color
 from .board import Board
 from .castling import Castling
 from .position import Position
@@ -7,4 +6,4 @@ from .piece import PieceType, Piece
 from .square import File, Rank, Square
 
 
-__all__ = ["Color", "Board", "Castling", "Position", "MoveType", "Move", "PieceType", "Piece", "File", "Rank", "Square"]
+__all__ = ["Board", "Castling", "Position", "MoveType", "Move", "PieceType", "Piece", "File", "Rank", "Square"]

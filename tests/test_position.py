@@ -1,16 +1,22 @@
 import pytest
 
-from chess import Position, Color, Move
+from chess import Position, Move
 
 
 def test_fen():
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="invalid fen"):
         Position(".")
+    with pytest.raises(ValueError, match="invalid fen color"):
+        Position("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR x KQkq - 0 1")
+    with pytest.raises(ValueError, match="invalid fen halfmove"):
+        Position("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - x 1")
+    with pytest.raises(ValueError, match="invalid fen fullmove"):
+        Position("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 0")
 
     position = Position()
     assert repr(position) == "Position('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1')"
     assert position.fen == "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
-    assert position.side == Color('w')
+    assert position.white
     assert position.castling.rights == 15
     assert position.epsquare is None
     assert position.halfmove == 0
@@ -19,7 +25,7 @@ def test_fen():
     position = Position("r3k2r/p1ppqpb1/bn2pnp1/3PN3/Pp2P3/2N2Q1p/1PPBBPPP/R3K2R b Kq a3 5 8")
     assert repr(position) == "Position('r3k2r/p1ppqpb1/bn2pnp1/3PN3/Pp2P3/2N2Q1p/1PPBBPPP/R3K2R b Kq a3 5 8')"
     assert position.fen == "r3k2r/p1ppqpb1/bn2pnp1/3PN3/Pp2P3/2N2Q1p/1PPBBPPP/R3K2R b Kq a3 5 8"
-    assert position.side == Color('b')
+    assert not position.white
     assert position.castling.rights == 9
     assert position.epsquare == "a3"
     assert position.halfmove == 5

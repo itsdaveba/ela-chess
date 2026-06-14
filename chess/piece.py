@@ -1,5 +1,3 @@
-from .color import Color
-
 PAWN = 0
 KNIGHT = 1
 BISHOP = 2
@@ -15,6 +13,7 @@ piece_name = {
     QUEEN: "QUEEN",
     KING: "KING"
 }
+color_name = ["BLACK", "WHITE"]
 
 
 class PieceType:
@@ -51,7 +50,7 @@ class PieceType:
 
 class Piece:
     def __init__(self, *args) -> None:
-        self.color: Color
+        self.white: bool
         self.type: PieceType
         self.name: str
         self.char: str
@@ -62,19 +61,19 @@ class Piece:
                 raise ValueError("invalid piece arguments")
             if len(piece_char) != 1:
                 raise ValueError(f"invalid piece char: {piece_char}")
-            self.color = Color(piece_char.isupper())
+            self.white = piece_char.isupper()
             self.type = PieceType(piece_char.upper())
         elif len(args) == 2:
             color, type = args
-            if not isinstance(color, Color) or not isinstance(type, PieceType):
+            if not isinstance(color, bool) or not isinstance(type, PieceType):
                 raise ValueError("invalid piece arguments")
-            self.color = color
+            self.white = color
             self.type = type
         else:
             raise ValueError("invalid piece arguments")
 
-        self.name = f"{self.color.name}_{self.type.name}"
-        self.char = self.type.char if self.color.white else self.type.char.lower()
+        self.name = f"{color_name[self.white]}_{self.type.name}"
+        self.char = self.type.char if self.white else self.type.char.lower()
 
     def __repr__(self) -> str:
-        return f"Piece.{self.color.name}_{self.type.name}"
+        return f"Piece.{self.name}"
