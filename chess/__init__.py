@@ -1,4 +1,5 @@
 from .board import Board
+from .game import ChessGame
 from .history import History
 from .castling import Castling
 from .position import Position
@@ -7,4 +8,5 @@ from .piece import PieceType, Piece
 from .square import File, Rank, Square
 
 
-__all__ = ["Board", "History", "Castling", "Position", "MoveType", "Move", "PieceType", "Piece", "File", "Rank", "Square"]
+__all__ = ["Board", "ChessGame", "History", "Castling", "Position",
+           "MoveType", "Move", "PieceType", "Piece", "File", "Rank", "Square"]

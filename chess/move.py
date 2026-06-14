@@ -56,7 +56,7 @@ class Move:
             if not isinstance(move_str, str):
                 raise ValueError("invalid move arguments")
             if len(move_str) not in (4, 5):
-                raise ValueError(f"invalid move string: {move_str}")
+                raise ValueError(f"invalid move string: '{move_str}'")
             self.source = Square(move_str[:2])
             self.target = Square(move_str[2:4])
             self.promotion = None if len(move_str) == 4 else PieceType(move_str[4].upper())
@@ -78,6 +78,9 @@ class Move:
 
     def __repr__(self) -> str:
         return f"Move.{self.string.upper()}"
+
+    def __str__(self) -> str:
+        return self.string
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Move):

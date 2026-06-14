@@ -6,7 +6,7 @@ from chess import Position, Move
 def test_fen():
     with pytest.raises(ValueError, match="invalid fen"):
         Position(".")
-    with pytest.raises(ValueError, match="invalid fen color"):
+    with pytest.raises(ValueError, match="invalid fen side to move"):
         Position("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR x KQkq - 0 1")
     with pytest.raises(ValueError, match="invalid fen halfmove"):
         Position("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - x 1")

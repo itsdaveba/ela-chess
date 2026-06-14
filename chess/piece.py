@@ -30,7 +30,7 @@ class PieceType:
 
         else:
             if len(val) != 1 or val not in "PNBRQK":
-                raise ValueError("invalid piece type char")
+                raise ValueError(f"invalid piece type char: '{val}'")
             self.value = "PNBRQK".index(val)
 
         self.name = piece_name[self.value]
@@ -60,7 +60,7 @@ class Piece:
             if not isinstance(piece_char, str):
                 raise ValueError("invalid piece arguments")
             if len(piece_char) != 1:
-                raise ValueError(f"invalid piece char: {piece_char}")
+                raise ValueError(f"invalid piece char: '{piece_char}'")
             self.white = piece_char.isupper()
             self.type = PieceType(piece_char.upper())
         elif len(args) == 2:

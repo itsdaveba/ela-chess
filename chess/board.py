@@ -50,6 +50,22 @@ class Board:
     def __repr__(self) -> str:
         return f"Board('{self.string}')"
 
+    def __str__(self) -> str:
+        string = ["+-----------------+"]
+        for r, rank in enumerate(Rank):
+            row = ["|"]
+            for file in File:
+                piece = self.grid[Square(file, rank)]
+                if piece is None:
+                    row.append(".")
+                else:
+                    row.append(piece.char)
+            row.extend(["|", str(8 - r)])
+            string.append(" ".join(row))
+        string.append("+-----------------+")
+        string.append("  a b c d e f g h")
+        return "\n".join(string)
+
     def __getitem__(self, key: Square) -> Piece | None:
         return self.grid[key]
 
@@ -80,7 +96,7 @@ class Board:
     def string(self, string: str) -> None:
         ranks: list[str] = string.split("/")
         if len(ranks) != 8:
-            raise ValueError(f"invalid board string; {string}")
+            raise ValueError(f"invalid board string; '{string}'")
 
         grid: list[list[Piece | None]] = []
         for rank in ranks:
@@ -92,7 +108,7 @@ class Board:
                     grid[-1].append(Piece(char))
 
             if len(grid[-1]) != 8:
-                raise ValueError(f"invalid board string: {string}")
+                raise ValueError(f"invalid board string: '{string}'")
 
         self.grid = {square: grid[square.rank.value][square.file.value] for square in Square}
 

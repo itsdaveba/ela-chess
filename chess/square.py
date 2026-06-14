@@ -18,7 +18,7 @@ class File(metaclass=Meta):
             return
 
         if len(val) != 1 or not 'a' <= val <= 'h':
-            raise ValueError(f"invalid file char: {val}")
+            raise ValueError(f"invalid file char: '{val}'")
 
         self.value = ord(val) - ord('a')
         self.char = val
@@ -50,7 +50,7 @@ class Rank(metaclass=Meta):
             return
 
         if len(val) != 1 or not '1' <= val <= '8':
-            raise ValueError(f"invalid rank char: {val}")
+            raise ValueError(f"invalid rank char: '{val}'")
 
         self.value = ord('8') - ord(val)
         self.char = val
@@ -86,7 +86,7 @@ class Square(metaclass=MetaSquare):
             if not isinstance(square_str, str):
                 raise ValueError("invalid square arguments")
             if len(square_str) != 2:
-                raise ValueError(f"invalid square string: {square_str}")
+                raise ValueError(f"invalid square string: '{square_str}'")
             file_char, rank_char = square_str
             self.file = File(file_char)
             self.rank = Rank(rank_char)

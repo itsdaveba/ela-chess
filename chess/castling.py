@@ -19,12 +19,12 @@ class Castling:
 
         n = len(val)
         if n <= 0 or n > 4:
-            raise ValueError(f"invalid castling string: {val}")
+            raise ValueError(f"invalid castling string: '{val}'")
 
         self.rights = i = j = 0
         while j != n:
             if i == 4:
-                raise ValueError(f"invalid castling string: {val}")
+                raise ValueError(f"invalid castling string: '{val}'")
             if order[i] == val[j]:
                 self.rights += flag_value[val[j]]
                 j += 1

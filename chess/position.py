@@ -27,6 +27,12 @@ class Position:
     def __repr__(self) -> str:
         return f"Position('{self.fen}')"
 
+    def __str__(self) -> str:
+        string = "White" if self.white else "Black"
+        string += " to move\n"
+        string += str(self.board)
+        return string
+
     @property
     def move_list(self) -> list[Move]:
         if not self._move_list:
@@ -48,24 +54,24 @@ class Position:
         fen_elements = fen.split()
 
         if len(fen_elements) != 6:
-            raise ValueError(f"invalid fen: {fen}")
+            raise ValueError(f"invalid fen: '{fen}'")
 
         self.board = Board()
         self.board.string = fen_elements[0]
 
         if len(fen_elements[1]) != 1 or fen_elements[1] not in "bw":
-            raise ValueError(f"invalid fen color: {fen_elements[1]}")
+            raise ValueError(f"invalid fen side to move: '{fen_elements[1]}'")
         self.white = bool("bw".index(fen_elements[1]))
 
         self.castling = Castling(fen_elements[2])
         self.epsquare = None if fen_elements[3] == "-" else Square(fen_elements[3])
 
         if not fen_elements[4].isdigit():
-            raise ValueError(f"invalid fen halfmove: {fen_elements[4]}")
+            raise ValueError(f"invalid fen halfmove: '{fen_elements[4]}'")
         self.halfmove = int(fen_elements[4])
 
         if not fen_elements[5].isdigit() or int(fen_elements[5]) < 1:
-            raise ValueError(f"invalid fen fullmove: {fen_elements[5]}")
+            raise ValueError(f"invalid fen fullmove: '{fen_elements[5]}'")
         self.fullmove = int(fen_elements[5])
 
         self.history = History()
@@ -73,6 +79,16 @@ class Position:
 
     def reset(self) -> None:
         self.fen = INITIAL_FEN
+
+    def in_check(self) -> bool:
+        return self.board.in_check(self.white)
+
+    def has_legal_moves(self) -> bool:
+        for move in self.move_list:
+            if self.make_move(move):
+                self.undo_move()
+                return True
+        return False
 
     def _update_castling(self, piece: Piece, capture: Piece | None, move: Move) -> None:
         if piece.type == KING:
