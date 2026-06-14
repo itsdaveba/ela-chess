@@ -1,6 +1,6 @@
 import pytest
 
-from chess import Position, Color
+from chess import Position, Color, Move
 
 
 def test_fen():
@@ -27,3 +27,55 @@ def test_fen():
 
     position.reset()
     assert position.fen == "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+
+
+def test_make_move():
+    position = Position()
+
+    # normal move
+    assert position.fen == "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+    assert position.make_move("e2e4")
+    assert position.fen == "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1"
+    assert position.make_move(Move("c7c5"))
+    assert position.fen == "rnbqkbnr/pp1ppppp/8/2p5/4P3/8/PPPP1PPP/RNBQKBNR w KQkq c6 0 2"
+    assert position.make_move("g1f3")
+    assert position.fen == "rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2"
+
+    # illegal move
+    assert not position.make_move("e2e4")
+
+    # king in check
+    assert position.make_move("d8a5")
+    assert position.fen == "rnb1kbnr/pp1ppppp/8/q1p5/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3"
+    assert not position.make_move("d2d4")
+
+    # undo move
+    position.undo_move()
+    assert position.fen == "rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2"
+    position.undo_move()
+    assert position.fen == "rnbqkbnr/pp1ppppp/8/2p5/4P3/8/PPPP1PPP/RNBQKBNR w KQkq c6 0 2"
+    position.undo_move()
+    assert position.fen == "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1"
+    position.undo_move()
+    assert position.fen == "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+    with pytest.raises(ValueError, match="no previous moves"):
+        position.undo_move()
+
+    # castling rights update
+    position.fen = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1"
+    assert position.make_move("a1d1")
+    assert position.fen == "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/3RK2R b Kkq - 1 1"
+    assert position.make_move("e8d8")
+    assert position.fen == "r2k3r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/3RK2R w K - 2 2"
+    position.undo_move()
+    assert position.make_move("h3g2")
+    assert position.fen == "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q2/PPPBBPpP/3RK2R w Kkq - 0 2"
+    assert not position.make_move("e1g1")
+    assert position.make_move("e2a6")
+    assert position.fen == "r3k2r/p1ppqpb1/Bn2pnp1/3PN3/1p2P3/2N2Q2/PPPB1PpP/3RK2R b Kkq - 0 2"
+    assert not position.make_move("e8c8")
+    assert position.make_move("e8g8")
+    assert position.fen == "r4rk1/p1ppqpb1/Bn2pnp1/3PN3/1p2P3/2N2Q2/PPPB1PpP/3RK2R w K - 1 3"
+    position.undo_move()
+    assert position.make_move("g2h1Q")
+    assert position.fen == "r3k2r/p1ppqpb1/Bn2pnp1/3PN3/1p2P3/2N2Q2/PPPB1P1P/3RK2q w kq - 0 3"

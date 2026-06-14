@@ -17,9 +17,8 @@ class Position:
         self.epsquare: Square | None
         self.halfmove: int
         self.fullmove: int
-        self.history: list[tuple[Move, Piece | None, int, Square | None, int]] = []
-
-        self._move_list: list[Move] = []
+        self.history: list[tuple[Move, Piece | None, int, Square | None, int]]
+        self._move_list: list[Move]
 
         self.fen = fen
 
@@ -57,6 +56,9 @@ class Position:
         self.halfmove = int(fen_elements[4])  # TODO maybe remove Counter
         self.fullmove = int(fen_elements[5])
 
+        self.history = []
+        self._move_list = []
+
     def reset(self) -> None:
         self.fen = INITIAL_FEN
 
@@ -79,7 +81,6 @@ class Position:
             move = Move(move)
 
         if move not in self.move_list:
-            print("illegal move")
             return False
 
         move = self.move_list[self.move_list.index(move)]
