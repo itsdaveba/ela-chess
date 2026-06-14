@@ -110,11 +110,11 @@ class Position:
             raise ValueError("no previous moves")
 
         move, capture, self.castling.rights, self.epsquare, self.halfmove = self.history.pop()
+        self.side = self.side.opponent
 
         self.board.undo_move(self.side, move, capture)
-        if self.side.white:
+        if not self.side.white:
             self.fullmove -= 1
-        self.side = self.side.opponent
         self._move_list = []
 
 

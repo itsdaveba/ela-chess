@@ -68,7 +68,10 @@ class Board:
             if not move.type & PAWN_MOVE:
                 if move.target == square:
                     return True
-        single = square + (SOUTH if side.white else NORTH)
+        try:
+            single = square + pawn_direction[not side.white]
+        except ValueError:
+            return False
         for dir in (EAST, WEST):
             try:
                 target = single + dir
