@@ -52,14 +52,18 @@ class Position:
 
         self.board = Board()
         self.board.string = fen_elements[0]
+
         if len(fen_elements[1]) != 1 or fen_elements[1] not in "bw":
             raise ValueError(f"invalid fen color: {fen_elements[1]}")
         self.white = bool("bw".index(fen_elements[1]))
+
         self.castling = Castling(fen_elements[2])
         self.epsquare = None if fen_elements[3] == "-" else Square(fen_elements[3])
+
         if not fen_elements[4].isdigit():
             raise ValueError(f"invalid fen halfmove: {fen_elements[4]}")
         self.halfmove = int(fen_elements[4])
+
         if not fen_elements[5].isdigit() or int(fen_elements[5]) < 1:
             raise ValueError(f"invalid fen fullmove: {fen_elements[5]}")
         self.fullmove = int(fen_elements[5])
