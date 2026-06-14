@@ -29,7 +29,7 @@ def test_fen():
     assert position.fen == "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
 
-def test_make_move():
+def test_make_undo():
     position = Position()
 
     # normal move
