@@ -28,6 +28,10 @@ class File(metaclass=Meta):
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, File):
+            if isinstance(other, int):
+                return self.value == other
+            if isinstance(other, str):
+                return self.char == other
             return False
         return self.value == other.value
 
@@ -56,6 +60,10 @@ class Rank(metaclass=Meta):
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Rank):
+            if isinstance(other, int):
+                return self.value == other
+            if isinstance(other, str):
+                return self.char == other
             return False
         return self.value == other.value
 
@@ -71,7 +79,7 @@ class Square(metaclass=MetaSquare):
     def __init__(self, *args) -> None:
         self.file: File
         self.rank: Rank
-        self.str: str
+        self.string: str
 
         if len(args) == 1:
             square_str = args[0]
@@ -91,12 +99,20 @@ class Square(metaclass=MetaSquare):
         else:
             raise ValueError("invalid square arguments")
 
-        self.str = self.file.char + self.rank.char
+        self.string = self.file.char + self.rank.char
 
     def __repr__(self) -> str:
-        return f"Square.{self.str.upper()}"
+        return f"Square.{self.string.upper()}"
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Square):
+            if isinstance(other, str):
+                return self.string == other
             return False
         return self.file == other.file and self.rank == other.rank
+
+    def __hash__(self) -> int:
+        return hash((self.file.value, self.rank.value))
+
+    def __add__(self, other: tuple[int, int]) -> "Square":
+        return Square(File(self.file.value + other[0]), Rank(self.rank.value + other[1]))

@@ -14,14 +14,17 @@ def test_castling():
     castling = Castling(15)
     assert repr(castling) == "Castling('KQkq')"
     assert castling.rights == 15
-    assert castling.str == "KQkq"
+    assert castling.string == "KQkq"
+    assert castling & "K"
 
     castling = Castling("-")
     assert repr(castling) == "Castling('-')"
     assert castling.rights == 0
-    assert castling.str == "-"
+    assert castling.string == "-"
+    assert not castling & "kq"
 
     castling = Castling("Kq")
     assert repr(castling) == "Castling('Kq')"
     assert castling.rights == 9
-    assert castling.str == "Kq"
+    assert castling.string == "Kq"
+    assert castling & "KQ"

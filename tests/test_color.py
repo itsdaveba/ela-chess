@@ -14,6 +14,7 @@ def test_color():
     assert color.white
     assert color.char == 'w'
     assert color.name == "WHITE"
+    assert color.opponent == Color(False)
 
     color = Color('b')
     assert color != 0
@@ -22,3 +23,4 @@ def test_color():
     assert not color.white
     assert color.char == 'b'
     assert color.name == "BLACK"
+    assert color.opponent == Color('w')

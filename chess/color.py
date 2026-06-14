@@ -28,3 +28,7 @@ class Color:
     @property
     def name(self) -> str:
         return "WHITE" if self.white else "BLACK"
+
+    @property
+    def opponent(self) -> "Color":
+        return Color(not self.white)

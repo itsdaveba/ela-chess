@@ -29,10 +29,13 @@ class MoveType:
         self.flags: int = flags
 
     def __repr__(self) -> str:
-        return f"MoveType('{self.str}')"
+        return f"MoveType('{self.string}')"
+
+    def __and__(self, other: int) -> int:
+        return self.flags & other
 
     @property
-    def str(self) -> str:
+    def string(self) -> str:
         string = [name for name in order if self.flags & flag[name]]
 
         if string:
@@ -45,33 +48,43 @@ class Move:
         self.source: Square
         self.target: Square
         self.promotion: PieceType | None
-        self.str: str
+        self.type: MoveType
+        self.string: str
 
         if len(args) == 1:
             move_str = args[0]
             if not isinstance(move_str, str):
-                raise ValueError(f"invalid move arguments")
+                raise ValueError("invalid move arguments")
             if len(move_str) not in (4, 5):
                 raise ValueError(f"invalid move string: {move_str}")
             self.source = Square(move_str[:2])
             self.target = Square(move_str[2:4])
             self.promotion = None if len(move_str) == 4 else PieceType(move_str[4].upper())
-        elif len(args) == 3:
-            source, target, promotion = args
-            if not isinstance(source, Square) or not isinstance(target, Square):
+            self.type = MoveType(0)
+        elif len(args) == 4:
+            source, target, flags, promotion = args
+            if not isinstance(source, Square) or not isinstance(target, Square) or not isinstance(flags, int):
                 raise ValueError("invalid move arguments")
             if promotion is not None and not isinstance(promotion, (PieceType, int)):
                 raise ValueError("invalid move arguments")
             self.source = source
             self.target = target
             self.promotion = promotion if promotion is None or isinstance(promotion, PieceType) else PieceType(promotion)
+            self.type = MoveType(flags)
         else:
             raise ValueError("invalid move arguments")
 
-        self.str = self.source.str + self.target.str + ('' if self.promotion is None else self.promotion.char.lower())
+        self.string = self.source.string + self.target.string + ('' if self.promotion is None else self.promotion.char.lower())
 
     def __repr__(self) -> str:
-        return f"Move.{self.str.upper()}"
+        return f"Move.{self.string.upper()}"
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Move):
+            if isinstance(other, str):
+                return self.string == other.lower()
+            return False
+        return self.string == other.string
 
     # @classmethod
     # def from_string(cls, string: str) -> "Move":

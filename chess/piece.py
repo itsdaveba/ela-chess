@@ -22,6 +22,7 @@ class PieceType:
         self.value: int
         self.name: str
         self.char: str
+        self.sliding: bool
 
         if isinstance(val, int):
             if val not in piece_name:
@@ -35,6 +36,7 @@ class PieceType:
 
         self.name = piece_name[self.value]
         self.char = "N" if self.value == KNIGHT else self.name[0]
+        self.sliding = self.char in "BRQ"
 
     def __repr__(self) -> str:
         return f"PieceType.{self.name}"

@@ -31,10 +31,13 @@ class Castling:
             i += 1
 
     def __repr__(self) -> str:
-        return f"Castling('{self.str}')"
+        return f"Castling('{self.string}')"
+
+    def __and__(self, other: str) -> int:
+        return self.rights & flag[other]
 
     @property
-    def str(self) -> str:
+    def string(self) -> str:
         string = [char for char in order if self.rights & flag[char]]
 
         if string:

@@ -17,15 +17,17 @@ def test_piece_type():
     assert type.value == 0
     assert type.name == "PAWN"
     assert type.char == 'P'
+    assert not type.sliding
 
-    type = PieceType('N')
-    assert type != 'N'
-    assert type == 1
-    assert type == PieceType('N')
-    assert repr(type) == "PieceType.KNIGHT"
-    assert type.value == 1
-    assert type.name == "KNIGHT"
-    assert type.char == 'N'
+    type = PieceType('B')
+    assert type != 'B'
+    assert type == 2
+    assert type == PieceType('B')
+    assert repr(type) == "PieceType.BISHOP"
+    assert type.value == 2
+    assert type.name == "BISHOP"
+    assert type.char == 'B'
+    assert type.sliding
 
 
 def test_piece():

@@ -23,7 +23,7 @@ class Counter:
         return f"Counter({self.value})"
 
     @property
-    def str(self) -> str:
+    def string(self) -> str:
         return str(self.value)
 
     def next(self) -> None:
