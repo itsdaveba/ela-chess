@@ -1,9 +1,46 @@
-from .piece import Piece, PieceType
 from .color import Color
 from .castling import Castling
 from .square import File, Rank, Square
 from .move import Move, PAWN_MOVE, PAWN_DOUBLE_MOVE, PROMOTION, CAPTURE, EP_CAPTURE, CASTLE
-from .piece import PAWN, KNIGHT, BISHOP, ROOK, QUEEN, KING
+from .piece import PieceType, Piece, PAWN, KNIGHT, BISHOP, ROOK, QUEEN, KING
+
+
+NORTH_EAST = (1, -1)
+NORTH_WEST = (-1, -1)
+SOUTH_EAST = (1, 1)
+SOUTH_WEST = (-1, 1)
+
+NORTH = (0, -1)
+SOUTH = (0, 1)
+EAST = (1, 0)
+WEST = (-1, 0)
+
+NORTH_EAST_NORTH = (1, -2)
+NORTH_EAST_EAST = (2, -1)
+NORTH_WEST_NORTH = (-1, -2)
+NORTH_WEST_WEST = (-2, -1)
+
+SOUTH_EAST_SOUTH = (1, 2)
+SOUTH_EAST_EAST = (2, 1)
+SOUTH_WEST_SOUTH = (-1, 2)
+SOUTH_WEST_WEST = (-2, 1)
+
+
+pawn_directions = [SOUTH, NORTH]
+piece_directions: dict[int, list[tuple[int, int]]] = {
+    KNIGHT: [NORTH_EAST_NORTH, NORTH_EAST_EAST, NORTH_WEST_NORTH, NORTH_WEST_WEST,
+             SOUTH_EAST_SOUTH, SOUTH_EAST_EAST, SOUTH_WEST_SOUTH, SOUTH_WEST_WEST],
+    BISHOP: [NORTH_EAST, NORTH_WEST, SOUTH_EAST, SOUTH_WEST],
+    ROOK: [NORTH, SOUTH, EAST, WEST],
+    QUEEN: [NORTH_EAST, NORTH_WEST, SOUTH_EAST, SOUTH_WEST, NORTH, SOUTH, EAST, WEST],
+    KING: [NORTH_EAST, NORTH_WEST, SOUTH_EAST, SOUTH_WEST, NORTH, SOUTH, EAST, WEST],
+}
+
+castling_squares = {"g1": ("f1", "h1"), "c1": ("d1", "a1"), "g8": ("f8", "h8"), "c8": ("d8", "a8")}
+castling_king_info = [
+    ("kq", (["f8", "g8"], ["d8", "c8", "b8"]), (["e8", "f8", "g8"], ["e8", "d8", "c8"]), ["g8", "c8"]),
+    ("KQ", (["f1", "g1"], ["d1", "c1", "b1"]), (["e1", "f1", "g1"], ["e1", "d1", "c1"]), ["g1", "c1"])
+]
 
 
 class Board:
@@ -65,11 +102,10 @@ class Board:
 
     def is_attacked(self, side: Color, square: Square) -> bool:
         for move in self.generate_moves(side):
-            if not move.type & PAWN_MOVE:
-                if move.target == square:
-                    return True
+            if not move.type & PAWN_MOVE and move.target == square:
+                return True
         try:
-            single = square + pawn_direction[not side.white]
+            single = square + pawn_directions[not side.white]
         except ValueError:
             return False
         for dir in (EAST, WEST):
@@ -85,9 +121,8 @@ class Board:
     def in_check(self, side: Color) -> bool:
         for square in Square:
             piece = self.grid[square]
-            if piece is not None:
-                if piece.type == KING and piece.color == side:
-                    return self.is_attacked(side.opponent, square)
+            if piece is not None and piece.type == KING and piece.color == side:
+                return self.is_attacked(side.opponent, square)
         return False
 
     def make_move(self, side: Color, move: Move) -> Piece | None:
@@ -97,8 +132,7 @@ class Board:
         self.grid[move.source] = None
 
         if move.type & EP_CAPTURE:
-            direction = pawn_direction[not side.white]
-            self.grid[move.target + direction] = None
+            self.grid[move.target + pawn_directions[not side.white]] = None
 
         elif move.type & CASTLE:
             free_sqr, rook_sqr = castling_squares[move.target.string]
@@ -112,8 +146,7 @@ class Board:
         self.grid[move.target] = capture
 
         if move.type & EP_CAPTURE:
-            direction = pawn_direction[not side.white]
-            self.grid[move.target + direction] = Piece(side.opponent, PieceType(PAWN))
+            self.grid[move.target + pawn_directions[not side.white]] = Piece(side.opponent, PieceType(PAWN))
 
         elif move.type & CASTLE:
             free_sqr, rook_sqr = castling_squares[move.target.string]
@@ -121,17 +154,13 @@ class Board:
             self.grid[Square(free_sqr)] = None
 
     def _pawn_promotion_moves(self, side: Color, source: Square, target: Square, is_capture: bool) -> list[Move]:
-        moves = []
-        flags = PAWN_MOVE
-        if is_capture:
-            flags |= CAPTURE
+        flags = (PAWN_MOVE | CAPTURE) if is_capture else PAWN_MOVE
+
         if target.rank == (Rank('8') if side.white else Rank('1')):
             flags |= PROMOTION
-            for prom in (KNIGHT, BISHOP, ROOK, QUEEN):
-                moves.append(Move(source, target, flags, prom))
-        else:
-            moves.append(Move(source, target, flags, None))
-        return moves
+            return [Move(source, target, flags, prom) for prom in (KNIGHT, BISHOP, ROOK, QUEEN)]
+
+        return [Move(source, target, flags, None)]
 
     def _pawn_forward_moves(self, side: Color, source: Square, single: Square, direction: tuple[int, int]) -> list[Move]:
         moves: list[Move] = []
@@ -154,9 +183,8 @@ class Board:
             except ValueError:
                 continue
             capture = self.grid[target]
-            if capture is not None:
-                if capture.color != side:
-                    moves.extend(self._pawn_promotion_moves(side, source, target, True))
+            if capture is not None and capture.color != side:
+                moves.extend(self._pawn_promotion_moves(side, source, target, True))
             elif target == epsquare:
                 moves.append(Move(source, target, PAWN_MOVE | CAPTURE | EP_CAPTURE, None))
 
@@ -165,7 +193,7 @@ class Board:
     def _pawn_moves(self, side: Color, source: Square, epsquare: Square | None) -> list[Move]:
         moves: list[Move] = []
 
-        direction = pawn_direction[side.white]
+        direction = pawn_directions[side.white]
         single = source + direction
 
         moves.extend(self._pawn_forward_moves(side, source, single, direction))
@@ -176,7 +204,7 @@ class Board:
     def _piece_moves(self, side: Color, source: Square, piece: Piece) -> list[Move]:
         moves: list[Move] = []
 
-        for direction in directions[piece.type.value]:
+        for direction in piece_directions[piece.type.value]:
             target = source
             while True:
                 try:
@@ -206,7 +234,7 @@ class Board:
     def _castle_moves(self, side: Color, source: Square, castling: Castling) -> list[Move]:
         moves: list[Move] = []
 
-        for flag, empty_sqrs, no_attacked_sqrs, target_sqr in zip(*castling_info[side.white]):
+        for flag, empty_sqrs, no_attacked_sqrs, target_sqr in zip(*castling_king_info[side.white]):
             if castling & flag and self._can_castle(side, empty_sqrs, no_attacked_sqrs):
                 moves.append(Move(source, Square(target_sqr), CASTLE, None))
 
@@ -227,49 +255,3 @@ class Board:
                 moves.extend(self._castle_moves(side, source, castling))
 
         return moves
-
-
-NORTH_EAST = (1, -1)
-NORTH_WEST = (-1, -1)
-SOUTH_EAST = (1, 1)
-SOUTH_WEST = (-1, 1)
-
-NORTH = (0, -1)
-SOUTH = (0, 1)
-EAST = (1, 0)
-WEST = (-1, 0)
-
-NORTH_EAST_NORTH = (1, -2)
-NORTH_EAST_EAST = (2, -1)
-NORTH_WEST_NORTH = (-1, -2)
-NORTH_WEST_WEST = (-2, -1)
-
-SOUTH_EAST_SOUTH = (1, 2)
-SOUTH_EAST_EAST = (2, 1)
-SOUTH_WEST_SOUTH = (-1, 2)
-SOUTH_WEST_WEST = (-2, 1)
-
-
-directions: dict[int, list[tuple[int, int]]] = {
-    BISHOP: [NORTH_EAST, NORTH_WEST, SOUTH_EAST, SOUTH_WEST],
-    ROOK: [NORTH, SOUTH, EAST, WEST],
-    QUEEN: [NORTH_EAST, NORTH_WEST, SOUTH_EAST, SOUTH_WEST, NORTH, SOUTH, EAST, WEST],
-    KNIGHT: [NORTH_EAST_NORTH, NORTH_EAST_EAST, NORTH_WEST_NORTH, NORTH_WEST_WEST,
-             SOUTH_EAST_SOUTH, SOUTH_EAST_EAST, SOUTH_WEST_SOUTH, SOUTH_WEST_WEST],
-    KING: [NORTH_EAST, NORTH_WEST, SOUTH_EAST, SOUTH_WEST, NORTH, SOUTH, EAST, WEST],
-}
-
-
-castling_info = [
-    ("kq", (["f8", "g8"], ["d8", "c8", "b8"]), (["e8", "f8", "g8"], ["e8", "d8", "c8"]), ["g8", "c8"]),
-    ("KQ", (["f1", "g1"], ["d1", "c1", "b1"]), (["e1", "f1", "g1"], ["e1", "d1", "c1"]), ["g1", "c1"])
-]
-
-castling_squares = {
-    "g1": ("f1", "h1"),
-    "c1": ("d1", "a1"),
-    "g8": ("f8", "h8"),
-    "c8": ("d8", "a8")
-}
-
-pawn_direction = [SOUTH, NORTH]

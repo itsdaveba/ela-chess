@@ -1,10 +1,10 @@
-from .board import Board
-from .piece import PieceType, Piece
 from .color import Color
+from .board import Board
 from .castling import Castling
-from .square import Square, File, Rank
 from .position import Position
-from .move import Move, MoveType
+from .move import MoveType, Move
+from .piece import PieceType, Piece
+from .square import File, Rank, Square
 
-__all__ = ["Board", "PieceType", "Piece", "Color", "Castling", "Square", "File", "Rank",
-           "Position", "Move", "MoveType"]
+
+__all__ = ["Color", "Board", "Castling", "Position", "MoveType", "Move", "PieceType", "Piece", "File", "Rank", "Square"]

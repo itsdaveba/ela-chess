@@ -1,12 +1,14 @@
-from .board import Board, pawn_direction
 from .color import Color
-from .castling import Castling
 from .square import Square
-from .move import Move, PAWN_DOUBLE_MOVE, PAWN_MOVE, CAPTURE
-from .piece import Piece, KING, ROOK
+from .castling import Castling
+from .piece import Piece, ROOK, KING
+from .board import Board, pawn_directions
+from .move import Move, PAWN_MOVE, PAWN_DOUBLE_MOVE, CAPTURE
 
 
 INITIAL_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+
+castling_rook_info = [("kq", ["h8", "a8"]), ("KQ", ["h1", "a1"])]
 
 
 class Position:
@@ -53,7 +55,7 @@ class Position:
         self.side = Color(fen_elements[1])
         self.castling = Castling(fen_elements[2])
         self.epsquare = None if fen_elements[3] == "-" else Square(fen_elements[3])
-        self.halfmove = int(fen_elements[4])  # TODO maybe remove Counter
+        self.halfmove = int(fen_elements[4])
         self.fullmove = int(fen_elements[5])
 
         self.history = []
@@ -64,15 +66,15 @@ class Position:
 
     def _update_castling(self, piece: Piece, capture: Piece | None, move: Move) -> None:
         if piece.type == KING:
-            self.castling.clear(castling_info[piece.color.white][0])
+            self.castling.clear(castling_rook_info[piece.color.white][0])
 
         elif piece.type == ROOK:
-            for flag, sqr_str in zip(*castling_info[piece.color.white]):
+            for flag, sqr_str in zip(*castling_rook_info[piece.color.white]):
                 if self.castling & flag and move.source == sqr_str:
                     self.castling.clear(flag)
 
         if capture is not None and capture.type == ROOK:
-            for flag, sqr_str in zip(*castling_info[capture.color.white]):
+            for flag, sqr_str in zip(*castling_rook_info[capture.color.white]):
                 if self.castling & flag and move.target == sqr_str:
                     self.castling.clear(flag)
 
@@ -96,7 +98,7 @@ class Position:
         assert piece is not None
         self._update_castling(piece, capture, move)
 
-        self.epsquare = move.target + pawn_direction[not self.side.white] if move.type & PAWN_DOUBLE_MOVE else None
+        self.epsquare = move.target + pawn_directions[not self.side.white] if move.type & PAWN_DOUBLE_MOVE else None
         self.halfmove = 0 if move.type & (PAWN_MOVE | CAPTURE) else self.halfmove + 1
         if not self.side.white:
             self.fullmove += 1
@@ -116,9 +118,3 @@ class Position:
         if not self.side.white:
             self.fullmove -= 1
         self._move_list = []
-
-
-castling_info = [
-    ("kq", ["h8", "a8"]),
-    ("KQ", ["h1", "a1"])
-]

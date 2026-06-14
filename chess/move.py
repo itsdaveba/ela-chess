@@ -9,7 +9,7 @@ EP_CAPTURE = 16
 CASTLE = 32
 
 order = ["PAWN_MOVE", "PAWN_DOUBLE_MOVE", "PROMOTION", "CAPTURE", "EP_CAPTURE", "CASTLE"]
-flag = {
+flag_value = {
     "CASTLE": CASTLE,
     "EP_CAPTURE": EP_CAPTURE,
     "CAPTURE": CAPTURE,
@@ -36,7 +36,7 @@ class MoveType:
 
     @property
     def string(self) -> str:
-        string = [name for name in order if self.flags & flag[name]]
+        string = [name for name in order if self.flags & flag_value[name]]
 
         if string:
             return "|".join(string)
@@ -85,14 +85,3 @@ class Move:
                 return self.string == other.lower()
             return False
         return self.string == other.string
-
-    # @classmethod
-    # def from_string(cls, string: str) -> "Move":
-    #     if len(string) != 4:
-    #         raise ValueError
-
-    #     source, target = string[:2], string[2:]
-    #     return cls(Square.from_string(source), Square.from_string(target), None, None)
-
-    # def get_string(self) -> str:
-    #     return self.source.get_string() + self.target.get_string()

@@ -1,5 +1,3 @@
-
-
 class Color:
     def __init__(self, val: bool | str) -> None:
         self.white: bool
