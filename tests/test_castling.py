@@ -28,3 +28,9 @@ def test_castling():
     assert castling.rights == 9
     assert castling.string == "Kq"
     assert castling & "KQ"
+
+    castling.clear("q")
+    assert repr(castling) == "Castling('K')"
+    assert castling.rights == 8
+    assert castling.string == "K"
+    assert castling & "K"

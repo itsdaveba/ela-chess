@@ -13,6 +13,7 @@ def test_str():
 
     assert repr(board) == "Board('8/8/8/8/8/8/8/8')"
     assert board.string == "8/8/8/8/8/8/8/8"
+    assert board[Square("a1")] is None
 
     board.string = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
     assert board.string == "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"

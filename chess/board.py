@@ -14,6 +14,9 @@ class Board:
     def __repr__(self) -> str:
         return f"Board('{self.string}')"
 
+    def __getitem__(self, key: Square) -> Piece | None:
+        return self.grid[key]
+
     @property
     def string(self) -> str:
         piece_placement = []
@@ -91,7 +94,7 @@ class Board:
         self.grid[move.source] = None
 
         if move.type & EP_CAPTURE:
-            direction = SOUTH if side.white else NORTH
+            direction = pawn_direction[not side.white]
             self.grid[move.target + direction] = None
 
         elif move.type & CASTLE:
@@ -106,7 +109,7 @@ class Board:
         self.grid[move.target] = capture
 
         if move.type & EP_CAPTURE:
-            direction = SOUTH if side.white else NORTH
+            direction = pawn_direction[not side.white]
             self.grid[move.target + direction] = Piece(side.opponent, PieceType(PAWN))
 
         elif move.type & CASTLE:
@@ -135,7 +138,7 @@ class Board:
             if source.rank == (Rank('2') if side.white else Rank('7')):
                 double = single + direction
                 if self.grid[double] is None:
-                    moves.append(Move(source, single, PAWN_MOVE | PAWN_DOUBLE_MOVE, None))
+                    moves.append(Move(source, double, PAWN_MOVE | PAWN_DOUBLE_MOVE, None))
 
         return moves
 
@@ -159,7 +162,7 @@ class Board:
     def _pawn_moves(self, side: Color, source: Square, epsquare: Square | None) -> list[Move]:
         moves: list[Move] = []
 
-        direction = NORTH if side.white else SOUTH
+        direction = pawn_direction[side.white]
         single = source + direction
 
         moves.extend(self._pawn_forward_moves(side, source, single, direction))
@@ -265,3 +268,5 @@ castling_squares = {
     "g8": ("f8", "h8"),
     "c8": ("d8", "a8")
 }
+
+pawn_direction = [SOUTH, NORTH]

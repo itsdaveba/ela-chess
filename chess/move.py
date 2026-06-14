@@ -69,7 +69,7 @@ class Move:
                 raise ValueError("invalid move arguments")
             self.source = source
             self.target = target
-            self.promotion = promotion if promotion is None or isinstance(promotion, PieceType) else PieceType(promotion)
+            self.promotion = promotion if (promotion is None or isinstance(promotion, PieceType)) else PieceType(promotion)
             self.type = MoveType(flags)
         else:
             raise ValueError("invalid move arguments")

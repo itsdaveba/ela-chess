@@ -1,5 +1,5 @@
 order = "KQkq"
-flag = {"K": 8, "Q": 4, "k": 2, "q": 1, "KQ": 12, "kq": 3}
+flag_value = {"K": 8, "Q": 4, "k": 2, "q": 1, "KQ": 12, "kq": 3}
 
 
 class Castling:
@@ -26,7 +26,7 @@ class Castling:
             if i == 4:
                 raise ValueError(f"invalid castling string: {val}")
             if order[i] == val[j]:
-                self.rights += flag[val[j]]
+                self.rights += flag_value[val[j]]
                 j += 1
             i += 1
 
@@ -34,12 +34,15 @@ class Castling:
         return f"Castling('{self.string}')"
 
     def __and__(self, other: str) -> int:
-        return self.rights & flag[other]
+        return self.rights & flag_value[other]
 
     @property
     def string(self) -> str:
-        string = [char for char in order if self.rights & flag[char]]
+        string = [char for char in order if self.rights & flag_value[char]]
 
         if string:
             return "".join(string)
         return "-"
+
+    def clear(self, flags: str) -> None:
+        self.rights &= ~flag_value[flags]
