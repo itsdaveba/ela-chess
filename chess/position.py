@@ -79,6 +79,13 @@ class Position:
     def in_check(self) -> bool:
         return self.board.in_check(self.white)
 
+    def has_legal_moves(self) -> bool:
+        for move in self.pseudo_legal_moves:
+            if self.make_move(move):
+                self.undo_move()
+                return True
+        return False
+
     def _update_castling(self, piece: Piece, capture: Piece | None, move: Move) -> None:
         if piece.type == KING:
             self.castling.clear(castling_rook_squares[piece.white][0])

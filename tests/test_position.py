@@ -99,6 +99,13 @@ def test_make_undo():
     assert position.make_move("g2h1Q")
     assert position.fen == "r3k2r/p1ppqpb1/Bn2pnp1/3PN3/1p2P3/2N2Q2/PPPB1P1P/3RK2q w kq - 0 3"
 
+    # has legal moves
+    position.fen = "rnbqkbnr/pppp1ppp/8/4p3/6P1/5P2/PPPPP2P/RNBQKBNR b KQkq - 0 2"
+    assert position.has_legal_moves()
+    assert position.make_move("d8h4")
+    assert position.fen == "rnb1kbnr/pppp1ppp/8/4p3/6Pq/5P2/PPPPP2P/RNBQKBNR w KQkq - 1 3"
+    assert not position.has_legal_moves()
+
 
 def test_perf():
     def perft(position: Position, depth: int):
