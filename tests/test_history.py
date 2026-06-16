@@ -1,0 +1,12 @@
+from chess import Move, History
+
+
+def test_castling():
+    history = History()
+    history.append(Move("e2e4"), None, 15, None, 42)
+    history.append(Move("e7e5"), None, 15, None, 42)
+    assert len(history) == 2
+    history.pop()
+    assert len(history) == 1
+    history.clear()
+    assert len(history) == 0

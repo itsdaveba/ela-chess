@@ -33,6 +33,19 @@ def test_fen():
 
     position.reset()
     assert position.fen == "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+    assert str(position) == """\
+White to move
++-----------------+
+| r n b q k b n r | 8
+| p p p p p p p p | 7
+| . . . . . . . . | 6
+| . . . . . . . . | 5
+| . . . . . . . . | 4
+| . . . . . . . . | 3
+| P P P P P P P P | 2
+| R N B Q K B N R | 1
++-----------------+
+  a b c d e f g h"""
 
 
 def test_make_undo():
@@ -93,7 +106,7 @@ def test_perf():
             return 1
 
         nodes = 0
-        for move in position.move_list:
+        for move in position.pseudo_legal_moves:
             if position.make_move(move):
                 nodes += perft(position, depth - 1)
                 position.undo_move()

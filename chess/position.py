@@ -8,7 +8,7 @@ from .move import Move, PAWN_MOVE, PAWN_DOUBLE_MOVE, CAPTURE
 
 INITIAL_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
-castling_rook_info = [("kq", ["h8", "a8"]), ("KQ", ["h1", "a1"])]
+castling_rook_squares = [("kq", ["h8", "a8"]), ("KQ", ["h1", "a1"])]
 
 
 class Position:
@@ -20,7 +20,6 @@ class Position:
         self.halfmove: int
         self.fullmove: int
         self.history: History
-        self._move_list: list[Move]
 
         self.fen = fen
 
@@ -34,10 +33,8 @@ class Position:
         return string
 
     @property
-    def move_list(self) -> list[Move]:
-        if not self._move_list:
-            self._move_list = self.board.generate_moves(self.white, self.castling, self.epsquare)
-        return self._move_list
+    def pseudo_legal_moves(self) -> list[Move]:  # TODO change this to legal moves
+        return self.board.generate_pseudo_legal_moves(self.white, self.castling, self.epsquare)
 
     @property
     def fen(self) -> str:
@@ -75,7 +72,6 @@ class Position:
         self.fullmove = int(fen_elements[5])
 
         self.history = History()
-        self._move_list = []
 
     def reset(self) -> None:
         self.fen = INITIAL_FEN
@@ -83,24 +79,17 @@ class Position:
     def in_check(self) -> bool:
         return self.board.in_check(self.white)
 
-    def has_legal_moves(self) -> bool:
-        for move in self.move_list:
-            if self.make_move(move):
-                self.undo_move()
-                return True
-        return False
-
     def _update_castling(self, piece: Piece, capture: Piece | None, move: Move) -> None:
         if piece.type == KING:
-            self.castling.clear(castling_rook_info[piece.white][0])
+            self.castling.clear(castling_rook_squares[piece.white][0])
 
         elif piece.type == ROOK:
-            for flag, sqr_str in zip(*castling_rook_info[piece.white]):
+            for flag, sqr_str in zip(*castling_rook_squares[piece.white]):
                 if self.castling & flag and move.source == sqr_str:
                     self.castling.clear(flag)
 
         if capture is not None and capture.type == ROOK:
-            for flag, sqr_str in zip(*castling_rook_info[capture.white]):
+            for flag, sqr_str in zip(*castling_rook_squares[capture.white]):
                 if self.castling & flag and move.target == sqr_str:
                     self.castling.clear(flag)
 
@@ -108,13 +97,13 @@ class Position:
         if isinstance(move, str):
             move = Move(move)
 
-        if move not in self.move_list:
+        if move not in self.pseudo_legal_moves:
             return False
 
-        move = self.move_list[self.move_list.index(move)]
+        move = self.pseudo_legal_moves[self.pseudo_legal_moves.index(move)]
         capture = self.board.make_move(self.white, move)
 
-        if self.board.in_check(self.white):
+        if self.in_check():
             self.board.undo_move(self.white, move, capture)
             return False
 
@@ -129,7 +118,6 @@ class Position:
         if not self.white:
             self.fullmove += 1
         self.white = not self.white
-        self._move_list = []
 
         return True
 
@@ -143,4 +131,3 @@ class Position:
         self.board.undo_move(self.white, move, capture)
         if not self.white:
             self.fullmove -= 1
-        self._move_list = []

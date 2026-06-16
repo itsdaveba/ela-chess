@@ -11,7 +11,7 @@ def test_file():
 
     file = File(0)
     assert file != []
-    assert file == 0
+    assert file == 'a'
     assert repr(file) == "File.A"
     assert file.value == 0
     assert file.char == 'a'
@@ -34,7 +34,7 @@ def test_rank():
 
     rank = Rank(0)
     assert rank != []
-    assert rank == 0
+    assert rank == '8'
     assert rank == Rank(0)
     assert repr(rank) == "Rank.8"
     assert rank.value == 0

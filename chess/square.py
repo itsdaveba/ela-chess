@@ -28,8 +28,6 @@ class File(metaclass=Meta):
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, File):
-            if isinstance(other, int):
-                return self.value == other
             if isinstance(other, str):
                 return self.char == other
             return False
@@ -60,8 +58,6 @@ class Rank(metaclass=Meta):
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Rank):
-            if isinstance(other, int):
-                return self.value == other
             if isinstance(other, str):
                 return self.char == other
             return False

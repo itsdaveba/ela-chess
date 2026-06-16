@@ -3,7 +3,7 @@ import pytest
 from chess import Board, Square, Castling, Move
 
 
-def test_str():
+def test_string():
     board = Board()
 
     with pytest.raises(ValueError, match="invalid board string"):
@@ -35,6 +35,18 @@ def test_str():
 
     board.string = "r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1"
     assert board.string == "r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1"
+    assert str(board) == """\
++-----------------+
+| r . . . . r k . | 8
+| . p p . q p p p | 7
+| p . n p . n . . | 6
+| . . b . p . B . | 5
+| . . B . P . b . | 4
+| P . N P . N . . | 3
+| . P P . Q P P P | 2
+| R . . . . R K . | 1
++-----------------+
+  a b c d e f g h"""
 
 
 def test_generate_moves():
@@ -42,32 +54,32 @@ def test_generate_moves():
 
     # bishop
     board.string = "8/2p5/2P3p1/8/4B3/8/8/8"
-    moves = board.generate_moves(True)
+    moves = board.generate_pseudo_legal_moves(True)
     assert len(moves) == 9
 
     # rook
     board.string = "8/8/4P3/8/2p1r3/2P5/8/8"
-    moves = board.generate_moves(False)
+    moves = board.generate_pseudo_legal_moves(False)
     assert len(moves) == 9
 
     # queen
     board.string = "8/8/4p3/8/4Q3/2p5/2P5/8"
-    moves = board.generate_moves(True)
+    moves = board.generate_pseudo_legal_moves(True)
     assert len(moves) == 23
 
     # knight
     board.string = "8/5P2/8/6n1/4p3/4P3/8/8"
-    moves = board.generate_moves(False)
+    moves = board.generate_pseudo_legal_moves(False)
     assert len(moves) == 5
 
     # pawn
     board.string = "3q4/4P3/8/5Pp1/3p4/1p5p/P2P3P/8"
-    moves = board.generate_moves(True, epsquare=Square("g6"))
+    moves = board.generate_pseudo_legal_moves(True, epsquare=Square("g6"))
     assert len(moves) == 14
 
     # king
     board.string = "8/8/5p2/5P2/4k3/3p4/3P4/8"
-    moves = board.generate_moves(False)
+    moves = board.generate_pseudo_legal_moves(False)
     assert len(moves) == 7
 
     # is attacked
@@ -85,7 +97,7 @@ def test_generate_moves():
 
     # castle
     board.string = "r3k1nr/p6p/8/8/8/p6p/P5pP/RN2K2R"
-    moves = board.generate_moves(True, Castling("KQkq"))
+    moves = board.generate_pseudo_legal_moves(True, Castling("KQkq"))
     assert len(moves) == 10
 
 
@@ -93,7 +105,7 @@ def test_make_undo():
     board = Board()
 
     board.string = "3q4/4P3/8/5Pp1/3p4/1p5p/P2P3P/4K2R"
-    moves = board.generate_moves(True, Castling("K"), Square("g6"))
+    moves = board.generate_pseudo_legal_moves(True, Castling("K"), Square("g6"))
 
     # pawn move
     move = moves[moves.index(Move("d2d3"))]

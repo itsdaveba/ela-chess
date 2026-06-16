@@ -41,6 +41,7 @@ def test_move():
     assert move == "e2e4"
     assert move == Move("e2e4")
     assert repr(move) == "Move.E2E4"
+    assert str(move) == "e2e4"
     assert move.source == Square("e2")
     assert move.target == Square("e4")
     assert move.promotion is None
@@ -52,6 +53,7 @@ def test_move():
     assert move == "e7e8Q"
     assert move == Move("e7e8Q")
     assert repr(move) == "Move.E7E8Q"
+    assert str(move) == "e7e8q"
     assert move.source == Square("e7")
     assert move.target == Square("e8")
     assert move.promotion == 4
@@ -63,6 +65,7 @@ def test_move():
     assert move == "e2e4"
     assert move == Move("e2e4")
     assert repr(move) == "Move.E2E4"
+    assert str(move) == "e2e4"
     assert move.source == Square("e2")
     assert move.target == Square("e4")
     assert move.promotion is None
@@ -74,6 +77,7 @@ def test_move():
     assert move == "e7e8Q"
     assert move == Move("e7e8Q")
     assert repr(move) == "Move.E7E8Q"
+    assert str(move) == "e7e8q"
     assert move.source == Square("e7")
     assert move.target == Square("e8")
     assert move.promotion == 4

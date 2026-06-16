@@ -60,3 +60,6 @@ __pycache__/
 # pytest-coverage
 .coverage
 htmlcov/
+
+# pyinstaller
+build/
