@@ -79,10 +79,22 @@ class Position:
     def in_check(self) -> bool:
         return self.board.in_check(self.white)
 
+    def is_legal_move(self, move: Move) -> bool:
+        if move not in self.pseudo_legal_moves:
+            return False
+
+        move = self.pseudo_legal_moves[self.pseudo_legal_moves.index(move)]
+        capture = self.board.make_move(self.white, move)
+
+        if self.board.in_check(self.white):
+            self.board.undo_move(self.white, move, capture)
+            return False
+        self.board.undo_move(self.white, move, capture)
+        return True
+
     def has_legal_moves(self) -> bool:
         for move in self.pseudo_legal_moves:
-            if self.make_move(move):
-                self.undo_move()
+            if self.is_legal_move(move):
                 return True
         return False
 
@@ -110,7 +122,7 @@ class Position:
         move = self.pseudo_legal_moves[self.pseudo_legal_moves.index(move)]
         capture = self.board.make_move(self.white, move)
 
-        if self.in_check():
+        if self.board.in_check(self.white):
             self.board.undo_move(self.white, move, capture)
             return False
 
