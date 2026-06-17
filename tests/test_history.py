@@ -1,10 +1,14 @@
 from chess import Move, History
 
 
-def test_castling():
+def test_history():
     history = History()
+
+    assert repr(history) == "History([])"
     history.append(Move("e2e4"), None, 15, None, 42)
     history.append(Move("e7e5"), None, 15, None, 42)
+    assert repr(history) == "History([Move.E2E4, Move.E7E5])"
+
     assert len(history) == 2
     history.pop()
     assert len(history) == 1

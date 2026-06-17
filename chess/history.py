@@ -10,6 +10,9 @@ class History:
         self.position_data_history: list[tuple[int, Square | None, int]]
         self.clear()
 
+    def __repr__(self) -> str:
+        return f"History({self.move_history!s})"
+
     def clear(self):
         self.move_history = []
         self.capture_history = []
