@@ -1,6 +1,6 @@
 import pytest
 
-from chess import MoveType, Move, Square
+from chess import MoveType, Move, Square, Board
 
 
 def test_move_type():
@@ -34,7 +34,11 @@ def test_move():
     with pytest.raises(ValueError, match="invalid move arguments"):
         Move(0, 0, 0, 0)
     with pytest.raises(ValueError, match="invalid move arguments"):
-        Move(Square("e2"), Square("e4"), 0, "x")
+        Move(0, 0, 0, 0, 0)
+    with pytest.raises(ValueError, match="invalid move arguments"):
+        Move(Square("e2"), Square("e4"), None, 0, "x")
+    with pytest.raises(ValueError, match="invalid move arguments"):
+        Move(Square("e2"), Square("e4"), Board(), 0, "x")
 
     move = Move("e2e4")
     assert move != []
@@ -60,7 +64,7 @@ def test_move():
     assert not move.type.flags
     assert move.string == "e7e8q"
 
-    move = Move(Square("e2"), Square("e4"), 3, None)
+    move = Move(Square("e2"), Square("e4"), Board(), 3, None)
     assert move != []
     assert move == "e2e4"
     assert move == Move("e2e4")
@@ -72,7 +76,7 @@ def test_move():
     assert move.type.flags == 3
     assert move.string == "e2e4"
 
-    move = Move(Square("e7"), Square("e8"), 5, 4)
+    move = Move(Square("e7"), Square("e8"), Board(), 5, 4)
     assert move != []
     assert move == "e7e8Q"
     assert move == Move("e7e8Q")

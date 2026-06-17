@@ -1,5 +1,5 @@
 from .square import Square
-from .piece import PieceType
+from .piece import PieceType, Piece
 
 PAWN_MOVE = 1
 PAWN_DOUBLE_MOVE = 2
@@ -48,6 +48,8 @@ class Move:
         self.source: Square
         self.target: Square
         self.promotion: PieceType | None
+        self.piece: Piece | None
+        self.capture: Piece | None
         self.type: MoveType
         self.string: str
 
@@ -60,16 +62,23 @@ class Move:
             self.source = Square(move_str[:2])
             self.target = Square(move_str[2:4])
             self.promotion = None if len(move_str) == 4 else PieceType(move_str[4].upper())
+            self.piece = None
+            self.capture = None
             self.type = MoveType(0)
-        elif len(args) == 4:
-            source, target, flags, promotion = args
+        elif len(args) == 5:
+            from .board import Board
+            source, target, board, flags, promotion = args
             if not isinstance(source, Square) or not isinstance(target, Square) or not isinstance(flags, int):
+                raise ValueError("invalid move arguments")
+            if not isinstance(board, Board):
                 raise ValueError("invalid move arguments")
             if promotion is not None and not isinstance(promotion, (PieceType, int)):
                 raise ValueError("invalid move arguments")
             self.source = source
             self.target = target
             self.promotion = promotion if (promotion is None or isinstance(promotion, PieceType)) else PieceType(promotion)
+            self.piece = board[source]
+            self.capture = board[target]
             self.type = MoveType(flags)
         else:
             raise ValueError("invalid move arguments")

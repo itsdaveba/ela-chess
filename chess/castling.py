@@ -36,6 +36,9 @@ class Castling:
     def __and__(self, other: str) -> int:
         return self.rights & flag_value[other]
 
+    def __bool__(self) -> bool:
+        return bool(self.rights)
+
     @property
     def string(self) -> str:
         string = [char for char in order if self.rights & flag_value[char]]

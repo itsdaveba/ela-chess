@@ -85,17 +85,20 @@ class Position:
     def in_check(self) -> bool:
         return self.board.in_check(self.white)
 
-    def is_legal_move(self, move: Move) -> bool:
+    def is_legal_move(self, move: Move | str) -> bool:
+        if isinstance(move, str):
+            move = Move(move)
+
         try:
             move = self.pseudo_legal_moves[self.pseudo_legal_moves.index(move)]
         except ValueError:
             return False
-        capture = self.board.make_move(self.white, move)
+        self.board.make_move(self.white, move)
 
         if self.board.in_check(self.white):
-            self.board.undo_move(self.white, move, capture)
+            self.board.undo_move(self.white, move)
             return False
-        self.board.undo_move(self.white, move, capture)
+        self.board.undo_move(self.white, move)
         return True
 
     def has_legal_moves(self) -> bool:
@@ -104,7 +107,7 @@ class Position:
                 return True
         return False
 
-    def _update_castling(self, piece: Piece, capture: Piece | None, move: Move) -> None:
+    def _update_castling(self, piece: Piece, move: Move) -> None:
         if piece.type == KING:
             self.castling.clear(castling_rook_squares[piece.white][0])
 
@@ -113,8 +116,8 @@ class Position:
                 if self.castling & flag and move.source == sqr_str:
                     self.castling.clear(flag)
 
-        if capture is not None and capture.type == ROOK:
-            for flag, sqr_str in zip(*castling_rook_squares[capture.white]):
+        if move.capture is not None and move.capture.type == ROOK:
+            for flag, sqr_str in zip(*castling_rook_squares[move.capture.white]):
                 if self.castling & flag and move.target == sqr_str:
                     self.castling.clear(flag)
 
@@ -126,17 +129,17 @@ class Position:
             move = self.pseudo_legal_moves[self.pseudo_legal_moves.index(move)]
         except ValueError:
             return False
-        capture = self.board.make_move(self.white, move)
+        self.board.make_move(self.white, move)
 
         if self.board.in_check(self.white):
-            self.board.undo_move(self.white, move, capture)
+            self.board.undo_move(self.white, move)
             return False
 
-        self.history.append(move, capture, self.castling.rights, self.epsquare, self.halfmove, self._pseudo_legal_moves)
+        self.history.append(move, self.castling.rights, self.epsquare, self.halfmove, self._pseudo_legal_moves)
 
         piece = self.board[move.target]
         assert piece is not None
-        self._update_castling(piece, capture, move)
+        self._update_castling(piece, move)
 
         self.epsquare = move.target + pawn_directions[not self.white] if move.type & PAWN_DOUBLE_MOVE else None
         self.halfmove = 0 if move.type & (PAWN_MOVE | CAPTURE) else self.halfmove + 1
@@ -152,9 +155,9 @@ class Position:
         if not self.history:
             raise ValueError("no previous moves")
 
-        move, capture, self.castling.rights, self.epsquare, self.halfmove, self._pseudo_legal_moves = self.history.pop()
+        move, self.castling.rights, self.epsquare, self.halfmove, self._pseudo_legal_moves = self.history.pop()
         self.white = not self.white
 
-        self.board.undo_move(self.white, move, capture)
+        self.board.undo_move(self.white, move)
         if not self.white:
             self.fullmove -= 1

@@ -62,8 +62,9 @@ def test_make_undo():
 
     # illegal move
     assert not position.make_move("e2e4")
+    assert not position.is_legal_move("e2e4")
 
-    # king in check
+    # king left in check
     assert position.make_move("d8a5")
     assert position.fen == "rnb1kbnr/pp1ppppp/8/q1p5/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3"
     assert not position.make_move("d2d4")
@@ -104,6 +105,7 @@ def test_make_undo():
     assert position.has_legal_moves()
     assert position.make_move("d8h4")
     assert position.fen == "rnb1kbnr/pppp1ppp/8/4p3/6Pq/5P2/PPPPP2P/RNBQKBNR w KQkq - 1 3"
+    assert position.in_check()
     assert not position.has_legal_moves()
 
 

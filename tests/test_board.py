@@ -87,6 +87,7 @@ def test_generate_moves():
     assert board.is_attacked(False, Square("h1"))
     assert not board.is_attacked(False, Square("h2"))
     assert not board.is_attacked(False, Square("h8"))
+    assert not board.is_attacked(False, None)
 
     # in check
     board.string = "8/8/3k4/2P5/4p3/4K3/8/8"
@@ -109,35 +110,35 @@ def test_make_undo():
 
     # pawn move
     move = moves[moves.index(Move("d2d3"))]
-    capture = board.make_move(True, move)
+    board.make_move(True, move)
     assert board.string == "3q4/4P3/8/5Pp1/3p4/1p1P3p/P6P/4K2R"
-    board.undo_move(True, move, capture)
+    board.undo_move(True, move)
     assert board.string == "3q4/4P3/8/5Pp1/3p4/1p5p/P2P3P/4K2R"
 
     # promotion
     move = moves[moves.index(Move("e7e8Q"))]
-    capture = board.make_move(True, move)
+    board.make_move(True, move)
     assert board.string == "3qQ3/8/8/5Pp1/3p4/1p5p/P2P3P/4K2R"
-    board.undo_move(True, move, capture)
+    board.undo_move(True, move)
     assert board.string == "3q4/4P3/8/5Pp1/3p4/1p5p/P2P3P/4K2R"
 
     # promotion and capture
     move = moves[moves.index(Move("e7d8Q"))]
-    capture = board.make_move(True, move)
+    board.make_move(True, move)
     assert board.string == "3Q4/8/8/5Pp1/3p4/1p5p/P2P3P/4K2R"
-    board.undo_move(True, move, capture)
+    board.undo_move(True, move)
     assert board.string == "3q4/4P3/8/5Pp1/3p4/1p5p/P2P3P/4K2R"
 
     # ep capture
     move = moves[moves.index(Move("f5g6"))]
-    capture = board.make_move(True, move)
+    board.make_move(True, move)
     assert board.string == "3q4/4P3/6P1/8/3p4/1p5p/P2P3P/4K2R"
-    board.undo_move(True, move, capture)
+    board.undo_move(True, move)
     assert board.string == "3q4/4P3/8/5Pp1/3p4/1p5p/P2P3P/4K2R"
 
     # castle
     move = moves[moves.index(Move("e1g1"))]
-    capture = board.make_move(True, move)
+    board.make_move(True, move)
     assert board.string == "3q4/4P3/8/5Pp1/3p4/1p5p/P2P3P/5RK1"
-    board.undo_move(True, move, capture)
+    board.undo_move(True, move)
     assert board.string == "3q4/4P3/8/5Pp1/3p4/1p5p/P2P3P/4K2R"

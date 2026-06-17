@@ -25,10 +25,14 @@ def test_human(monkeypatch):
 
 
 def test_engine():
-    player = Engine(uci=True)
     position = Position()
 
+    player = Engine(uci=True)
     assert repr(player) == "Engine(uci=True)"
+    move = player.search(position)
+    assert move is not None
 
+    player = Engine(uci=False)
+    assert repr(player) == "Engine(uci=False)"
     move = player.search(position)
     assert move is not None
