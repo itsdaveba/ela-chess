@@ -16,7 +16,13 @@ piece_name = {
 color_name = ["BLACK", "WHITE"]
 
 
-class PieceType:
+class Meta(type):
+    def __iter__(cls):
+        for value in range(6):
+            yield cls(value)
+
+
+class PieceType(metaclass=Meta):
     def __init__(self, val: int | str) -> None:
         self.value: int
         self.name: str
@@ -46,6 +52,9 @@ class PieceType:
                 return self.value == other
             return False
         return self.value == other.value
+
+    def __hash__(self) -> int:
+        return hash(self.value)
 
 
 class Piece:

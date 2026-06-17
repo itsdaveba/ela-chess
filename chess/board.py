@@ -43,9 +43,9 @@ piece_directions: dict[int, list[tuple[int, int]]] = {
 castling_rook_info = {Square("g1"): (Square("f1"), Square("h1")), Square("c1"): (Square("d1"), Square("a1")),
                       Square("g8"): (Square("f8"), Square("h8")), Square("c8"): (Square("d8"), Square("a8"))}
 castling_king_info = [
-    ("kq", ([Square("f8"), Square("g8")], [Square("d8"), Square("c8"), Square("b8")]),
+    ("kq", [Square("e8"), Square("e8")], ([Square("f8"), Square("g8")], [Square("d8"), Square("c8"), Square("b8")]),
      ([Square("e8"), Square("f8"), Square("g8")], [Square("e8"), Square("d8"), Square("c8")]), [Square("g8"), Square("c8")]),
-    ("KQ", ([Square("f1"), Square("g1")], [Square("d1"), Square("c1"), Square("b1")]),
+    ("KQ", [Square("e1"), Square("e1")], ([Square("f1"), Square("g1")], [Square("d1"), Square("c1"), Square("b1")]),
      ([Square("e1"), Square("f1"), Square("g1")], [Square("e1"), Square("d1"), Square("c1")]), [Square("g1"), Square("c1")])
 ]
 
@@ -53,8 +53,8 @@ castling_king_info = [
 class Board:
     def __init__(self) -> None:
         self.grid: dict[Square, Piece | None]
-        self.king_square: list[Square | None]
-        self.pawn_squares: list[set[Square]]
+        self.piece_squares: list[dict[PieceType, set[Square]]]
+
         self.clear()
 
     def __repr__(self) -> str:
@@ -118,24 +118,21 @@ class Board:
                 raise ValueError(f"invalid board string: '{string}'")
 
         self.clear()
+
         for square in Square:
             piece = grid[square.rank.value][square.file.value]
             self.grid[square] = piece
             if piece is not None:
-                if piece.type == KING:
-                    self.king_square[piece.white] = square
-                elif piece.type == PAWN:
-                    self.pawn_squares[piece.white].add(square)
+                self.piece_squares[piece.white][piece.type].add(square)
+
+        if len(self.piece_squares[True][PieceType(KING)]) != 1 or len(self.piece_squares[False][PieceType(KING)]) != 1:
+            print("warning: invalid number of kings")
 
     def clear(self):
         self.grid = {square: None for square in Square}
-        self.king_square = [None, None]
-        self.pawn_squares = [set(), set()]
+        self.piece_squares = [{type: set() for type in PieceType}, {type: set() for type in PieceType}]
 
-    def is_attacked(self, white: bool, square: Square | None) -> bool:  # TODO improve, do not generate all moves
-        if square is None:
-            return False
-
+    def is_attacked(self, white: bool, square: Square) -> bool:  # TODO improve, do not generate all moves
         for move in self.generate_pseudo_legal_moves(white):
             if not move.type & PAWN_MOVE and move.target == square:
                 return True
@@ -154,55 +151,66 @@ class Board:
         return False
 
     def in_check(self, white: bool) -> bool:
-        return self.is_attacked(not white, self.king_square[white])
+        king_square_set = self.piece_squares[white][PieceType(KING)]
+        if not king_square_set:
+            return False
+        return self.is_attacked(not white, next(iter(king_square_set)))
+
+    def _make_piece_square(self, white: bool, move: Move):
+        assert move.piece is not None
+        self.piece_squares[white][move.piece.type].remove(move.source)
+        if move.type & PROMOTION:
+            assert move.promotion is not None
+            self.piece_squares[white][move.promotion].add(move.target)
+        else:
+            self.piece_squares[white][move.piece.type].add(move.target)
+
+        if move.capture is not None:
+            self.piece_squares[not white][move.capture.type].remove(move.target)
+
+    def _undo_piece_square(self, white: bool, move: Move):
+        assert move.piece is not None
+        self.piece_squares[white][move.piece.type].add(move.source)
+        if move.piece.type == PAWN and move.type & PROMOTION:
+            assert move.promotion is not None
+            self.piece_squares[white][move.promotion].remove(move.target)
+        else:
+            self.piece_squares[white][move.piece.type].remove(move.target)
+
+        if move.capture is not None:
+            self.piece_squares[not white][move.capture.type].add(move.target)
 
     def make_move(self, white: bool, move: Move):
         self.grid[move.target] = Piece(white, move.promotion) if move.type & PROMOTION else move.piece
         self.grid[move.source] = None
-
-        assert move.piece is not None
-        if move.piece.type == KING:
-            self.king_square[white] = move.target
-        elif move.piece.type == PAWN:
-            self.pawn_squares[white].remove(move.source)
-            if not move.type & PROMOTION:
-                self.pawn_squares[white].add(move.target)
-
-        if move.capture is not None and move.capture.type == PAWN:
-            self.pawn_squares[not white].remove(move.target)
+        self._make_piece_square(white, move)
 
         if move.type & EP_CAPTURE:
+            assert move.piece is not None
             self.grid[move.target + pawn_directions[not white]] = None
-            self.pawn_squares[not white].remove(move.target + pawn_directions[not white])
+            self.piece_squares[not white][move.piece.type].remove(move.target + pawn_directions[not white])
 
         elif move.type & CASTLE:
             free_sqr, rook_sqr = castling_rook_info[move.target]
             self.grid[free_sqr] = self.grid[rook_sqr]
             self.grid[rook_sqr] = None
+            self.piece_squares[white][PieceType(ROOK)] ^= {rook_sqr, free_sqr}
 
     def undo_move(self, white: bool, move: Move) -> None:
         self.grid[move.source] = Piece(white, PieceType(PAWN)) if move.type & PROMOTION else move.piece
         self.grid[move.target] = move.capture
-
-        assert move.piece is not None
-        if move.piece.type == KING:
-            self.king_square[white] = move.source
-        elif move.piece.type == PAWN:
-            if not move.type & PROMOTION:
-                self.pawn_squares[white].remove(move.target)
-            self.pawn_squares[white].add(move.source)
-
-        if move.capture is not None and move.capture.type == PAWN:
-            self.pawn_squares[not white].add(move.target)
+        self._undo_piece_square(white, move)
 
         if move.type & EP_CAPTURE:
+            assert move.piece is not None
             self.grid[move.target + pawn_directions[not white]] = Piece(not white, PieceType(PAWN))
-            self.pawn_squares[not white].add(move.target + pawn_directions[not white])
+            self.piece_squares[not white][move.piece.type].add(move.target + pawn_directions[not white])
 
         elif move.type & CASTLE:
             free_sqr, rook_sqr = castling_rook_info[move.target]
             self.grid[rook_sqr] = self.grid[free_sqr]
             self.grid[free_sqr] = None
+            self.piece_squares[white][PieceType(ROOK)] ^= {rook_sqr, free_sqr}
 
     def _pawn_single_moves(self, white: bool, source: Square, target: Square, is_capture: bool) -> list[Move]:
         flags = (PAWN_MOVE | CAPTURE) if is_capture else PAWN_MOVE
@@ -252,10 +260,10 @@ class Board:
 
         return moves
 
-    def _piece_moves(self, white: bool, source: Square, piece: Piece) -> list[Move]:
+    def _piece_moves(self, white: bool, source: Square, type: PieceType) -> list[Move]:
         moves: list[Move] = []
 
-        for direction in piece_directions[piece.type.value]:
+        for direction in piece_directions[type.value]:
             target = source
             while True:
                 try:
@@ -268,7 +276,7 @@ class Board:
                         moves.append(Move(source, target, self, CAPTURE, None))
                     break
                 moves.append(Move(source, target, self, 0, None))
-                if not piece.type.sliding:
+                if not type.sliding:
                     break
 
         return moves
@@ -285,27 +293,24 @@ class Board:
     def _castle_moves(self, white: bool, castling: Castling) -> list[Move]:
         moves: list[Move] = []
 
-        for flag, empty_sqrs, no_attacked_sqrs, target in zip(*castling_king_info[white]):
+        for flag, source, empty_sqrs, no_attacked_sqrs, target in zip(*castling_king_info[white]):
             if castling & flag and self._can_castle(white, empty_sqrs, no_attacked_sqrs):
-                moves.append(Move(self.king_square[white], target, self, CASTLE, None))
+                moves.append(Move(source, target, self, CASTLE, None))
 
         return moves
 
     def generate_pseudo_legal_moves(self, white: bool, castling: Castling = Castling(0),
-                                    epsquare: Square | None = None) -> list[Move]:  # TODO improve, do not iterate over all squares
+                                    epsquare: Square | None = None) -> list[Move]:
         moves: list[Move] = []
 
-        for source in Square:
-            piece = self.grid[source]
-            if piece is None or piece.white != white:
-                continue
-            if piece.type != PAWN:
-                moves.extend(self._piece_moves(white, source, piece))
+        for type, squares in self.piece_squares[white].items():
+            for source in squares:
+                if type == PAWN:
+                    moves.extend(self._pawn_moves(white, source, epsquare))
+                else:
+                    moves.extend(self._piece_moves(white, source, type))
 
-        for source in self.pawn_squares[white]:
-            moves.extend(self._pawn_moves(white, source, epsquare))
-
-        if castling:
+        if castling & castling_king_info[white][0]:
             moves.extend(self._castle_moves(white, castling))
 
         return moves

@@ -87,7 +87,6 @@ def test_generate_moves():
     assert board.is_attacked(False, Square("h1"))
     assert not board.is_attacked(False, Square("h2"))
     assert not board.is_attacked(False, Square("h8"))
-    assert not board.is_attacked(False, None)
 
     # in check
     board.string = "8/8/3k4/2P5/4p3/4K3/8/8"

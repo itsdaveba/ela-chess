@@ -13,6 +13,7 @@ def test_piece_type():
     assert type != 'P'
     assert type == 0
     assert type == PieceType(0)
+    assert hash(type) == hash(PieceType(0))
     assert repr(type) == "PieceType.PAWN"
     assert type.value == 0
     assert type.name == "PAWN"
@@ -23,11 +24,14 @@ def test_piece_type():
     assert type != 'B'
     assert type == 2
     assert type == PieceType('B')
+    assert hash(type) == hash(PieceType('B'))
     assert repr(type) == "PieceType.BISHOP"
     assert type.value == 2
     assert type.name == "BISHOP"
     assert type.char == 'B'
     assert type.sliding
+
+    assert len(list(PieceType)) == 6
 
 
 def test_piece():
