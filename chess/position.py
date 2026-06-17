@@ -21,6 +21,8 @@ class Position:
         self.fullmove: int
         self.history: History
 
+        self._pseudo_legal_moves: list[Move]
+
         self.fen = fen
 
     def __repr__(self) -> str:
@@ -34,7 +36,9 @@ class Position:
 
     @property
     def pseudo_legal_moves(self) -> list[Move]:  # TODO change this to legal moves
-        return self.board.generate_pseudo_legal_moves(self.white, self.castling, self.epsquare)
+        if not self._pseudo_legal_moves:
+            self._pseudo_legal_moves = self.board.generate_pseudo_legal_moves(self.white, self.castling, self.epsquare)
+        return self._pseudo_legal_moves
 
     @property
     def fen(self) -> str:
@@ -73,6 +77,8 @@ class Position:
 
         self.history = History()
 
+        self._pseudo_legal_moves = []
+
     def reset(self) -> None:
         self.fen = INITIAL_FEN
 
@@ -80,10 +86,10 @@ class Position:
         return self.board.in_check(self.white)
 
     def is_legal_move(self, move: Move) -> bool:
-        if move not in self.pseudo_legal_moves:
+        try:
+            move = self.pseudo_legal_moves[self.pseudo_legal_moves.index(move)]
+        except ValueError:
             return False
-
-        move = self.pseudo_legal_moves[self.pseudo_legal_moves.index(move)]
         capture = self.board.make_move(self.white, move)
 
         if self.board.in_check(self.white):
@@ -116,17 +122,17 @@ class Position:
         if isinstance(move, str):
             move = Move(move)
 
-        if move not in self.pseudo_legal_moves:
+        try:
+            move = self.pseudo_legal_moves[self.pseudo_legal_moves.index(move)]
+        except ValueError:
             return False
-
-        move = self.pseudo_legal_moves[self.pseudo_legal_moves.index(move)]
         capture = self.board.make_move(self.white, move)
 
         if self.board.in_check(self.white):
             self.board.undo_move(self.white, move, capture)
             return False
 
-        self.history.append(move, capture, self.castling.rights, self.epsquare, self.halfmove)
+        self.history.append(move, capture, self.castling.rights, self.epsquare, self.halfmove, self._pseudo_legal_moves)
 
         piece = self.board[move.target]
         assert piece is not None
@@ -138,13 +144,15 @@ class Position:
             self.fullmove += 1
         self.white = not self.white
 
+        self._pseudo_legal_moves = []
+
         return True
 
     def undo_move(self) -> None:
         if not self.history:
             raise ValueError("no previous moves")
 
-        move, capture, self.castling.rights, self.epsquare, self.halfmove = self.history.pop()
+        move, capture, self.castling.rights, self.epsquare, self.halfmove, self._pseudo_legal_moves = self.history.pop()
         self.white = not self.white
 
         self.board.undo_move(self.white, move, capture)

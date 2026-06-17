@@ -11,6 +11,9 @@ class ChessGame:
     def __init__(self) -> None:
         self.position: Position = Position()
 
+    def __repr__(self) -> str:
+        return f"ChessGame('{self.position.fen}')"
+
     def play(self, fen: str | None, wplayer: str, bplayer: str) -> str:
         if fen is None:
             fen = INITIAL_FEN

@@ -5,6 +5,7 @@ from chess import ChessGame
 
 def test_game(monkeypatch):
     game = ChessGame()
+    assert repr(game) == "ChessGame('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1')"
 
     monkeypatch.setattr("sys.stdin", StringIO("resign\n"))
     assert game.play(None, "human", "engine") == "White resigns: 0-1"

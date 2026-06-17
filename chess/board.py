@@ -120,7 +120,7 @@ class Board:
     def clear(self):
         self.grid = {square: None for square in Square}
 
-    def is_attacked(self, white: bool, square: Square) -> bool:
+    def is_attacked(self, white: bool, square: Square) -> bool:  # TODO improve, do not generate all moves
         for move in self.generate_pseudo_legal_moves(white):
             if not move.type & PAWN_MOVE and move.target == square:
                 return True
@@ -138,7 +138,7 @@ class Board:
                 return True
         return False
 
-    def in_check(self, white: bool) -> bool:
+    def in_check(self, white: bool) -> bool:  # TODO improve, do not iterate over all square
         for square in Square:
             piece = self.grid[square]
             if piece is not None and piece.type == KING and piece.white == white:
@@ -261,7 +261,7 @@ class Board:
         return moves
 
     def generate_pseudo_legal_moves(self, white: bool, castling: Castling = Castling(0),
-                                    epsquare: Square | None = None) -> list[Move]:
+                                    epsquare: Square | None = None) -> list[Move]:  # TODO improve, do not iterate over all squares
         moves: list[Move] = []
 
         for source in Square:
