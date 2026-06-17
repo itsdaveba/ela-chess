@@ -45,10 +45,10 @@ if __name__ == "__main__":
             case "go":
                 subcommand = line[1] if line[1:] else "infinite"
 
-                if subcommand == "infinite":
-                    threading.Thread(target=engine.search, args=[position, -1]).start()
-                elif subcommand == "depth":
+                if subcommand == "depth":
                     threading.Thread(target=engine.search, args=[position, int(line[2])]).start()
+                else:
+                    threading.Thread(target=engine.search, args=[position, -1]).start()
 
             case "stop":
                 pass
