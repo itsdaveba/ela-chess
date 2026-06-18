@@ -31,13 +31,13 @@ SOUTH_WEST_WEST = (-2, 1)
 
 
 pawn_directions = [SOUTH, NORTH]
-piece_directions: dict[int, list[tuple[int, int]]] = {
-    KNIGHT: [NORTH_EAST_NORTH, NORTH_EAST_EAST, NORTH_WEST_NORTH, NORTH_WEST_WEST,
-             SOUTH_EAST_SOUTH, SOUTH_EAST_EAST, SOUTH_WEST_SOUTH, SOUTH_WEST_WEST],
-    BISHOP: [NORTH_EAST, NORTH_WEST, SOUTH_EAST, SOUTH_WEST],
-    ROOK: [NORTH, SOUTH, EAST, WEST],
-    QUEEN: [NORTH_EAST, NORTH_WEST, SOUTH_EAST, SOUTH_WEST, NORTH, SOUTH, EAST, WEST],
-    KING: [NORTH_EAST, NORTH_WEST, SOUTH_EAST, SOUTH_WEST, NORTH, SOUTH, EAST, WEST],
+piece_directions: dict[PieceType, list[tuple[int, int]]] = {
+    PieceType(KNIGHT): [NORTH_EAST_NORTH, NORTH_EAST_EAST, NORTH_WEST_NORTH, NORTH_WEST_WEST,
+                        SOUTH_EAST_SOUTH, SOUTH_EAST_EAST, SOUTH_WEST_SOUTH, SOUTH_WEST_WEST],
+    PieceType(BISHOP): [NORTH_EAST, NORTH_WEST, SOUTH_EAST, SOUTH_WEST],
+    PieceType(ROOK): [NORTH, SOUTH, EAST, WEST],
+    PieceType(QUEEN): [NORTH_EAST, NORTH_WEST, SOUTH_EAST, SOUTH_WEST, NORTH, SOUTH, EAST, WEST],
+    PieceType(KING): [NORTH_EAST, NORTH_WEST, SOUTH_EAST, SOUTH_WEST, NORTH, SOUTH, EAST, WEST],
 }
 
 castling_rook_info = {Square("g1"): (Square("f1"), Square("h1")), Square("c1"): (Square("d1"), Square("a1")),
@@ -62,6 +62,7 @@ class Board:
 
     def __str__(self) -> str:
         string = ["+-----------------+"]
+
         for r, rank in enumerate(Rank):
             row = ["|"]
             for file in File:
@@ -69,8 +70,10 @@ class Board:
                 row.append("." if piece is None else piece.char)
             row.extend(["|", str(8 - r)])
             string.append(" ".join(row))
+
         string.append("+-----------------+")
         string.append("  a b c d e f g h")
+
         return "\n".join(string)
 
     def __getitem__(self, key: Square) -> Piece | None:
@@ -126,7 +129,7 @@ class Board:
                 self.piece_squares[piece.white][piece.type].add(square)
 
         if len(self.piece_squares[True][PieceType(KING)]) != 1 or len(self.piece_squares[False][PieceType(KING)]) != 1:
-            print("warning: invalid number of kings")
+            print("warning: invalid number of kings")  # TODO Warning
 
     def clear(self):
         self.grid = {square: None for square in Square}
@@ -171,7 +174,7 @@ class Board:
     def _undo_piece_square(self, white: bool, move: Move):
         assert move.piece is not None
         self.piece_squares[white][move.piece.type].add(move.source)
-        if move.piece.type == PAWN and move.type & PROMOTION:
+        if move.type & PROMOTION:
             assert move.promotion is not None
             self.piece_squares[white][move.promotion].remove(move.target)
         else:
@@ -263,7 +266,7 @@ class Board:
     def _piece_moves(self, white: bool, source: Square, type: PieceType) -> list[Move]:
         moves: list[Move] = []
 
-        for direction in piece_directions[type.value]:
+        for direction in piece_directions[type]:
             target = source
             while True:
                 try:
