@@ -1,6 +1,6 @@
 import pytest
 
-from chess import Board, Square, Castling, Move
+from chess import Board, Square, Castling, Move, PieceType
 
 
 def test_string():
@@ -14,9 +14,13 @@ def test_string():
     assert repr(board) == "Board('8/8/8/8/8/8/8/8')"
     assert board.string == "8/8/8/8/8/8/8/8"
     assert board[Square("a1")] is None
+    assert not board.pieces[False]
+    assert not board.pieces[True]
 
     board.string = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
     assert board.string == "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
+    assert board.pieces[False][PieceType('P')] == 8
+    assert board.pieces[True][PieceType('P')] == 8
 
     board.string = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R"
     assert board.string == "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R"

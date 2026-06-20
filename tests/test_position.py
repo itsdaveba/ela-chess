@@ -1,6 +1,6 @@
 import pytest
 
-from chess import Position, Move
+from chess import Position, Move, PieceType
 
 
 def test_fen():
@@ -21,6 +21,8 @@ def test_fen():
     assert position.epsquare is None
     assert position.halfmove == 0
     assert position.fullmove == 1
+    assert position.pieces[False][PieceType('P')] == 8
+    assert position.pieces[True][PieceType('P')] == 8
 
     position = Position("r3k2r/p1ppqpb1/bn2pnp1/3PN3/Pp2P3/2N2Q1p/1PPBBPPP/R3K2R b Kq a3 5 8")
     assert repr(position) == "Position('r3k2r/p1ppqpb1/bn2pnp1/3PN3/Pp2P3/2N2Q1p/1PPBBPPP/R3K2R b Kq a3 5 8')"
@@ -102,11 +104,11 @@ def test_make_undo():
 
     # has legal moves
     position.fen = "rnbqkbnr/pppp1ppp/8/4p3/6P1/5P2/PPPPP2P/RNBQKBNR b KQkq - 0 2"
-    assert position.has_legal_moves()
+    assert position.has_legal_moves
     assert position.make_move("d8h4")
     assert position.fen == "rnb1kbnr/pppp1ppp/8/4p3/6Pq/5P2/PPPPP2P/RNBQKBNR w KQkq - 1 3"
-    assert position.in_check()
-    assert not position.has_legal_moves()
+    assert position.in_check
+    assert not position.has_legal_moves
 
 
 def test_perf():

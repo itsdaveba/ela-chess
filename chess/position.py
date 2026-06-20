@@ -1,8 +1,8 @@
 from .square import Square
 from .history import History
 from .castling import Castling
-from .piece import Piece, ROOK, KING
 from .board import Board, pawn_directions
+from .piece import PieceType, Piece, ROOK, KING
 from .move import Move, PAWN_MOVE, PAWN_DOUBLE_MOVE, CAPTURE
 
 
@@ -79,11 +79,23 @@ class Position:
 
         self._pseudo_legal_moves = []
 
-    def reset(self) -> None:
-        self.fen = INITIAL_FEN
+    @property
+    def pieces(self) -> list[dict[PieceType, int]]:
+        return self.board.pieces
 
+    @property
     def in_check(self) -> bool:
         return self.board.in_check(self.white)
+
+    @property
+    def has_legal_moves(self) -> bool:
+        for move in self.pseudo_legal_moves:
+            if self.is_legal_move(move):
+                return True
+        return False
+
+    def reset(self) -> None:
+        self.fen = INITIAL_FEN
 
     def is_legal_move(self, move: Move | str) -> bool:
         if isinstance(move, str):
@@ -100,12 +112,6 @@ class Position:
             return False
         self.board.undo_move(self.white, move)
         return True
-
-    def has_legal_moves(self) -> bool:
-        for move in self.pseudo_legal_moves:
-            if self.is_legal_move(move):
-                return True
-        return False
 
     def _update_castling(self, piece: Piece, move: Move) -> None:
         if piece.type == KING:
@@ -137,9 +143,8 @@ class Position:
 
         self.history.append(move, self.castling.rights, self.epsquare, self.halfmove, self._pseudo_legal_moves)
 
-        piece = self.board[move.target]
-        assert piece is not None
-        self._update_castling(piece, move)
+        assert move.piece is not None
+        self._update_castling(move.piece, move)
 
         self.epsquare = move.target + pawn_directions[not self.white] if move.type & PAWN_DOUBLE_MOVE else None
         self.halfmove = 0 if move.type & (PAWN_MOVE | CAPTURE) else self.halfmove + 1

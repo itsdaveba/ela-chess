@@ -131,6 +131,18 @@ class Board:
         if len(self.piece_squares[True][PieceType(KING)]) != 1 or len(self.piece_squares[False][PieceType(KING)]) != 1:
             print("warning: invalid number of kings")  # TODO Warning
 
+    @property
+    def pieces(self) -> list[dict[PieceType, int]]:
+        pieces = [{}, {}]
+
+        for white in (False, True):
+            for type in PieceType:
+                num = len(self.piece_squares[white][type])
+                if num:
+                    pieces[white][type] = num
+
+        return pieces
+
     def clear(self):
         self.grid = {square: None for square in Square}
         self.piece_squares = [{type: set() for type in PieceType}, {type: set() for type in PieceType}]

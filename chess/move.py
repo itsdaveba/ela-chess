@@ -51,6 +51,7 @@ class Move:
         self.piece: Piece | None
         self.capture: Piece | None
         self.type: MoveType
+        self.score = int
         self.string: str
 
         if len(args) == 1:
@@ -83,6 +84,7 @@ class Move:
         else:
             raise ValueError("invalid move arguments")
 
+        self.score = 0
         self.string = self.source.string + self.target.string + ('' if self.promotion is None else self.promotion.char.lower())
 
     def __repr__(self) -> str:

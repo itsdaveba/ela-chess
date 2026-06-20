@@ -34,9 +34,9 @@ class ChessGame:
 
             self.position.make_move(move)
 
-            in_check = self.position.in_check()
+            in_check = self.position.in_check  # TODO make cached property
 
-            if not self.position.has_legal_moves():
+            if not self.position.has_legal_moves:
                 if in_check:
                     print("\nCheckmate!")
                     outcome = f"{player_name[not self.position.white]} wins: {result[not self.position.white]}"
