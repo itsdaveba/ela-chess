@@ -2,12 +2,14 @@ from enum import Enum
 
 
 class Piece(int, Enum):
-    PAWN = 0
-    KNIGHT = 1
-    BISHOP = 2
-    ROOK = 3
-    QUEEN = 4
-    KING = 5
+    NONE = 0
+
+    PAWN = 1
+    KNIGHT = 2
+    BISHOP = 3
+    ROOK = 4
+    QUEEN = 5
+    KING = 6
 
     @classmethod
     def from_char(cls, char: str) -> "Piece":
@@ -15,12 +17,22 @@ class Piece(int, Enum):
             raise ValueError(f"invalid piece char: '{char}'")
 
         try:
-            return cls(to_char.index(char))
-        except ValueError:
+            return from_char[char]
+        except KeyError:
             raise ValueError(f"invalid piece char: '{char}'")
 
-    def to_char(self) -> str:
+    @property
+    def char(self) -> str:
         return to_char[self]
 
 
-to_char: str = "PNBRQK"
+to_char: str = ".PNBRQK"
+from_char: dict[str, Piece] = {
+    ".": Piece.NONE,
+    "P": Piece.PAWN,
+    "N": Piece.KNIGHT,
+    "B": Piece.BISHOP,
+    "R": Piece.ROOK,
+    "Q": Piece.QUEEN,
+    "K": Piece.KING
+}
