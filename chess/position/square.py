@@ -2,6 +2,8 @@ from enum import Enum
 
 
 class Square(int, Enum):
+    NONE = -1
+
     A8 = 0
     B8 = 1
     C8 = 2
@@ -76,8 +78,17 @@ class Square(int, Enum):
 
     @classmethod
     def from_string(cls, string: str) -> "Square":
-        return Square[string]
+        if string == "-":
+            return Square.NONE
+        if len(string) != 2:
+            raise ValueError(f"invalid square string: '{string}'")
+        try:
+            return Square[string.upper()]
+        except KeyError:
+            raise ValueError(f"invalid square string: '{string}'")
 
     @property
     def string(self) -> str:
-        return self.name
+        if self == Square.NONE:
+            return "-"
+        return self.name.lower()

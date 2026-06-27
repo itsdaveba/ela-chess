@@ -2,14 +2,14 @@ from enum import Enum
 
 
 class Piece(int, Enum):
-    NONE = 0
+    NONE = -1
 
-    PAWN = 1
-    KNIGHT = 2
-    BISHOP = 3
-    ROOK = 4
-    QUEEN = 5
-    KING = 6
+    PAWN = 0
+    KNIGHT = 1
+    BISHOP = 2
+    ROOK = 3
+    QUEEN = 4
+    KING = 5
 
     @classmethod
     def from_char(cls, char: str) -> "Piece":
@@ -26,13 +26,13 @@ class Piece(int, Enum):
         return to_char[self]
 
 
-to_char: str = ".PNBRQK"
+to_char: str = "PNBRQK."
 from_char: dict[str, Piece] = {
-    ".": Piece.NONE,
     "P": Piece.PAWN,
     "N": Piece.KNIGHT,
     "B": Piece.BISHOP,
     "R": Piece.ROOK,
     "Q": Piece.QUEEN,
-    "K": Piece.KING
+    "K": Piece.KING,
+    ".": Piece.NONE
 }
