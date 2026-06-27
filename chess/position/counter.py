@@ -1,8 +1,13 @@
 class Counter:
+    def __init__(self, value: int) -> None:
+        self.value: int = value
+
     @classmethod
     def from_string(cls, string: str) -> "Counter":
-        return Counter()
+        if string.isdigit():
+            return Counter(int(string))
+        raise ValueError(f"invalid counter string '{string}'")
 
     @property
     def string(self) -> str:
-        return ""
+        return str(self.value)
