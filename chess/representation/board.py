@@ -7,18 +7,31 @@ EMPTY_BOARD_STRING = "8/8/8/8/8/8/8/8"
 
 class Board:
     def __init__(self, string: str = EMPTY_BOARD_STRING) -> None:
-        self.color: list[Color | None] = [None] * 64
-        self.piece: list[Piece | None] = [None] * 64
+        self.color: list[Color]
+        self.piece: list[Piece]
 
-        self.set_string(string)
+        self.string = string
 
     def __repr__(self) -> str:
-        return self.get_string()
+        return self.string
 
     def __str__(self) -> str:
-        return self.get_display_string()
+        ranks = []
 
-    def get_string(self) -> str:
+        for r in range(8):
+            rank = []
+            color_rank = self.color[r * 8:]
+            piece_rank = self.piece[r * 8:]
+            for f in range(8):
+                piece = piece_rank[f]
+                char = piece.char
+                rank.append(char if color_rank[f] == Color.WHITE else char.lower())
+            ranks.append(" ".join(rank))
+
+        return "\n".join(ranks)
+
+    @property
+    def string(self) -> str:
         ranks = []
 
         for r in range(8):
@@ -26,20 +39,21 @@ class Board:
             count = 0
             for f in range(8):
                 piece = self.piece[r * 8 + f]
-                if piece is None:
+                if piece == Piece.NONE:
                     count += 1
                     continue
                 if count:
                     rank += str(count)
                     count = 0
-                rank += piece.to_char() if self.color[r * 8 + f] == Color.WHITE else piece.to_char().lower()
+                rank += piece.char if self.color[r * 8 + f] == Color.WHITE else piece.char.lower()
             if count:
                 rank += str(count)
             ranks.append(rank)
 
         return "/".join(ranks)
 
-    def set_string(self, string: str):
+    @string.setter
+    def string(self, string: str) -> None:
         self.color = []
         self.piece = []
 
@@ -52,8 +66,8 @@ class Board:
             piece_rank = []
             for char in rank:
                 if char.isdigit():
-                    color_rank.extend([None] * int(char))
-                    piece_rank.extend([None] * int(char))
+                    color_rank.extend([Color.WHITE] * int(char))
+                    piece_rank.extend([Piece.NONE] * int(char))
                 else:
                     color_rank.append(Color.WHITE if char.isupper() else Color.BLACK)
                     piece_rank.append(Piece.from_char(char.upper()))
@@ -62,18 +76,3 @@ class Board:
 
             self.color.extend(color_rank)
             self.piece.extend(piece_rank)
-
-    def get_display_string(self) -> str:
-        ranks = []
-
-        for r in range(8):
-            rank = []
-            color_rank = self.color[r * 8:]
-            piece_rank = self.piece[r * 8:]
-            for f in range(8):
-                piece = piece_rank[f]
-                char = "." if piece is None else piece.to_char()
-                rank.append(char if color_rank[f] == Color.WHITE else char.lower())
-            ranks.append(" ".join(rank))
-
-        return "\n".join(ranks)
