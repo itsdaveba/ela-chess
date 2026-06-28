@@ -13,9 +13,6 @@ class Piece(int, Enum):
 
     @classmethod
     def from_char(cls, char: str) -> "Piece":
-        if len(char) != 1:
-            raise ValueError(f"invalid piece char: '{char}'")
-
         try:
             return from_char[char]
         except KeyError:

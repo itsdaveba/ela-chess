@@ -7,12 +7,18 @@ class Color(int, Enum):
 
     @classmethod
     def from_char(cls, char: str) -> "Color":
-        if char == "w":
-            return Color.WHITE
-        elif char == "b":
-            return Color.BLACK
-        raise ValueError(f"invalid color char: '{char}'")
+        try:
+            return from_char[char]
+        except KeyError:
+            raise ValueError(f"invalid color char: '{char}'")
 
     @property
     def char(self) -> str:
-        return "wb"[self]
+        return to_char[self]
+
+
+to_char = "wb"
+from_char: dict[str, Color] = {
+    "w": Color.WHITE,
+    "b": Color.BLACK
+}
