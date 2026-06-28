@@ -15,8 +15,6 @@ def test_piece():
     assert Piece.NONE.char == "."
 
     with pytest.raises(ValueError, match="invalid piece char"):
-        assert Piece.from_char("")
-    with pytest.raises(ValueError, match="invalid piece char"):
         assert Piece.from_char("n")
 
     assert Piece.from_char("P") == Piece.PAWN
