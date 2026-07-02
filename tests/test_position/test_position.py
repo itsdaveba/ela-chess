@@ -1,4 +1,14 @@
+import pytest
+
 from chess import Position
+
+
+def test_position():
+    with pytest.raises(ValueError, match="invalid fen"):
+        Position("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR")
+
+    position = Position()
+    assert position.fen == "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
 
 def test_fen():
