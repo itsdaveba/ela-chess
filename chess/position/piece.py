@@ -24,13 +24,12 @@ class Piece(int, Enum):
         return to_char[self]
 
 
-to_char: str = "PNBRQK."
+to_char: str = "PNBRQK*."
 from_char: dict[str, Piece] = {
     "P": Piece.PAWN,
     "N": Piece.KNIGHT,
     "B": Piece.BISHOP,
     "R": Piece.ROOK,
     "Q": Piece.QUEEN,
-    "K": Piece.KING,
-    ".": Piece.NONE
+    "K": Piece.KING
 }
