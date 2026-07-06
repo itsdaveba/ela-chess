@@ -2,6 +2,8 @@ from enum import Enum
 
 
 class Color(int, Enum):
+    NONE = -1
+
     WHITE = 0
     BLACK = 1
 
@@ -17,7 +19,7 @@ class Color(int, Enum):
         return to_char[self]
 
 
-to_char = "wb"
+to_char = "wb-"
 from_char: dict[str, Color] = {
     "w": Color.WHITE,
     "b": Color.BLACK

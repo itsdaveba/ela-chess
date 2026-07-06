@@ -2,6 +2,7 @@ from enum import Enum
 
 
 class Piece(int, Enum):
+    OFF = -2
     NONE = -1
 
     PAWN = 0
