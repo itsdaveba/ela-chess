@@ -1,13 +1,21 @@
 import pytest
 
-from chess import Square
+from chess import Square, File, Rank
 
 
 def test_square():
     assert len(Square) == 65
 
+    assert Square.A1.file == File.FA
+    assert Square.A1.rank == Rank.R1
     assert Square.A1.string == "a1"
+
+    assert Square.H8.file == File.FH
+    assert Square.H8.rank == Rank.R8
     assert Square.H8.string == "h8"
+
+    assert Square.NONE.file == File.NONE
+    assert Square.NONE.rank == Rank.NONE
     assert Square.NONE.string == "-"
 
     with pytest.raises(ValueError, match="invalid square string"):

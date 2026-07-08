@@ -1,6 +1,32 @@
 from enum import Enum
 
 
+class File(int, Enum):
+    NONE = -1
+
+    FA = 0
+    FB = 1
+    FC = 2
+    FD = 3
+    FE = 4
+    FF = 5
+    FG = 6
+    FH = 7
+
+
+class Rank(int, Enum):
+    NONE = -1
+
+    R8 = 0
+    R7 = 1
+    R6 = 2
+    R5 = 3
+    R4 = 4
+    R3 = 5
+    R2 = 6
+    R1 = 7
+
+
 class Square(int, Enum):
     NONE = -1
 
@@ -76,6 +102,21 @@ class Square(int, Enum):
     G1 = 77
     H1 = 78
 
+    def __init__(self, value: int) -> None:
+        self.file: File
+        self.rank: Rank
+        self.string: str
+
+        if self.name == "NONE":
+            self.file = File.NONE
+            self.rank = Rank.NONE
+            self.string = "-"
+        else:
+            div, mod = divmod(value, 10)
+            self.file = File(mod - 1)
+            self.rank = Rank(div)
+            self.string = self.name.lower()
+
     @classmethod
     def from_string(cls, string: str) -> "Square":
         if string == "-":
@@ -86,9 +127,3 @@ class Square(int, Enum):
             return Square[string.upper()]
         except KeyError:
             raise ValueError(f"invalid square string: '{string}'")
-
-    @property
-    def string(self) -> str:
-        if self == Square.NONE:
-            return "-"
-        return self.name.lower()

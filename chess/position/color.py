@@ -18,8 +18,13 @@ class Color(int, Enum):
     def char(self) -> str:
         return to_char[self]
 
+    @property
+    def opponent(self) -> "Color":
+        return opponent[self]
 
-to_char = "wb-"
+
+opponent: list[Color] = [Color.BLACK, Color.WHITE, Color.NONE]
+to_char: str = "wb-"
 from_char: dict[str, Color] = {
     "w": Color.WHITE,
     "b": Color.BLACK

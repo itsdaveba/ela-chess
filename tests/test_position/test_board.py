@@ -1,6 +1,6 @@
 import pytest
 
-from chess import Board
+from chess import Board, Color, Square
 
 
 def test_board():
@@ -14,7 +14,6 @@ def test_board():
 
     board.string = "r1bk3r/p2pBpNp/n4n2/1p1NP2P/6P1/3P4/P1P1K3/q5b1"
     assert board.string == "r1bk3r/p2pBpNp/n4n2/1p1NP2P/6P1/3P4/P1P1K3/q5b1"
-
     assert str(board) == """\
 r . b k . . . r
 p . . p B p N p
@@ -24,6 +23,32 @@ n . . . . n . .
 . . . P . . . .
 P . P . K . . .
 q . . . . . b ."""
+
+    # bishop
+    board.string = "8/8/2p5/8/4B3/2p5/2P5/8"
+    assert len(board.generate_pseudo_legal_moves(Color.WHITE)) == 9
+
+    # rook
+    board.string = "8/8/8/2P1r3/8/4p3/4P3/8"
+    assert len(board.generate_pseudo_legal_moves(Color.BLACK)) == 9
+
+    # queen
+    board.string = "8/2p1p3/2P1P1p1/8/2p1Q3/8/8/8"
+    assert len(board.generate_pseudo_legal_moves(Color.WHITE)) == 18
+
+    # knight
+    board.string = "8/5p2/5P2/4n3/8/3P4/8/8"
+    assert len(board.generate_pseudo_legal_moves(Color.BLACK)) == 7
+
+    # king
+    board.string = "8/8/8/5p2/3pKP2/3P4/8/8"
+    assert len(board.generate_pseudo_legal_moves(Color.WHITE)) == 6
+
+    # pawn
+    board.string = "7q/5PP1/8/3pP3/2P4p/P5p1/1P5P/8"
+    assert len(board.generate_pseudo_legal_moves(Color.WHITE, Square.D6)) == 21
+
+    # castling
 
 
 def test_string():

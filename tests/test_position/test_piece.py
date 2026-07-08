@@ -6,14 +6,29 @@ from chess import Piece
 def test_piece():
     assert len(Piece) == 8
 
+    assert not Piece.PAWN.sliding
     assert Piece.PAWN.char == "P"
+
+    assert not Piece.KNIGHT.sliding
     assert Piece.KNIGHT.char == "N"
+
+    assert Piece.BISHOP.sliding
     assert Piece.BISHOP.char == "B"
+
+    assert Piece.ROOK.sliding
     assert Piece.ROOK.char == "R"
+
+    assert Piece.QUEEN.sliding
     assert Piece.QUEEN.char == "Q"
+
+    assert not Piece.KING.sliding
     assert Piece.KING.char == "K"
+
+    assert not Piece.OFF.sliding
+    assert Piece.OFF.char == "#"
+
+    assert not Piece.NONE.sliding
     assert Piece.NONE.char == "."
-    assert Piece.OFF.char == "*"
 
     with pytest.raises(ValueError, match="invalid piece char"):
         assert Piece.from_char(".")
