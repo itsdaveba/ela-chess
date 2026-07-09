@@ -102,21 +102,6 @@ class Square(int, Enum):
     G1 = 77
     H1 = 78
 
-    def __init__(self, value: int) -> None:
-        self.file: File
-        self.rank: Rank
-        self.string: str
-
-        if self.name == "NONE":
-            self.file = File.NONE
-            self.rank = Rank.NONE
-            self.string = "-"
-        else:
-            div, mod = divmod(value, 10)
-            self.file = File(mod - 1)
-            self.rank = Rank(div)
-            self.string = self.name.lower()
-
     @classmethod
     def from_string(cls, string: str) -> "Square":
         if string == "-":
@@ -127,3 +112,15 @@ class Square(int, Enum):
             return Square[string.upper()]
         except KeyError:
             raise ValueError(f"invalid square string: '{string}'")
+
+    @property
+    def string(self) -> str:
+        return "-" if self == Square.NONE else self.name.lower()
+
+    @property
+    def file(self) -> File:
+        return File.NONE if self == Square.NONE else File(self.value % 10 - 1)
+
+    @property
+    def rank(self) -> Rank:
+        return Rank.NONE if self == Square.NONE else Rank(self.value // 10)

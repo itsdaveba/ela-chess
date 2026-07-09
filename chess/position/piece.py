@@ -24,11 +24,11 @@ class Piece(int, Enum):
         return to_char[self]
 
     @property
-    def sliding(self) -> bool:
-        return sliding[self]
+    def is_sliding(self) -> bool:
+        return is_sliding[self]
 
 
-sliding: list[bool] = [False, False, True, True, True, False, False, False]
+is_sliding: list[bool] = [False, False, True, True, True, False, False, False]
 to_char: str = "PNBRQK#."
 from_char: dict[str, Piece] = {
     "P": Piece.PAWN,
