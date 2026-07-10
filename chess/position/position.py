@@ -1,11 +1,18 @@
 from .color import Color
-from .board import Board
+from .piece import Piece
 from .square import Square
 from .counter import Counter
 from .castling import Castling
+from .board import Board, CASTLING_FLAGS
+
+from ..move.move import Move, MoveType
 
 
 STARTING_POSITION_FEN: str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+CASTLING_ROOK_INFO: list[dict[Castling, Square]] = [
+    {Castling.WHITE_KINGSIDE: Square.H1, Castling.WHITE_QUEENSIDE: Square.A1},
+    {Castling.BLACK_KINGSIDE: Square.H8, Castling.BLACK_QUEENSIDE: Square.A8}
+]
 
 
 class Position:
@@ -44,3 +51,16 @@ class Position:
         self.epsquare = Square.from_string(fen_elements[3])
         self.halfmove = Counter.from_string(fen_elements[4])
         self.fullmove = Counter.from_string(fen_elements[5])
+
+    @property
+    def pseudo_legal_moves(self) -> list[Move]:  # TODO cached
+        return self.board.generate_pseudo_legal_moves(self.side, self.castling, self.epsquare)
+
+    def make_move(self, move: Move) -> None:
+        capture = self.board.make_move(move)
+        self.history.append(move, capture, (self.castling, self.epsquare, self.halfmove))
+        self.side = self.side.opponent
+
+    def undo_move(self) -> None:
+        move, capture, irrev = self.history.pop()
+        self.board.undo_move(move, capture)

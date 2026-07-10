@@ -1,6 +1,6 @@
 import pytest
 
-from chess import Board, Color, Castling, Square
+from chess import Board, Color, Castling, Square, Move, MoveType, Piece
 
 
 def test_board():
@@ -23,6 +23,21 @@ n . . . . n . .
 . . . P . . . .
 P . P . K . . .
 q . . . . . b ."""
+
+    # is attacked
+    assert not board.is_attacked(Square.D6, Color.BLACK)
+    assert board.is_attacked(Square.C5, Color.BLACK)
+    assert not board.is_attacked(Square.A4, Color.WHITE)
+    assert board.is_attacked(Square.E4, Color.WHITE)
+
+    # in check
+    assert not board.in_check(Color.WHITE)
+    assert board.in_check(Color.BLACK)
+    assert not Board().in_check(Color.WHITE)
+
+
+def test_move_generator():
+    board = Board()
 
     # bishop
     board.string = "8/8/2p5/8/4B3/2p5/2P5/8"
@@ -47,13 +62,6 @@ q . . . . . b ."""
     # pawn
     board.string = "7q/5PP1/8/3pP3/2P4p/P5p1/1P5P/8"
     assert len(board.generate_pseudo_legal_moves(Color.WHITE, Castling.NONE, Square.D6)) == 21
-
-    # is attacked
-    board.string = "8/8/8/2q1p3/8/8/8/8"
-    assert board.is_attacked(Square.C4, Color.BLACK)
-    assert not board.is_attacked(Square.E4, Color.BLACK)
-    assert board.is_attacked(Square.F4, Color.BLACK)
-    assert not board.is_attacked(Square.E8, Color.BLACK)
 
     # castling
     castling = Castling(15)
@@ -88,3 +96,41 @@ def test_string():
 
     board.string = "r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1"
     assert board.string == "r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1"
+
+
+def test_make_undo():
+    board = Board("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R")
+
+    # make
+    type = MoveType.PAWN_MOVE | MoveType.PAWN_DOUBLE_MOVE
+    board.make_move(Color.BLACK, Move(Square.C7, Square.C5, Piece.PAWN, Piece.NONE, type))
+    assert board.string == "r3k2r/p2pqpb1/bn2pnp1/2pPN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R"
+
+    type = MoveType.PAWN_MOVE | MoveType.CAPTURE | MoveType.EPCAPTURE
+    board.make_move(Color.WHITE, Move(Square.D5, Square.C6, Piece.PAWN, Piece.NONE, type))
+    assert board.string == "r3k2r/p2pqpb1/bnP1pnp1/4N3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R"
+
+    type = MoveType.CASTLE
+    board.make_move(Color.BLACK, Move(Square.E8, Square.G8, Piece.KING, Piece.NONE, type))
+    assert board.string == "r4rk1/p2pqpb1/bnP1pnp1/4N3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R"
+
+    type = MoveType.PAWN_MOVE | MoveType.CAPTURE
+    board.make_move(Color.WHITE, Move(Square.G2, Square.H3, Piece.PAWN, Piece.PAWN, type))
+    assert board.string == "r4rk1/p2pqpb1/bnP1pnp1/4N3/1p2P3/2N2Q1P/PPPBBP1P/R3K2R"
+
+    # undo
+    type = MoveType.PAWN_MOVE | MoveType.CAPTURE
+    board.undo_move(Color.WHITE, Move(Square.G2, Square.H3, Piece.PAWN, Piece.PAWN, type))
+    assert board.string == "r4rk1/p2pqpb1/bnP1pnp1/4N3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R"
+
+    type = MoveType.CASTLE
+    board.undo_move(Color.BLACK, Move(Square.E8, Square.G8, Piece.KING, Piece.NONE, type))
+    assert board.string == "r3k2r/p2pqpb1/bnP1pnp1/4N3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R"
+
+    type = MoveType.PAWN_MOVE | MoveType.CAPTURE | MoveType.EPCAPTURE
+    board.undo_move(Color.WHITE, Move(Square.D5, Square.C6, Piece.PAWN, Piece.NONE, type))
+    assert board.string == "r3k2r/p2pqpb1/bn2pnp1/2pPN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R"
+
+    type = MoveType.PAWN_MOVE | MoveType.PAWN_DOUBLE_MOVE
+    board.undo_move(Color.BLACK, Move(Square.C7, Square.C5, Piece.PAWN, Piece.NONE, type))
+    assert board.string == "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R"

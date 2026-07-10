@@ -11,6 +11,7 @@ def test_castling():
     assert Castling.BLACK_KINGSIDE.string == "k"
     assert Castling.BLACK_QUEENSIDE.string == "q"
     assert Castling.NONE.string == "-"
+    assert not Castling.NONE
 
     assert (Castling.BLACK_QUEENSIDE | Castling.WHITE_KINGSIDE).string == "Kq"
 
