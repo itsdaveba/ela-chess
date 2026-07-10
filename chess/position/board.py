@@ -162,11 +162,11 @@ class Board:
 
         type = MoveType.PAWN_MOVE
         if self.piece[single] == Piece.NONE:
-            moves.extend(self._pawn_promotion_moves(side, source, single, Piece.NONE, type))
+            moves.extend(self._pawn_promotion_moves(side, source, single, type))
             if source.rank == SECOND_RANK[side]:
                 double = Square(single + DIRECTIONS[Piece.PAWN][side])
                 if self.piece[double] == Piece.NONE:
-                    moves.append(Move(source, double, Piece.PAWN, Piece.NONE, type | MoveType.PAWN_DOUBLE_MOVE))
+                    moves.append(Move(source, double, Piece.PAWN, type | MoveType.PAWN_DOUBLE_MOVE))
 
         return moves
 
@@ -180,20 +180,19 @@ class Board:
             target = Square(target)
             if self.color[target] == Color.NONE:
                 if target == epsquare:
-                    moves.append(Move(source, target, Piece.PAWN, Piece.NONE, type | MoveType.EPCAPTURE))
+                    moves.append(Move(source, target, Piece.PAWN, type | MoveType.EPCAPTURE))
             elif self.color[target] != side:
-                moves.extend(self._pawn_promotion_moves(side, source, target, self.piece[target], type))
+                moves.extend(self._pawn_promotion_moves(side, source, target, type))
 
         return moves
 
-    def _pawn_promotion_moves(self, side: Color, source: Square, target: Square,
-                              capture: Piece, type: MoveType) -> list[Move]:
+    def _pawn_promotion_moves(self, side: Color, source: Square, target: Square, type: MoveType) -> list[Move]:
         if target.rank == LAST_RANK[side]:
             moves = []
             for promotion in (Piece.KNIGHT, Piece.BISHOP, Piece.ROOK, Piece.QUEEN):
-                moves.append(Move(source, target, Piece.PAWN, capture, type | MoveType.PROMOTION, promotion))
+                moves.append(Move(source, target, Piece.PAWN, type | MoveType.PROMOTION, promotion))
             return moves
-        return [Move(source, target, Piece.PAWN, capture, type)]
+        return [Move(source, target, Piece.PAWN, type)]
 
     def _piece_moves(self, side: Color, source: Square) -> list[Move]:
         moves = []
@@ -209,9 +208,9 @@ class Board:
                 target = Square(target)
                 if self.color[target] != Color.NONE:
                     if self.color[target] != side:
-                        moves.append(Move(source, target, piece, self.piece[target], MoveType.CAPTURE))
+                        moves.append(Move(source, target, piece, MoveType.CAPTURE))
                     break
-                moves.append(Move(source, target, piece, Piece.NONE, MoveType.NONE))
+                moves.append(Move(source, target, piece, MoveType.NONE))
                 if not is_sliding:
                     break
 
@@ -223,7 +222,7 @@ class Board:
         if not self.is_attacked(source, side.opponent):
             for flag, empty_squares, not_attacked_squares, target in zip(*CASTLING_INFO[side]):
                 if castling & flag and self._can_castle(side, empty_squares, not_attacked_squares):
-                    moves.append(Move(source, target, Piece.KING, Piece.NONE, MoveType.CASTLE))
+                    moves.append(Move(source, target, Piece.KING, MoveType.CASTLE))
 
         return moves
 
@@ -236,7 +235,9 @@ class Board:
                 return False
         return True
 
-    def make_move(self, side: Color, move: Move) -> None:
+    def make_move(self, side: Color, move: Move) -> Piece:
+        capture = self.piece[move.target]
+
         self.color[move.target] = self.color[move.source]
         self.piece[move.target] = move.promotion if move.type & MoveType.PROMOTION else self.piece[move.source]
 
@@ -257,12 +258,14 @@ class Board:
             self.color[source] = Color.NONE
             self.piece[source] = Piece.NONE
 
-    def undo_move(self, side: Color, move: Move) -> None:
+        return capture
+
+    def undo_move(self, side: Color, move: Move, capture: Piece) -> None:
         self.color[move.source] = self.color[move.target]
         self.piece[move.source] = Piece.PAWN if move.type & MoveType.PROMOTION else self.piece[move.target]
 
         self.color[move.target] = side.opponent if move.type & MoveType.CAPTURE else Color.NONE
-        self.piece[move.target] = move.capture
+        self.piece[move.target] = capture
 
         if move.type & MoveType.EPCAPTURE:
             target = move.target + DIRECTIONS[Piece.PAWN][side.opponent]

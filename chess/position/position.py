@@ -3,7 +3,7 @@ from .piece import Piece
 from .square import Square
 from .counter import Counter
 from .castling import Castling
-from .board import Board, CASTLING_FLAGS
+from .board import Board, DIRECTIONS, CASTLING_FLAGS
 
 from ..move.move import Move, MoveType
 
@@ -56,11 +56,46 @@ class Position:
     def pseudo_legal_moves(self) -> list[Move]:  # TODO cached
         return self.board.generate_pseudo_legal_moves(self.side, self.castling, self.epsquare)
 
-    def make_move(self, move: Move) -> None:
-        capture = self.board.make_move(move)
-        self.history.append(move, capture, (self.castling, self.epsquare, self.halfmove))
+    def make_move(self, move: Move) -> tuple[Piece, Castling, Square, Counter]:
+        capture = self.board.make_move(self.side, move)
+
+        irrev_info = capture, self.castling, self.epsquare, self.halfmove.copy()
+
+        if self.castling:
+            if move.piece == Piece.KING:
+                self.castling &= ~CASTLING_FLAGS[self.side]
+            elif move.piece == Piece.ROOK:
+                for flag, square in CASTLING_ROOK_INFO[self.side].items():
+                    if move.source == square:
+                        self.castling &= ~flag
+            if capture == Piece.ROOK:
+                for flag, square in CASTLING_ROOK_INFO[self.side.opponent].items():
+                    if move.target == square:
+                        self.castling &= ~flag
+
+        if move.type & MoveType.PAWN_DOUBLE_MOVE:
+            self.epsquare = Square(move.source + DIRECTIONS[Piece.PAWN][self.side])
+        else:
+            self.epsquare = Square.NONE
+
+        if move.type & (MoveType.PAWN_MOVE | MoveType.CAPTURE):
+            self.halfmove.reset()
+        else:
+            self.halfmove.incr()
+
+        if self.side == Color.BLACK:
+            self.fullmove.incr()
+
         self.side = self.side.opponent
 
-    def undo_move(self) -> None:
-        move, capture, irrev = self.history.pop()
-        self.board.undo_move(move, capture)
+        return irrev_info
+
+    def undo_move(self, move: Move, irrev_info: tuple[Piece, Castling, Square, Counter]) -> None:
+        self.side = self.side.opponent
+
+        capture, self.castling, self.epsquare, self.halfmove = irrev_info
+
+        self.board.undo_move(self.side, move, capture)
+
+        if self.side == Color.BLACK:
+            self.fullmove.decr()
