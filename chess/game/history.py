@@ -8,14 +8,18 @@ from ..move.move import Move
 
 class History:
     def __init__(self) -> None:
-        self.moves: list[Move]
-        self.captures: list[Piece]
-        self.irrevs: list[tuple[Castling, Square, Counter]]  # TODO check all tuple types
+        self.moves: list[Move] = []
+        self.irrevs: list[tuple[Piece, Castling, Square, Counter]] = []
 
-    def append(self, move: Move, capture: Piece, irrev: tuple[Castling, Square, Counter]) -> None:
+    def __repr__(self) -> str:
+        return f"History({self.moves})"
+
+    def __len__(self) -> int:
+        return len(self.moves)
+
+    def append(self, move: Move, irrev: tuple[Piece, Castling, Square, Counter]) -> None:
         self.moves.append(move)
-        self.captures.append(capture)
         self.irrevs.append(irrev)
 
-    def pop(self) -> tuple[Move, Piece, tuple[Castling, Square, Counter]]:
-        return self.moves.pop(), self.captures.pop(), self.irrevs.pop()
+    def pop(self) -> tuple[Move, tuple[Piece, Castling, Square, Counter]]:
+        return self.moves.pop(), self.irrevs.pop()

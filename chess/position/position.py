@@ -8,7 +8,6 @@ from .board import Board, DIRECTIONS, CASTLING_FLAGS
 from ..move.move import Move, MoveType
 
 
-STARTING_POSITION_FEN: str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 CASTLING_ROOK_INFO: list[dict[Castling, Square]] = [
     {Castling.WHITE_KINGSIDE: Square.H1, Castling.WHITE_QUEENSIDE: Square.A1},
     {Castling.BLACK_KINGSIDE: Square.H8, Castling.BLACK_QUEENSIDE: Square.A8}
@@ -16,7 +15,7 @@ CASTLING_ROOK_INFO: list[dict[Castling, Square]] = [
 
 
 class Position:
-    def __init__(self, fen: str = STARTING_POSITION_FEN) -> None:
+    def __init__(self, fen) -> None:
         self.board: Board
         self.side: Color
         self.castling: Castling
@@ -25,6 +24,9 @@ class Position:
         self.fullmove: Counter
 
         self.fen = fen
+
+    def __repr__(self) -> str:
+        return f"Position('{self.fen}')"
 
     @property
     def fen(self) -> str:
@@ -56,10 +58,13 @@ class Position:
     def pseudo_legal_moves(self) -> list[Move]:  # TODO cached
         return self.board.generate_pseudo_legal_moves(self.side, self.castling, self.epsquare)
 
+    def in_check(self, side: Color) -> bool:
+        return self.board.in_check(side)
+
     def make_move(self, move: Move) -> tuple[Piece, Castling, Square, Counter]:
         capture = self.board.make_move(self.side, move)
 
-        irrev_info = capture, self.castling, self.epsquare, self.halfmove.copy()
+        irrev = capture, self.castling, self.epsquare, self.halfmove.copy()
 
         if self.castling:
             if move.piece == Piece.KING:
@@ -88,12 +93,12 @@ class Position:
 
         self.side = self.side.opponent
 
-        return irrev_info
+        return irrev
 
-    def undo_move(self, move: Move, irrev_info: tuple[Piece, Castling, Square, Counter]) -> None:
+    def undo_move(self, move: Move, irrev: tuple[Piece, Castling, Square, Counter]) -> None:
         self.side = self.side.opponent
 
-        capture, self.castling, self.epsquare, self.halfmove = irrev_info
+        capture, self.castling, self.epsquare, self.halfmove = irrev
 
         self.board.undo_move(self.side, move, capture)
 

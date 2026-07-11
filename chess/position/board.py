@@ -116,7 +116,7 @@ class Board:
 
     def is_attacked(self, square: Square, side: Color) -> bool:
         for move in self.generate_pseudo_legal_moves(side, Castling.NONE, Square.NONE):
-            if self.piece[move.source] != Piece.PAWN and move.target == square:
+            if move.piece != Piece.PAWN and move.target == square:
                 return True
 
         single = square + DIRECTIONS[Piece.PAWN][side.opponent]
