@@ -18,7 +18,7 @@ class MoveType(IntFlag):
 
 @dataclass
 class Move:
-    source: Square
+    origin: Square
     target: Square
     piece: Piece
     type: MoveType
@@ -31,7 +31,7 @@ class Move:
         if not isinstance(other, Move):
             return False
 
-        if self.source != other.source:
+        if self.origin != other.origin:
             return False
         if self.target != other.target:
             return False
@@ -43,15 +43,15 @@ class Move:
     @classmethod
     def from_string(cls, string: str) -> "Move":
         if len(string) in (4, 5):
-            source = Square.from_string(string[0:2])
+            origin = Square.from_string(string[0:2])
             target = Square.from_string(string[2:4])
             promotion = Piece.NONE if len(string) == 4 else Piece.from_char(string[4].upper())
-            return cls(source, target, Piece.NONE, MoveType.NONE, promotion)
+            return cls(origin, target, Piece.NONE, MoveType.NONE, promotion)
         raise ValueError(f"invalid move string: '{string}'")
 
     @property
     def string(self) -> str:
-        string = self.source.string + self.target.string
+        string = self.origin.string + self.target.string
         if self.promotion != Piece.NONE:
             string += self.promotion.char.lower()
         return string

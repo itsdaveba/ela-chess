@@ -55,7 +55,7 @@ class Position:
         self.fullmove = Counter.from_string(fen_elements[5])
 
     @property
-    def pseudo_legal_moves(self) -> list[Move]:  # TODO cached
+    def pseudo_legal_moves(self) -> list[Move]:
         return self.board.generate_pseudo_legal_moves(self.side, self.castling, self.epsquare)
 
     def in_check(self, side: Color) -> bool:
@@ -71,7 +71,7 @@ class Position:
                 self.castling &= ~CASTLING_FLAGS[self.side]
             elif move.piece == Piece.ROOK:
                 for flag, square in CASTLING_ROOK_INFO[self.side].items():
-                    if move.source == square:
+                    if move.origin == square:
                         self.castling &= ~flag
             if capture == Piece.ROOK:
                 for flag, square in CASTLING_ROOK_INFO[self.side.opponent].items():
@@ -79,7 +79,7 @@ class Position:
                         self.castling &= ~flag
 
         if move.type & MoveType.PAWN_DOUBLE_MOVE:
-            self.epsquare = Square(move.source + DIRECTIONS[Piece.PAWN][self.side])
+            self.epsquare = Square(move.origin + DIRECTIONS[Piece.PAWN][self.side])
         else:
             self.epsquare = Square.NONE
 
