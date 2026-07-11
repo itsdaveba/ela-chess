@@ -264,7 +264,8 @@ class Board:
         self.color[move.source] = self.color[move.target]
         self.piece[move.source] = Piece.PAWN if move.type & MoveType.PROMOTION else self.piece[move.target]
 
-        self.color[move.target] = side.opponent if move.type & MoveType.CAPTURE else Color.NONE
+        is_normal_capture = move.type & (MoveType.CAPTURE | MoveType.EPCAPTURE) == MoveType.CAPTURE
+        self.color[move.target] = side.opponent if is_normal_capture else Color.NONE
         self.piece[move.target] = capture
 
         if move.type & MoveType.EPCAPTURE:

@@ -15,7 +15,7 @@ CASTLING_ROOK_INFO: list[dict[Castling, Square]] = [
 
 
 class Position:
-    def __init__(self, fen) -> None:
+    def __init__(self, fen: str) -> None:
         self.board: Board
         self.side: Color
         self.castling: Castling
