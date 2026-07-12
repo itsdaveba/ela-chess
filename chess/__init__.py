@@ -1,5 +1,6 @@
 from .game.game import ChessGame
 from .game.history import History
+from .game.player import Player, HumanPlayer, EnginePlayer
 
 from .move.move import Move, MoveType
 
@@ -12,5 +13,5 @@ from .position.position import Position
 from .position.square import Square, File, Rank
 
 
-__all__ = ["ChessGame", "History", "Move", "MoveType", "Color", "Piece",
-           "Board", "Counter", "Castling", "Position", "Square", "File", "Rank"]
+__all__ = ["ChessGame", "History", "Player", "HumanPlayer", "EnginePlayer", "Move", "MoveType",
+           "Color", "Piece", "Board", "Counter", "Castling", "Position", "Square", "File", "Rank"]

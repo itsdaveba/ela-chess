@@ -8,6 +8,7 @@ from .board import Board, DIRECTIONS, CASTLING_FLAGS
 from ..move.move import Move, MoveType
 
 
+SIDE_STRING: list[str] = ["White", "Black"]
 CASTLING_ROOK_INFO: list[dict[Castling, Square]] = [
     {Castling.WHITE_KINGSIDE: Square.H1, Castling.WHITE_QUEENSIDE: Square.A1},
     {Castling.BLACK_KINGSIDE: Square.H8, Castling.BLACK_QUEENSIDE: Square.A8}
@@ -27,6 +28,19 @@ class Position:
 
     def __repr__(self) -> str:
         return f"Position('{self.fen}')"
+
+    def __str__(self) -> str:
+        rows = [f"{SIDE_STRING[self.side]} to move"]
+
+        rows.append("+-----------------+")
+
+        for i, row in enumerate(str(self.board).split("\n")):
+            rows.append(f"| {row} | {8 - i}")
+
+        rows.append("+-----------------+")
+        rows.append("  a b c d e f g h")
+
+        return "\n".join(rows)
 
     @property
     def fen(self) -> str:

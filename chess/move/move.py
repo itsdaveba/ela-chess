@@ -27,6 +27,9 @@ class Move:
     def __repr__(self) -> str:
         return f"Move.{self.string.upper()}"
 
+    def __str__(self) -> str:
+        return self.string
+
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Move):
             return False

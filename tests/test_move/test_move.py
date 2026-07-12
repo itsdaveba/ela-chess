@@ -6,11 +6,11 @@ from chess import Move, MoveType, Square, Piece
 def test_move():
     move = Move(Square.E2, Square.E4, Piece.PAWN, MoveType.PAWN_MOVE)
     assert repr(move) == "Move.E2E4"
-    assert move.string == "e2e4"
+    assert str(move) == "e2e4"
 
     move = Move(Square.E7, Square.E8, Piece.PAWN, MoveType.PAWN_MOVE | MoveType.PROMOTION, Piece.QUEEN)
     assert repr(move) == "Move.E7E8Q"
-    assert move.string == "e7e8q"
+    assert str(move) == "e7e8q"
 
     assert not move == "e7e8q"
     assert not move == Move.from_string("e2e4")
