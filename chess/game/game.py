@@ -1,7 +1,9 @@
 import time
+from types import NoneType
+from datetime import datetime
 
-from .player import Player
 from .history import History
+from .player import Player, HumanPlayer, EnginePlayer
 
 from ..move.move import Move
 
@@ -10,37 +12,106 @@ from ..position.position import Position, SIDE_STRING
 
 
 STARTING_POSITION_FEN: str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+EVENT: dict[tuple[type, type], str] = {
+    (HumanPlayer, HumanPlayer): "Player Match",
+    (HumanPlayer, EnginePlayer): "Player vs Engine",
+    (EnginePlayer, HumanPlayer): "Player vs Engine",
+    (EnginePlayer, EnginePlayer): "Engine Match"
+}
+PLAYER_NAME: dict[type, str] = {
+    HumanPlayer: "Player",
+    EnginePlayer: "ElaChess",
+    NoneType: "?"
+}
 RESULT: list[str] = ["1-0", "0-1", "1/2-1/2"]
 
 
 class ChessGame:
-    def __init__(self, white: Player, black: Player, fen: str | None = None) -> None:
-        self.white: Player = white
-        self.black: Player = black
-
+    def __init__(self, fen: str | None = None) -> None:
         self.fen: str
-        self.position: Position
+        self.playing: bool
+        self.winner: Color
         self.history: History
+        self.position: Position
+        self.white: Player | None
+        self.black: Player | None
 
         self.reset(fen)
 
     def __repr__(self) -> str:
-        string = f"ChessGame(white='{self.white.name.lower()}', black='{self.black.name.lower()}', "
+        string = "ChessGame("
         if self.fen != STARTING_POSITION_FEN:
             string += f"fen='{self.fen}', "
+        string += f"white={self.white}, "
+        string += f"black={self.black}, "
+        result = None if self.playing else self.winner
+        string += f"result={result!s}, "
         return string + f"history={self.history.moves})"
+
+    def __str__(self) -> str:
+        return self.pgn
+
+    @property
+    def pgn(self) -> str:
+        try:
+            pgn = [f'[Event "{EVENT[(type(self.white), type(self.black))]}"]']
+        except KeyError:
+            pgn = ['[Event "?"]']
+        pgn.append('[Site "Ela Chess"]')
+        pgn.append(f'[Date "{datetime.today().strftime("%Y.%m.%d")}"]')
+        pgn.append('[Round "?"]')
+        pgn.append(f'[White "{PLAYER_NAME[type(self.white)]}"]')
+        pgn.append(f'[Black "{PLAYER_NAME[type(self.black)]}"]')
+        result = "*" if self.playing else RESULT[self.winner]
+        pgn.append(f'[Result "{result}"]')
+        if self.fen != STARTING_POSITION_FEN:
+            pgn.append('[SetUp "1"]')
+            pgn.append(f'[FEN "{self.fen}"]')
+
+        pgn.append('')
+        pgn.append(self.history.movetext())
+
+        return "\n".join(pgn)
+
+    def save_pgn(self, filename: str | None = None) -> None:
+        if filename is None:
+            white = PLAYER_NAME[type(self.white)]
+            white = "_" if white == "?" else white
+            black = PLAYER_NAME[type(self.black)]
+            black = "_" if black == "?" else black
+            filename = f"{white}_vs_{black}_{datetime.today().strftime('%Y.%m.%d')}.pgn"
+
+        with open(filename, "w") as file:
+            file.write(self.pgn)
+
+        print(f"PGN file saved: '{filename}'")
 
     def reset(self, fen: str | None = None) -> None:
         self.fen = STARTING_POSITION_FEN if fen is None else fen
-        self.position = Position(self.fen)
+        self.playing = True
+        self.winner = Color.NONE
         self.history = History()
+        self.position = Position(self.fen)
+        self.white = None
+        self.black = None
 
-    def make_move(self, move: Move) -> bool:
+    def display(self) -> None:
+        print(self.position)
+
+    def make_move(self, move: Move | str) -> bool:
+        if isinstance(move, str):
+            parsed = self._parse_move(move)
+
+            if parsed is None:
+                return False
+
+            move = parsed
+
         side = self.position.side
-
         irrev = self.position.make_move(move)
 
         if self.position.in_check(side):
+            print(f"Illegal move: '{move}'")
             self.position.undo_move(move, irrev)
             return False
 
@@ -52,8 +123,11 @@ class ChessGame:
         try:
             move, irrev = self.history.pop()
         except IndexError:
-            raise ValueError("no previous move")
+            print("No previous move")
+            return
 
+        self.playing = True
+        self.winner = Color.NONE
         self.position.undo_move(move, irrev)
 
     def has_legal_moves(self) -> bool:
@@ -69,35 +143,40 @@ class ChessGame:
 
         return False
 
-    def play(self) -> None:
-        playing: bool
-        winner: Color
+    def play(self, white: Player, black: Player) -> None:
+        self.white = white
+        self.black = black
 
-        print("\nChess Game\n")
-        print(f"White: {self.white}")
-        print(f"Black: {self.black}")
+        print(f"\n{EVENT[(type(self.white), type(self.black))]}\n")
+        print(f"White: {white}")
+        print(f"Black: {black}")
         print(f"\n{self.position}\n")
 
-        if self.has_legal_moves():
-            playing = True
-            winner = Color.NONE
+        if self.has_legal_moves() and self.position.halfmove.value < 100:
+            self.playing = True
+            self.winner = Color.NONE
         else:
-            playing = False
-            winner = self._get_winner()
+            self.playing = False
+            self.winner = self._get_winner()
 
-        while playing:
-            player = self.white if self.position.side == Color.WHITE else self.black
+        while self.playing:
+            player = white if self.position.side == Color.WHITE else black
             move = player.best_move(self.position)
 
             if isinstance(move, str):
                 if move in ("exit", "quit", "resign"):
+                    self.playing = False
+                    self.winner = self.position.side.opponent
                     print(f"\n{SIDE_STRING[self.position.side]} resigns")
-                    playing = False
-                    winner = self.position.side.opponent
                     break
 
-                move = self._parse_move(move)
-                if move is None:
+                if move == "undo":
+                    if len(self.history) < 2:
+                        print("No previous move")
+                    else:
+                        self.undo_move()
+                        self.undo_move()
+                        print(f"\n{self.position}\n")
                     continue
 
             else:
@@ -107,18 +186,18 @@ class ChessGame:
                 print(f"\n{self.position}\n")
 
                 if not self.has_legal_moves():
-                    playing = False
-                    winner = self._get_winner()
-            else:
-                print(f"Illegal move: '{move}'")
+                    self.playing = False
+                    self.winner = self._get_winner()
+
+                elif self.position.halfmove.value >= 100:
+                    print("Fifty-move rule")
+                    self.playing = False
+                    self.winner = Color.NONE
 
             time.sleep(0.1)
 
-        print(f"\nResult: {RESULT[winner]}")
-        if winner == Color.NONE:
-            print("Draw\n")
-        else:
-            print(f"{SIDE_STRING[winner]} wins\n")
+        print(f"\nResult: {RESULT[self.winner]}")
+        print("Draw\n" if self.winner == Color.NONE else f"{SIDE_STRING[self.winner]} wins\n")
 
     def _get_winner(self) -> Color:
         if self.position.in_check(self.position.side):
@@ -129,15 +208,6 @@ class ChessGame:
             return Color.NONE
 
     def _parse_move(self, move_str: str) -> Move | None:
-        if move_str == "undo":
-            if len(self.history) < 2:
-                print("No previous move")
-            else:
-                self.undo_move()
-                self.undo_move()
-                print(f"\n{self.position}\n")
-            return None
-
         try:
             move = Move.from_string(move_str)
         except ValueError:

@@ -1,3 +1,5 @@
+import textwrap
+
 from ..position.piece import Piece
 from ..position.square import Square
 from ..position.counter import Counter
@@ -23,3 +25,6 @@ class History:
 
     def pop(self) -> tuple[Move, tuple[Piece, Castling, Square, Counter]]:
         return self.moves.pop(), self.irrevs.pop()
+
+    def movetext(self) -> str:
+        return "\n".join(textwrap.wrap(" ".join(map(str, self.moves)), width=81))

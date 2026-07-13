@@ -14,13 +14,18 @@ if __name__ == "__main__":
     parser.add_argument("fen", nargs="?")
     parser.add_argument("-w", "--white", choices=["human", "engine"], default="human")
     parser.add_argument("-b", "--black", choices=["human", "engine"], default="engine")
+    parser.add_argument("-s", "--save", nargs="?", const="game.pgn", default=None)
 
     args = parser.parse_args()
 
     fen = args.fen
     white = PLAYER[args.white]()
     black = PLAYER[args.black]()
+    filename = args.save
 
-    game = ChessGame(white, black, fen)
+    game = ChessGame(fen)
+    game.play(white, black)
 
-    game.play()
+    if filename is not None:
+        game.save_pgn(filename)
+        print()
