@@ -81,9 +81,9 @@ class Position:
         irrev = capture, self.castling, self.epsquare, self.halfmove.copy()
 
         if self.castling:
-            if move.piece == Piece.KING:
+            if self.board.piece[move.target] == Piece.KING:
                 self.castling &= ~CASTLING_FLAGS[self.side]
-            elif move.piece == Piece.ROOK:
+            elif self.board.piece[move.target] == Piece.ROOK:
                 for flag, square in CASTLING_ROOK_INFO[self.side].items():
                     if move.origin == square:
                         self.castling &= ~flag

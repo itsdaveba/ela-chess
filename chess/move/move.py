@@ -20,7 +20,6 @@ class MoveType(IntFlag):
 class Move:
     origin: Square
     target: Square
-    piece: Piece
     type: MoveType
     promotion: Piece = Piece.NONE
 
@@ -49,7 +48,7 @@ class Move:
             origin = Square.from_string(string[0:2])
             target = Square.from_string(string[2:4])
             promotion = Piece.NONE if len(string) == 4 else Piece.from_char(string[4].upper())
-            return cls(origin, target, Piece.NONE, MoveType.NONE, promotion)
+            return cls(origin, target, MoveType.NONE, promotion)
         raise ValueError(f"invalid move string: '{string}'")
 
     @property
