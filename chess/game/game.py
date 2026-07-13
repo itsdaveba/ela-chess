@@ -119,16 +119,18 @@ class ChessGame:
 
         return True
 
-    def undo_move(self) -> None:
+    def undo_move(self) -> Move | None:
         try:
             move, irrev = self.history.pop()
         except IndexError:
             print("No previous move")
-            return
+            return None
 
         self.playing = True
         self.winner = Color.NONE
         self.position.undo_move(move, irrev)
+
+        return move
 
     def has_legal_moves(self) -> bool:
         side = self.position.side

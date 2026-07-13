@@ -16,10 +16,13 @@ def test_game(monkeypatch, capsys):
     assert game.make_move("e2e4")
     assert repr(game) == "ChessGame(white=None, black=None, result=None, history=[Move.E2E4])"
 
-    game.undo_move()
+    move = game.undo_move()
+    assert move is not None
+    assert move.string == "e2e4"
     assert repr(game) == "ChessGame(white=None, black=None, result=None, history=[])"
 
-    game.undo_move()
+    move = game.undo_move()
+    assert move is None
     captured = capsys.readouterr()
     assert captured.out.find("No previous move") != -1
 
