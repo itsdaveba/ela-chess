@@ -1,14 +1,16 @@
-import time
+from time import sleep
 from types import NoneType
 from datetime import datetime
 
 from .history import History
-from .player import Player, HumanPlayer, EnginePlayer
+from .player import Player, HumanPlayer
 
 from ..move.move import Move
 
 from ..position.color import Color
 from ..position.position import Position, SIDE_STRING
+
+from ..search.engine import EnginePlayer
 
 
 STARTING_POSITION_FEN: str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
@@ -145,7 +147,7 @@ class ChessGame:
 
         return False
 
-    def play(self, white: Player, black: Player) -> None:
+    def play(self, white: Player, black: Player, time: int, depth: int, nodes: int) -> None:
         self.white = white
         self.black = black
 
@@ -163,7 +165,7 @@ class ChessGame:
 
         while self.playing:
             player = white if self.position.side == Color.WHITE else black
-            move = player.best_move(self.position)
+            move = player.best_move(self.position, time, depth, nodes)
 
             if isinstance(move, str):
                 if move in ("exit", "quit", "resign"):
@@ -196,7 +198,7 @@ class ChessGame:
                     self.playing = False
                     self.winner = Color.NONE
 
-            time.sleep(0.1)
+            sleep(0.1)
 
         print(f"\nResult: {RESULT[self.winner]}")
         print("Draw\n" if self.winner == Color.NONE else f"{SIDE_STRING[self.winner]} wins\n")

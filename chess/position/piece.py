@@ -2,15 +2,15 @@ from enum import Enum
 
 
 class Piece(int, Enum):
-    OFF = -2
-    NONE = -1
-
     PAWN = 0
     KNIGHT = 1
     BISHOP = 2
     ROOK = 3
     QUEEN = 4
     KING = 5
+
+    OFF = 6
+    NONE = 7
 
     @classmethod
     def from_char(cls, char: str) -> "Piece":

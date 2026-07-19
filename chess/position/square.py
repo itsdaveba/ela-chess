@@ -2,8 +2,6 @@ from enum import Enum
 
 
 class File(int, Enum):
-    NONE = -1
-
     FA = 0
     FB = 1
     FC = 2
@@ -13,10 +11,10 @@ class File(int, Enum):
     FG = 6
     FH = 7
 
+    NONE = 8
+
 
 class Rank(int, Enum):
-    NONE = -1
-
     R8 = 0
     R7 = 1
     R6 = 2
@@ -26,10 +24,10 @@ class Rank(int, Enum):
     R2 = 6
     R1 = 7
 
+    NONE = 8
+
 
 class Square(int, Enum):
-    NONE = -1
-
     A8 = 1
     B8 = 2
     C8 = 3
@@ -101,6 +99,8 @@ class Square(int, Enum):
     F1 = 76
     G1 = 77
     H1 = 78
+
+    NONE = 99
 
     @classmethod
     def from_string(cls, string: str) -> "Square":

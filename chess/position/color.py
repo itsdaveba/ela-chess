@@ -2,10 +2,10 @@ from enum import Enum
 
 
 class Color(int, Enum):
-    NONE = -1
-
     WHITE = 0
     BLACK = 1
+
+    NONE = 2
 
     @classmethod
     def from_char(cls, char: str) -> "Color":
