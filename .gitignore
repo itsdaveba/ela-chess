@@ -220,5 +220,10 @@ __marimo__/
 # vscode
 .vscode/
 
-# Portable Game Notation
+# Game Notation
 *.pgn
+*.epd
+
+# Fastchess
+fastchess.exe
+config.json
