@@ -60,7 +60,7 @@ if __name__ == "__main__":
                         side = game.position.side
                         time = int(int(tokens[TIME_IDX[side]]) / 20 + int(tokens[INC_IDX[side]]) / 2)
 
-                move = engine.best_move(game.position, time, depth, nodes)
+                move = engine.best_move(game.position.copy(), time, depth, nodes)
                 print(f"bestmove {move}")
 
             case "d":

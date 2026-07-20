@@ -11,12 +11,12 @@ def test_player(monkeypatch):
     assert repr(player) == "Human"
 
     monkeypatch.setattr('sys.stdin', io.StringIO("e2e4"))
-    move = player.best_move(position, -1, -1, -1)
+    move = player.best_move(position.copy(), -1, -1, -1)
     assert move == "e2e4"
 
     # engine
     player = EnginePlayer()
     assert repr(player) == "Engine"
 
-    move = player.best_move(position, -1, 1, -1)
+    move = player.best_move(position.copy(), -1, 1, -1)
     assert isinstance(move, Move)
