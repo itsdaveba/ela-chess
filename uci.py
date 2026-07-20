@@ -43,7 +43,7 @@ if __name__ == "__main__":
                         game.make_move(move)
 
             case "go":
-                depth = nodes = time = -1
+                time = depth = nodes = -1
                 subcommand = tokens[1] if len(tokens) >= 2 else "infinite"
 
                 if subcommand == "movetime":

@@ -24,6 +24,11 @@ White to move
   a b c d e f g h"""
 
     assert position.fen == "r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1"
+
+    copy = position.copy()
+    assert copy != position
+    assert copy.fen == "r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1"
+
     assert position.in_check(Color.WHITE)
     assert not position.in_check(Color.BLACK)
 

@@ -18,5 +18,5 @@ def test_player(monkeypatch):
     player = EnginePlayer()
     assert repr(player) == "Engine"
 
-    move = player.best_move(position, -1, 0, -1)
+    move = player.best_move(position, -1, 1, -1)
     assert isinstance(move, Move)

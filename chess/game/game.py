@@ -165,7 +165,7 @@ class ChessGame:
 
         while self.playing:
             player = white if self.position.side == Color.WHITE else black
-            move = player.best_move(self.position, time, depth, nodes)
+            move = player.best_move(self.position.copy(), time, depth, nodes)
 
             if isinstance(move, str):
                 if move in ("exit", "quit", "resign"):

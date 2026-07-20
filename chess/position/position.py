@@ -72,6 +72,9 @@ class Position:
     def pseudo_legal_moves(self) -> list[Move]:
         return self.board.generate_pseudo_legal_moves(self.side, self.castling, self.epsquare)
 
+    def copy(self) -> "Position":
+        return Position(self.fen)
+
     def in_check(self, side: Color) -> bool:
         return self.board.in_check(side)
 

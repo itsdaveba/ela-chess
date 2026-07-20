@@ -4,7 +4,7 @@ from chess import EnginePlayer, Position, Move
 def test_engine():
     engine = EnginePlayer()
     position = Position("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
-    move = engine.best_move(position, -1, 0, -1)
+    move = engine.best_move(position, -1, 1, -1)
     assert isinstance(move, Move)
 
     position.fen = "rnb1kbnr/pppp1ppp/8/4p1q1/4P2P/8/PPPP1PP1/RNBQKBNR w KQkq - 1 3"
