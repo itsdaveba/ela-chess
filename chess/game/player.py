@@ -12,12 +12,14 @@ class Player(ABC):
         return self.name
 
     @abstractmethod
-    def best_move(self, position: Position, max_time: int, max_depth: int, max_nodes: int) -> Move | str:
+    def search(self, position: Position, max_time: int, max_depth: int,
+               max_nodes: int, print_uci_info: bool = False) -> Move | str:
         ...
 
 
 class HumanPlayer(Player):
     name = "Human"
 
-    def best_move(self, position: Position, max_time: int, max_depth: int, max_nodes: int) -> Move | str:
+    def search(self, position: Position, max_time: int, max_depth: int,
+               max_nodes: int, print_uci_info: bool = False) -> Move | str:
         return input("Move: ")

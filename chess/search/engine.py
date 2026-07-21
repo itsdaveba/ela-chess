@@ -1,6 +1,6 @@
+import sys
 import time
 import random
-from itertools import count
 
 from ..evaluation.eval import evaluate
 
@@ -11,7 +11,10 @@ from ..move.move import Move
 from ..position.position import Position
 
 
-MIN_VALUE: int = -50000
+MAX_DEPTH: int = 128
+
+MIN_SCORE: int = -50000
+MATE_CUTOFF: int = 30000
 
 
 class EnginePlayer(Player):
@@ -20,53 +23,85 @@ class EnginePlayer(Player):
     def __init__(self) -> None:
         super().__init__()
         self.nodes: int
+        self.stop: bool
         self.max_nodes: int
         self.max_time: float
+        self.best_move: Move
+        self.pv: list[list[Move]]
 
-    def best_move(self, position: Position, max_time: int, max_depth: int, max_nodes: int) -> Move | str:
+    def print_uci_info(self, depth: int, score_type: str, score: int, current_time: float, pv: list[Move]) -> None:
+        score_key = f"score {score_type}"
+
+        info = {
+            "depth": depth,
+            score_key: score,
+            "nodes": self.nodes,
+            "nps": int(self.nodes / current_time),
+            "time": int(current_time * 1000)
+        }
+
+        sys.stdout.write("info ")
+        for key in ["depth", score_key, "nodes", "nps", "time"]:
+            sys.stdout.write(f"{key} {info[key]} ")
+        sys.stdout.write(f"pv {' '.join(map(str, pv))}\n")
+        sys.stdout.flush()
+
+    def search(self, position: Position, max_time: int, max_depth: int,
+               max_nodes: int, print_uci_info: bool = False) -> Move | str:
         self.nodes = 0
+        self.stop = False
         self.max_nodes = max_nodes
-        self.max_time = max_time if max_time <= 0 else time.perf_counter() + max_time / 1000
 
-        ply = 0
-        side = position.side
+        start_time = time.perf_counter()
+        self.max_time = max_time if max_time <= 0 else start_time + max_time / 1000
 
         moves = position.pseudo_legal_moves
         random.shuffle(moves)
-        best_move = moves[0]
+        self.best_move = moves[0]
 
-        iterator = count(1) if max_depth < 0 else range(1, max_depth + 1)
+        if max_depth < 0:
+            max_depth = MAX_DEPTH
+        self.pv = [[moves[0]] * depth for depth in range(max_depth, -1, -1)]
 
-        for depth in iterator:
-            max = MIN_VALUE
+        side = position.side
+
+        for depth in range(1, max_depth + 1):
+            max = MIN_SCORE
             random.shuffle(moves)
-            bmove = moves[0]
 
             for move in moves:
                 irrev = position.make_move(move)
                 if not position.in_check(side):
                     try:
-                        score = -self.negamax(position, depth - 1, ply + 1)
+                        score = -self.negamax(position, depth - 1, 1)
                     except TimeoutError:
-                        return best_move
+                        return self.best_move
                     if score > max:
+                        self.pv[0][0] = move
+                        self.pv[0][1:depth] = self.pv[1][:depth - 1]
                         max = score
-                        bmove = move
                 position.undo_move(move, irrev)
 
-            if max > 30000:
-                return bmove
-            if max < -30000:
-                return bmove
+            self.best_move = self.pv[0][0]
+            current_time = time.perf_counter() - start_time
 
-            best_move = bmove
+            if max < -MATE_CUTOFF or max > MATE_CUTOFF:
+                if print_uci_info:
+                    score = depth // 2 if max > 0 else -(depth // 2)
+                    self.print_uci_info(depth, "mate", score, current_time, self.pv[0][:depth - 1])
+                return self.best_move
 
-        return best_move
+            if print_uci_info:
+                self.print_uci_info(depth, "cp", max, current_time, self.pv[0][:depth])
+
+        return self.best_move
 
     def negamax(self, position: Position, depth: int, ply: int) -> int:
         self.nodes += 1
 
         if self.nodes % 500 == 0:
+            if self.stop:
+                raise TimeoutError
             if self.max_nodes >= 0 and self.nodes >= self.max_nodes:
                 raise TimeoutError
             if self.max_time >= 0 and time.perf_counter() > self.max_time:
@@ -75,7 +110,7 @@ class EnginePlayer(Player):
         if depth == 0:
             return evaluate(position)
 
-        max = MIN_VALUE
+        max = MIN_SCORE
         side = position.side
         moves = position.pseudo_legal_moves
         random.shuffle(moves)
@@ -85,9 +120,11 @@ class EnginePlayer(Player):
             if not position.in_check(side):
                 score = -self.negamax(position, depth - 1, ply + 1)
                 if score > max:
+                    self.pv[ply][0] = move
+                    self.pv[ply][1:depth] = self.pv[ply+1][:depth - 1]
                     max = score
             position.undo_move(move, irrev)
 
-        if max == MIN_VALUE:
+        if max == MIN_SCORE:
             return (max + ply) if position.in_check(side) else 0
         return max

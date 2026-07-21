@@ -1,30 +1,44 @@
+import sys
+from threading import Thread
+
 from chess import ChessGame, EnginePlayer
 
 
 TIME_IDX = [2, 4]
-INC_IDX = [6, 8]
+INCR_IDX = [6, 8]
+
+
+def search(engine: EnginePlayer, *args) -> None:
+    best_move = engine.search(*args)
+    if not engine.stop:
+        sys.stdout.write(f"bestmove {best_move}\n")
+        sys.stdout.flush()
 
 
 if __name__ == "__main__":
     game = ChessGame()
     engine = EnginePlayer()
+    search_thread = Thread()
 
-    while True:
-        tokens = input().split()
+    for line in sys.stdin:
+        tokens = line.split()
         command = tokens[0]
 
         match command:
             case "uci":
-                print("id name ElaChess 0.2")
-                print("id author Dave Barragan")
-                print("uciok")
+                sys.stdout.write("id name ElaChess 0.2\n")
+                sys.stdout.write("id author Dave Barragan\n")
+                sys.stdout.write("uciok\n")
+                sys.stdout.flush()
 
             case "setoption":
                 name = tokens[2] if len(tokens) >= 3 else ""
-                print(f"No such option: {name}")
+                sys.stdout.write(f"No such option: {name}\n")
+                sys.stdout.flush()
 
             case "isready":
-                print("readyok")
+                sys.stdout.write("readyok\n")
+                sys.stdout.flush()
 
             case "ucinewgame":
                 pass
@@ -58,16 +72,25 @@ if __name__ == "__main__":
                 elif subcommand == "wtime":
                     if len(tokens) >= 9:
                         side = game.position.side
-                        time = int(int(tokens[TIME_IDX[side]]) / 20 + int(tokens[INC_IDX[side]]) / 2)
+                        time = int(int(tokens[TIME_IDX[side]]) / 20 + int(tokens[INCR_IDX[side]]) / 2)
 
-                move = engine.best_move(game.position.copy(), time, depth, nodes)
-                print(f"bestmove {move}")
+                search_thread = Thread(target=search, args=(engine, game.position.copy(), time, depth, nodes, True))
+                search_thread.start()
+
+            case "stop":
+                if search_thread.is_alive():
+                    engine.stop = True
+                    search_thread.join()
+                    sys.stdout.write(f"bestmove {engine.best_move}\n")
+                    sys.stdout.flush()
 
             case "d":
-                print(game.position)
+                sys.stdout.write(f"{game.position}\n")
+                sys.stdout.flush()
 
             case "quit":
                 break
 
             case _:
-                print(f"Unknown command: '{command}'")
+                sys.stdout.write(f"Unknown command: '{command}'\n")
+                sys.stdout.flush()
