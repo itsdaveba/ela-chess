@@ -9,5 +9,8 @@
 
 ## v0.2
 - Negamax
-- Iterative Deepening
+- Iterative deepening
 - Material evaluation
+
+## v0.3
+- Alpha-Beta pruning

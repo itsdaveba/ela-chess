@@ -66,37 +66,37 @@ class EnginePlayer(Player):
         side = position.side
 
         for depth in range(1, max_depth + 1):
-            max = MIN_SCORE
+            alpha = MIN_SCORE
             random.shuffle(moves)
 
             for move in moves:
                 irrev = position.make_move(move)
                 if not position.in_check(side):
                     try:
-                        score = -self.negamax(position, depth - 1, 1)
+                        score = -self.alpha_beta(position, MIN_SCORE, -alpha, depth - 1, 1)
                     except TimeoutError:
                         return self.best_move
-                    if score > max:
+                    if score > alpha:
+                        alpha = score
                         self.pv[0][0] = move
                         self.pv[0][1:depth] = self.pv[1][:depth - 1]
-                        max = score
                 position.undo_move(move, irrev)
 
             self.best_move = self.pv[0][0]
             current_time = time.perf_counter() - start_time
 
-            if max < -MATE_CUTOFF or max > MATE_CUTOFF:
+            if abs(alpha) > MATE_CUTOFF:
                 if print_uci_info:
-                    score = depth // 2 if max > 0 else -(depth // 2)
+                    score = depth // 2 if alpha > 0 else -(depth // 2)
                     self.print_uci_info(depth, "mate", score, current_time, self.pv[0][:depth - 1])
                 return self.best_move
 
             if print_uci_info:
-                self.print_uci_info(depth, "cp", max, current_time, self.pv[0][:depth])
+                self.print_uci_info(depth, "cp", alpha, current_time, self.pv[0][:depth])
 
         return self.best_move
 
-    def negamax(self, position: Position, depth: int, ply: int) -> int:
+    def alpha_beta(self, position: Position, alpha: int, beta: int, depth: int, ply: int) -> int:
         self.nodes += 1
 
         if self.nodes % 500 == 0:
@@ -110,21 +110,25 @@ class EnginePlayer(Player):
         if depth == 0:
             return evaluate(position)
 
-        max = MIN_SCORE
         side = position.side
+        no_legal_moves = True
         moves = position.pseudo_legal_moves
         random.shuffle(moves)
 
         for move in moves:
             irrev = position.make_move(move)
             if not position.in_check(side):
-                score = -self.negamax(position, depth - 1, ply + 1)
-                if score > max:
+                no_legal_moves = False
+                score = -self.alpha_beta(position, -beta, -alpha, depth - 1, ply + 1)
+                if score >= beta:
+                    position.undo_move(move, irrev)
+                    return beta
+                if score > alpha:
+                    alpha = score
                     self.pv[ply][0] = move
                     self.pv[ply][1:depth] = self.pv[ply+1][:depth - 1]
-                    max = score
             position.undo_move(move, irrev)
 
-        if max == MIN_SCORE:
-            return (max + ply) if position.in_check(side) else 0
-        return max
+        if no_legal_moves:
+            return (MIN_SCORE + ply) if position.in_check(side) else 0
+        return alpha
