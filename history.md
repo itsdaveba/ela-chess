@@ -4,7 +4,7 @@
 - Mailbox board representation
 - Pseudo legal move generation
 - Random move selection
-- UCI protocol
+- Baisc UCI protocol
 - PGN generator (partial, without SAN)
 
 ## v0.2
@@ -14,3 +14,5 @@
 
 ## v0.3
 - Alpha-Beta pruning
+- Principal variation
+- UCI 'info' and 'stop' commands

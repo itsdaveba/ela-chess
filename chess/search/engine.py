@@ -12,6 +12,7 @@ from ..position.position import Position
 
 
 MAX_DEPTH: int = 128
+TIME_CONTROL_FREQ: int = 1000
 
 MIN_SCORE: int = -50000
 MATE_CUTOFF: int = 30000
@@ -99,7 +100,7 @@ class EnginePlayer(Player):
     def alpha_beta(self, position: Position, alpha: int, beta: int, depth: int, ply: int) -> int:
         self.nodes += 1
 
-        if self.nodes % 500 == 0:
+        if self.nodes % TIME_CONTROL_FREQ == 0:
             if self.stop:
                 raise TimeoutError
             if self.max_nodes >= 0 and self.nodes >= self.max_nodes:
