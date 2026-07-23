@@ -12,7 +12,7 @@ from ..position.position import Position
 
 
 MAX_DEPTH: int = 128
-TIME_CONTROL_FREQ: int = 1000
+TIME_CONTROL_FREQ: int = 500
 
 MIN_SCORE: int = -50000
 MATE_CUTOFF: int = 30000

@@ -145,6 +145,7 @@ class Board:
                 moves.extend(self._piece_moves(side, origin))
                 if self.piece[origin] == Piece.KING and castling & CASTLING_FLAGS[side]:
                     moves.extend(self._castle_moves(side, origin, castling))
+
         return moves
 
     def _pawn_moves(self, side: Color, origin: Square, epsquare: Square) -> list[Move]:

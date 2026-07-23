@@ -14,5 +14,6 @@
 
 ## v0.3
 - Alpha-Beta pruning
+- Simplified evaluation function
 - Principal variation
 - UCI 'info' and 'stop' commands
