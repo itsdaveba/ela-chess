@@ -57,7 +57,6 @@ class EnginePlayer(Player):
         self.max_time = max_time if max_time <= 0 else start_time + max_time / 1000
 
         moves = position.pseudo_legal_moves
-        random.shuffle(moves)
         self.best_move = moves[0]
 
         if max_depth < 0:
@@ -74,7 +73,7 @@ class EnginePlayer(Player):
                 irrev = position.make_move(move)
                 if not position.in_check(side):
                     try:
-                        score = -self.alpha_beta(position, MIN_SCORE, -alpha, depth - 1, 1)
+                        score = -self.negamax(position, MIN_SCORE, -alpha, depth - 1, 1)
                     except TimeoutError:
                         return self.best_move
                     if score > alpha:
@@ -97,7 +96,7 @@ class EnginePlayer(Player):
 
         return self.best_move
 
-    def alpha_beta(self, position: Position, alpha: int, beta: int, depth: int, ply: int) -> int:
+    def negamax(self, position: Position, alpha: int, beta: int, depth: int, ply: int) -> int:
         self.nodes += 1
 
         if self.nodes % TIME_CONTROL_FREQ == 0:
@@ -120,7 +119,7 @@ class EnginePlayer(Player):
             irrev = position.make_move(move)
             if not position.in_check(side):
                 no_legal_moves = False
-                score = -self.alpha_beta(position, -beta, -alpha, depth - 1, ply + 1)
+                score = -self.negamax(position, -beta, -alpha, depth - 1, ply + 1)
                 if score >= beta:
                     position.undo_move(move, irrev)
                     return beta
