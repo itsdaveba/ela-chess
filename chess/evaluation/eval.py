@@ -87,13 +87,15 @@ for piece, table in zip(Piece, PIECE_TABLE):
 
 def evaluate(position: Position) -> int:
     eval = 0
-    side = position.side
 
-    for square in Square:
-        color = position.board.color[square]
-        piece = position.board.piece[square]
-        if color != Color.NONE:
-            value = PIECE_SQUARE_VALUE[color][piece][square]
-            eval += value if color == side else -value
+    side = position.side
+    for piece, squares in zip(Piece, position.board.piece_list[side]):
+        for square in squares:
+            eval += PIECE_SQUARE_VALUE[side][piece][square]
+
+    opponent = side.opponent
+    for piece, squares in zip(Piece, position.board.piece_list[opponent]):
+        for square in squares:
+            eval -= PIECE_SQUARE_VALUE[opponent][piece][square]
 
     return eval

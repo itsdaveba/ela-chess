@@ -12,7 +12,7 @@ from ..position.position import Position
 
 
 MAX_DEPTH: int = 128
-TIME_CONTROL_FREQ: int = 500
+TIME_CONTROL_FREQ: int = 1000
 
 MIN_SCORE: int = -50000
 MATE_CUTOFF: int = 30000
@@ -30,15 +30,15 @@ class EnginePlayer(Player):
         self.best_move: Move
         self.pv: list[list[Move]]
 
-    def print_uci_info(self, depth: int, score_type: str, score: int, current_time: float, pv: list[Move]) -> None:
+    def print_uci_info(self, depth: int, score_type: str, score: int, time_elapsed: float, pv: list[Move]) -> None:
         score_key = f"score {score_type}"
 
         info = {
             "depth": depth,
             score_key: score,
             "nodes": self.nodes,
-            "nps": int(self.nodes / current_time),
-            "time": int(current_time * 1000)
+            "nps": int(self.nodes / time_elapsed),
+            "time": int(time_elapsed * 1000)
         }
 
         sys.stdout.write("info ")
@@ -57,6 +57,7 @@ class EnginePlayer(Player):
         self.max_time = max_time if max_time <= 0 else start_time + max_time / 1000
 
         moves = position.pseudo_legal_moves
+        random.shuffle(moves)
         self.best_move = moves[0]
 
         if max_depth < 0:
@@ -83,16 +84,16 @@ class EnginePlayer(Player):
                 position.undo_move(move, irrev)
 
             self.best_move = self.pv[0][0]
-            current_time = time.perf_counter() - start_time
+            time_elapsed = time.perf_counter() - start_time
 
             if abs(alpha) > MATE_CUTOFF:
                 if print_uci_info:
                     score = depth // 2 if alpha > 0 else -(depth // 2)
-                    self.print_uci_info(depth, "mate", score, current_time, self.pv[0][:depth - 1])
+                    self.print_uci_info(depth, "mate", score, time_elapsed, self.pv[0][:depth - 1])
                 return self.best_move
 
             if print_uci_info:
-                self.print_uci_info(depth, "cp", alpha, current_time, self.pv[0][:depth])
+                self.print_uci_info(depth, "cp", alpha, time_elapsed, self.pv[0][:depth])
 
         return self.best_move
 

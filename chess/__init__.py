@@ -11,11 +11,11 @@ from .position.piece import Piece
 from .position.board import Board
 from .position.counter import Counter
 from .position.castling import Castling
-from .position.position import Position
+from .position.position import Position, perft
 from .position.square import Square, File, Rank
 
 from .search.engine import EnginePlayer
 
 
 __all__ = ["evaluate", "ChessGame", "History", "Player", "HumanPlayer", "EnginePlayer", "Move", "MoveType",
-           "Color", "Piece", "Board", "Counter", "Castling", "Position", "Square", "File", "Rank"]
+           "Color", "Piece", "Board", "Counter", "Castling", "Position", "perft", "Square", "File", "Rank"]

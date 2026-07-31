@@ -9,8 +9,7 @@ class Piece(int, Enum):
     QUEEN = 4
     KING = 5
 
-    OFF = 6
-    NONE = 7
+    NONE = 6
 
     @classmethod
     def from_char(cls, char: str) -> "Piece":
@@ -28,8 +27,8 @@ class Piece(int, Enum):
         return is_sliding[self]
 
 
-is_sliding: list[bool] = [False, False, True, True, True, False, False, False]
-to_char: str = "PNBRQK#."
+is_sliding: list[bool] = [False, False, True, True, True, False, False]
+to_char: str = "PNBRQK."
 from_char: dict[str, Piece] = {
     "P": Piece.PAWN,
     "N": Piece.KNIGHT,

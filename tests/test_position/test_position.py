@@ -1,6 +1,6 @@
 import pytest
 
-from chess import Position, Move, Color
+from chess import Position, Move, Color, perft
 
 
 def test_position():
@@ -155,22 +155,6 @@ def test_make_undo():
 
 
 def test_perft():
-
-    def perft(position: Position, depth: int) -> int:
-        if depth == 0:
-            return 1
-
-        nodes = 0
-        side = position.side
-
-        for move in position.pseudo_legal_moves:
-            irrev = position.make_move(move)
-            if not position.in_check(side):
-                nodes += perft(position, depth - 1)
-            position.undo_move(move, irrev)
-
-        return nodes
-
     fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
     results = [1, 20, 400, 8902, 197281]
     for i, r in enumerate(results):

@@ -4,7 +4,7 @@ from chess import Piece
 
 
 def test_piece():
-    assert len(Piece) == 8
+    assert len(Piece) == 7
 
     assert not Piece.PAWN.is_sliding
     assert Piece.PAWN.char == "P"
@@ -23,9 +23,6 @@ def test_piece():
 
     assert not Piece.KING.is_sliding
     assert Piece.KING.char == "K"
-
-    assert not Piece.OFF.is_sliding
-    assert Piece.OFF.char == "#"
 
     assert not Piece.NONE.is_sliding
     assert Piece.NONE.char == "."

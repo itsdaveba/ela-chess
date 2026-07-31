@@ -1,7 +1,8 @@
 import sys
 from threading import Thread
+from time import perf_counter
 
-from chess import ChessGame, EnginePlayer
+from chess import ChessGame, EnginePlayer, perft, evaluate
 
 
 TIME_IDX = [2, 4]
@@ -60,6 +61,25 @@ if __name__ == "__main__":
                 time = depth = nodes = -1
                 subcommand = tokens[1] if len(tokens) >= 2 else "infinite"
 
+                if subcommand == "perft":
+                    if len(tokens) >= 3:
+                        depth = int(tokens[2])
+                        start_time = perf_counter()
+                        nodes = perft(game.position, depth)
+                        time_elapsed = perf_counter() - start_time
+                        info = {
+                            "depth": depth,
+                            "nodes": nodes,
+                            "nps": int(nodes / time_elapsed),
+                            "time": int(time_elapsed * 1000)
+                        }
+                        sys.stdout.write("info")
+                        for key in ["depth", "nodes", "nps", "time"]:
+                            sys.stdout.write(f" {key} {info[key]}")
+                        sys.stdout.write("\n")
+                        sys.stdout.flush()
+                        continue
+
                 if subcommand == "movetime":
                     if len(tokens) >= 3:
                         time = int(tokens[2])
@@ -86,6 +106,10 @@ if __name__ == "__main__":
 
             case "d":
                 sys.stdout.write(f"{game.position}\n")
+                sys.stdout.flush()
+
+            case "eval":
+                sys.stdout.write(f"{evaluate(game.position) / 100:+.2f} (white side)\n")
                 sys.stdout.flush()
 
             case "quit":

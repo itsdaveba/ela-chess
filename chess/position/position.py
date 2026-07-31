@@ -3,7 +3,7 @@ from .piece import Piece
 from .square import Square
 from .counter import Counter
 from .castling import Castling
-from .board import Board, DIRECTIONS, CASTLING_FLAGS
+from .board import Board, PAWN_FORWARD, CASTLING_FLAGS
 
 from ..move.move import Move, MoveType
 
@@ -13,6 +13,22 @@ CASTLING_ROOK_INFO: list[dict[Castling, Square]] = [
     {Castling.WHITE_KINGSIDE: Square.H1, Castling.WHITE_QUEENSIDE: Square.A1},
     {Castling.BLACK_KINGSIDE: Square.H8, Castling.BLACK_QUEENSIDE: Square.A8}
 ]
+
+
+def perft(position: "Position", depth: int) -> int:
+    if depth == 0:
+        return 1
+
+    nodes = 0
+    side = position.side
+
+    for move in position.pseudo_legal_moves:
+        irrev = position.make_move(move)
+        if not position.in_check(side):
+            nodes += perft(position, depth - 1)
+        position.undo_move(move, irrev)
+
+    return nodes
 
 
 class Position:
@@ -96,7 +112,7 @@ class Position:
                         self.castling &= ~flag
 
         if move.type & MoveType.PAWN_DOUBLE_MOVE:
-            self.epsquare = Square(move.origin + DIRECTIONS[Piece.PAWN][self.side])
+            self.epsquare = PAWN_FORWARD[self.side][move.origin]
         else:
             self.epsquare = Square.NONE
 
