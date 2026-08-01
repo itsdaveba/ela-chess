@@ -54,6 +54,71 @@ TO_BIG_BOARD: list[int] = []
 for r in range(8):
     TO_BIG_BOARD.extend([f for f in range(r * 10 + 1, r * 10 + 9)])
 
+PIECE_VALUE: list[int] = [100, 320, 330, 500, 900, 20000]
+PIECE_TABLE: list[list[int]] = [
+    [  # pawn
+        0,   0,   0,   0,   0,   0,   0,   0,
+        50, 50,  50,  50,  50,  50,  50,  50,
+        10, 10,  20,  30,  30,  20,  10,  10,
+        5,   5,  10,  25,  25,  10,   5,   5,
+        0,   0,   0,  20,  20,   0,   0,   0,
+        5,  -5, -10,   0,   0, -10,  -5,   5,
+        5,  10,  10, -20, -20,  10,  10,   5,
+        0,   0,   0,   0,   0,   0,   0,   0
+    ],
+    [  # knight
+        -50, -40, -30, -30, -30, -30, -40, -50,
+        -40, -20,   0,   0,   0,   0, -20, -40,
+        -30,   0,  10,  15,  15,  10,   0, -30,
+        -30,   5,  15,  20,  20,  15,   5, -30,
+        -30,   0,  15,  20,  20,  15,   0, -30,
+        -30,   5,  10,  15,  15,  10,   5, -30,
+        -40, -20,   0,   5,   5,   0, -20, -40,
+        -50, -40, -30, -30, -30, -30, -40, -50
+    ],
+    [  # bishop
+        -20, -10, -10, -10, -10, -10, -10, -20,
+        -10,   0,   0,   0,   0,   0,   0, -10,
+        -10,   0,   5,  10,  10,   5,   0, -10,
+        -10,   5,   5,  10,  10,   5,   5, -10,
+        -10,   0,  10,  10,  10,  10,   0, -10,
+        -10,  10,  10,  10,  10,  10,  10, -10,
+        -10,   5,   0,   0,   0,   0,   5, -10,
+        -20, -10, -10, -10, -10, -10, -10, -20
+    ],
+    [  # rook
+        0,   0,  0,  0,  0,  0,  0,  0,
+        5,  10, 10, 10, 10, 10, 10,  5,
+        -5,  0,  0,  0,  0,  0,  0, -5,
+        -5,  0,  0,  0,  0,  0,  0, -5,
+        -5,  0,  0,  0,  0,  0,  0, -5,
+        -5,  0,  0,  0,  0,  0,  0, -5,
+        -5,  0,  0,  0,  0,  0,  0, -5,
+        0,   0,  0,  5,  5,  0,  0,  0
+    ],
+    [  # queen
+        -20, -10, -10,  -5,  -5, -10, -10, -20,
+        -10,   0,   0,   0,   0,   0,   0, -10,
+        -10,   0,   5,   5,   5,   5,   0, -10,
+        -5,    0,   5,   5,   5,   5,   0,  -5,
+        0,     0,   5,   5,   5,   5,   0,  -5,
+        -10,   5,   5,   5,   5,   5,   0, -10,
+        -10,   0,   5,   0,   0,   0,   0, -10,
+        -20, -10, -10,  -5,  -5, -10, -10, -20
+    ],
+    [  # king
+        -30, -40, -40, -50, -50, -40, -40, -30,
+        -30, -40, -40, -50, -50, -40, -40, -30,
+        -30, -40, -40, -50, -50, -40, -40, -30,
+        -30, -40, -40, -50, -50, -40, -40, -30,
+        -20, -30, -30, -40, -40, -30, -30, -20,
+        -10, -20, -20, -20, -20, -20, -20, -10,
+        20,   20,   0,   0,   0,   0,  20,  20,
+        20,   30,  10,   0,   0,  10,  30,  20
+    ]
+]
+
+PIECE_SQUARE_VALUE: list[list[list[int]]] = [[[0] * NUM_SQUARES for _ in PIECES], [[0] * NUM_SQUARES for _ in PIECES]]
 for origin in Square:
     if origin == Square.NONE:
         continue
@@ -66,20 +131,25 @@ for origin in Square:
                     for target in (single - 1, single + 1):
                         if BIG_BOARD[target] != Square.NONE:
                             ATTACK_SQUARES[Piece.PAWN][color][origin].append(BIG_BOARD[target])
-            continue
-        for d, direction in enumerate(DIRECTIONS[piece]):
-            squares = []
-            target = TO_BIG_BOARD[origin]
-            while True:
-                target += direction
-                if BIG_BOARD[target] == Square.NONE:
-                    break
-                if not piece.is_sliding:
-                    ATTACK_SQUARES[piece][origin].append(BIG_BOARD[target])
-                    break
-                squares.append(BIG_BOARD[target])
-            if piece.is_sliding and squares:
-                ATTACK_SQUARES[piece][origin].append(squares)
+        else:
+            for d, direction in enumerate(DIRECTIONS[piece]):
+                squares = []
+                target = TO_BIG_BOARD[origin]
+                while True:
+                    target += direction
+                    if BIG_BOARD[target] == Square.NONE:
+                        break
+                    if not piece.is_sliding:
+                        ATTACK_SQUARES[piece][origin].append(BIG_BOARD[target])
+                        break
+                    squares.append(BIG_BOARD[target])
+                if piece.is_sliding and squares:
+                    ATTACK_SQUARES[piece][origin].append(squares)
+
+        value = PIECE_VALUE[piece]
+        table = PIECE_TABLE[piece]
+        PIECE_SQUARE_VALUE[Color.WHITE][piece][origin] = value + table[origin.rank * 8 + origin.file]
+        PIECE_SQUARE_VALUE[Color.BLACK][piece][origin] = -value - table[(7 - origin.rank) * 8 + origin.file]
 
 
 class Board:
@@ -87,6 +157,7 @@ class Board:
         self.color: list[Color]
         self.piece: list[Piece]
         self.piece_list: list[list[set[Square]]]
+        self.eval: int
 
         self.string = string
 
@@ -135,6 +206,7 @@ class Board:
         self.color = [Color.NONE] * NUM_SQUARES
         self.piece = [Piece.NONE] * NUM_SQUARES
         self.piece_list = [[set() for _ in PIECES], [set() for _ in PIECES]]
+        self.eval = 0
 
         ranks = string.split("/")
         if len(ranks) != 8:
@@ -146,9 +218,8 @@ class Board:
                 if char.isdigit():
                     square += int(char)
                 else:
-                    self.color[square] = Color.WHITE if char.isupper() else Color.BLACK
-                    self.piece[square] = Piece.from_char(char.upper())
-                    self.piece_list[self.color[square]][self.piece[square]].add(Square(square))
+                    self._add_piece(Color.WHITE if char.isupper() else Color.BLACK,
+                                    Piece.from_char(char.upper()), Square(square))
                     square += 1
             if square % 8 != 0:
                 raise ValueError(f"invalid board string: '{string}'")
@@ -294,72 +365,56 @@ class Board:
         piece = self.piece[move.origin]
         capture = self.piece[move.target]
 
+        self._remove_piece(side, piece, move.origin)
         if capture != Piece.NONE:
-            self.piece_list[side.opponent][capture].remove(move.target)
-
-        self.color[move.target] = side
-        if move.type & MoveType.PROMOTION:
-            self.piece[move.target] = move.promotion
-            self.piece_list[side][move.promotion].add(move.target)
+            self._replace_piece(side.opponent, capture, side,
+                                move.promotion if move.type & MoveType.PROMOTION else piece, move.target)
         else:
-            self.piece[move.target] = piece
-            self.piece_list[side][piece].add(move.target)
-
-        self.color[move.origin] = Color.NONE
-        self.piece[move.origin] = Piece.NONE
-        self.piece_list[side][piece].remove(move.origin)
+            self._add_piece(side, move.promotion if move.type & MoveType.PROMOTION else piece, move.target)
 
         if move.type & MoveType.EPCAPTURE:
-            target = PAWN_FORWARD[side.opponent][move.target]
-            self.color[target] = Color.NONE
-            self.piece[target] = Piece.NONE
-            self.piece_list[side.opponent][Piece.PAWN].remove(target)
+            self._remove_piece(side.opponent, Piece.PAWN, PAWN_FORWARD[side.opponent][move.target])
 
         if move.type & MoveType.CASTLE:
             origin, target = CASTLING_ROOK_INFO[side][move.target]
-
-            self.color[target] = side
-            self.piece[target] = Piece.ROOK
-            self.piece_list[side][Piece.ROOK].add(target)
-
-            self.color[origin] = Color.NONE
-            self.piece[origin] = Piece.NONE
-            self.piece_list[side][Piece.ROOK].remove(origin)
+            self._remove_piece(side, Piece.ROOK, origin)
+            self._add_piece(side, Piece.ROOK, target)
 
         return capture
 
     def undo_move(self, side: Color, move: Move, capture: Piece) -> None:
         piece = self.piece[move.target]
 
-        self.color[move.origin] = side
-        if move.type & MoveType.PROMOTION:
-            self.piece[move.origin] = Piece.PAWN
-            self.piece_list[side][Piece.PAWN].add(move.origin)
-        else:
-            self.piece[move.origin] = piece
-            self.piece_list[side][piece].add(move.origin)
-
         if capture != Piece.NONE:
-            self.color[move.target] = side.opponent
-            self.piece_list[side.opponent][capture].add(move.target)
+            self._replace_piece(side, piece, side.opponent, capture, move.target)
         else:
-            self.color[move.target] = Color.NONE
-        self.piece[move.target] = capture
-        self.piece_list[side][piece].remove(move.target)
+            self._remove_piece(side, piece, move.target)
+        self._add_piece(side, Piece.PAWN if move.type & MoveType.PROMOTION else piece, move.origin)
 
         if move.type & MoveType.EPCAPTURE:
-            target = PAWN_FORWARD[side.opponent][move.target]
-            self.color[target] = side.opponent
-            self.piece[target] = Piece.PAWN
-            self.piece_list[side.opponent][Piece.PAWN].add(target)
+            self._add_piece(side.opponent, Piece.PAWN, PAWN_FORWARD[side.opponent][move.target])
 
         if move.type & MoveType.CASTLE:
             origin, target = CASTLING_ROOK_INFO[side][move.target]
+            self._remove_piece(side, Piece.ROOK, target)
+            self._add_piece(side, Piece.ROOK, origin)
 
-            self.color[origin] = side
-            self.piece[origin] = Piece.ROOK
-            self.piece_list[side][Piece.ROOK].add(origin)
+    def _add_piece(self, side: Color, piece: Piece, square: Square) -> None:
+        self.color[square] = side
+        self.piece[square] = piece
+        self.piece_list[side][piece].add(square)
+        self.eval += PIECE_SQUARE_VALUE[side][piece][square]
 
-            self.color[target] = Color.NONE
-            self.piece[target] = Piece.NONE
-            self.piece_list[side][Piece.ROOK].remove(target)
+    def _remove_piece(self, side: Color, piece: Piece, square: Square) -> None:
+        self.color[square] = Color.NONE
+        self.piece[square] = Piece.NONE
+        self.piece_list[side][piece].remove(square)
+        self.eval -= PIECE_SQUARE_VALUE[side][piece][square]
+
+    def _replace_piece(self, old_side: Color, old_piece: Piece,
+                       new_side: Color, new_piece: Piece, square: Square) -> None:
+        self.color[square] = new_side
+        self.piece[square] = new_piece
+        self.piece_list[old_side][old_piece].remove(square)
+        self.piece_list[new_side][new_piece].add(square)
+        self.eval += PIECE_SQUARE_VALUE[new_side][new_piece][square] - PIECE_SQUARE_VALUE[old_side][old_piece][square]

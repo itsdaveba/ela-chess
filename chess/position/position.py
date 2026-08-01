@@ -85,6 +85,10 @@ class Position:
         self.fullmove = Counter.from_string(fen_elements[5])
 
     @property
+    def eval(self) -> int:
+        return self.board.eval
+
+    @property
     def pseudo_legal_moves(self) -> list[Move]:
         return self.board.generate_pseudo_legal_moves(self.side, self.castling, self.epsquare)
 

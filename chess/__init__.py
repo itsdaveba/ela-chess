@@ -1,5 +1,3 @@
-from .evaluation.eval import evaluate
-
 from .game.game import ChessGame
 from .game.history import History
 from .game.player import Player, HumanPlayer
@@ -17,5 +15,5 @@ from .position.square import Square, File, Rank
 from .search.engine import EnginePlayer
 
 
-__all__ = ["evaluate", "ChessGame", "History", "Player", "HumanPlayer", "EnginePlayer", "Move", "MoveType",
+__all__ = ["ChessGame", "History", "Player", "HumanPlayer", "EnginePlayer", "Move", "MoveType",
            "Color", "Piece", "Board", "Counter", "Castling", "Position", "perft", "Square", "File", "Rank"]

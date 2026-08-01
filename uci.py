@@ -2,7 +2,7 @@ import sys
 from threading import Thread
 from time import perf_counter
 
-from chess import ChessGame, EnginePlayer, perft, evaluate
+from chess import ChessGame, EnginePlayer, perft
 
 
 TIME_IDX = [2, 4]
@@ -109,10 +109,13 @@ if __name__ == "__main__":
                 sys.stdout.flush()
 
             case "eval":
-                sys.stdout.write(f"{evaluate(game.position) / 100:+.2f} (white side)\n")
+                sys.stdout.write(f"{game.position.eval / 100:+.2f} (white side)\n")
                 sys.stdout.flush()
 
             case "quit":
+                if search_thread.is_alive():
+                    engine.stop = True
+                    search_thread.join()
                 break
 
             case _:

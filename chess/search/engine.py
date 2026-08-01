@@ -2,13 +2,11 @@ import sys
 import time
 import random
 
-from ..evaluation.eval import evaluate
-
 from ..game.player import Player
 
 from ..move.move import Move
 
-from ..position.position import Position
+from ..position.position import Color, Position
 
 
 MAX_DEPTH: int = 128
@@ -109,7 +107,7 @@ class EnginePlayer(Player):
                 raise TimeoutError
 
         if depth == 0:
-            return evaluate(position)
+            return position.eval if position.side == Color.WHITE else -position.eval
 
         side = position.side
         no_legal_moves = True
