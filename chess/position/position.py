@@ -9,9 +9,9 @@ from ..move.move import Move, MoveType
 
 
 SIDE_STRING: list[str] = ["White", "Black"]
-CASTLING_ROOK_INFO: list[dict[Castling, Square]] = [
-    {Castling.WHITE_KINGSIDE: Square.H1, Castling.WHITE_QUEENSIDE: Square.A1},
-    {Castling.BLACK_KINGSIDE: Square.H8, Castling.BLACK_QUEENSIDE: Square.A8}
+CASTLING_ROOK_INFO: list[list[tuple[Castling, Square]]] = [
+    [(Castling.WHITE_KINGSIDE, Square.H1), (Castling.WHITE_QUEENSIDE, Square.A1)],
+    [(Castling.BLACK_KINGSIDE, Square.H8), (Castling.BLACK_QUEENSIDE, Square.A8)]
 ]
 
 
@@ -107,11 +107,11 @@ class Position:
             if self.board.piece[move.target] == Piece.KING:
                 self.castling &= ~CASTLING_FLAGS[self.side]
             elif self.board.piece[move.target] == Piece.ROOK:
-                for flag, square in CASTLING_ROOK_INFO[self.side].items():
+                for flag, square in CASTLING_ROOK_INFO[self.side]:
                     if move.origin == square:
                         self.castling &= ~flag
             if capture == Piece.ROOK:
-                for flag, square in CASTLING_ROOK_INFO[self.side.opponent].items():
+                for flag, square in CASTLING_ROOK_INFO[self.side.opponent]:
                     if move.target == square:
                         self.castling &= ~flag
 

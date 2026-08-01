@@ -11,12 +11,12 @@ SECOND_RANK: list[Rank] = [Rank.R2, Rank.R7]
 PIECES: list[Piece] = [Piece.PAWN, Piece.KNIGHT, Piece.BISHOP, Piece.ROOK, Piece.QUEEN, Piece.KING]
 
 DIRECTIONS: list[list[int]] = [
-    [-10, 10],  # pawn
-    [-21, -19, -12, -8, 8, 12, 19, 21],  # knight
-    [-11, -9, 9, 11],  # bishop
-    [-10, -1, 1, 10],  # rook
-    [-11, -10, -9, -1, 1, 9, 10, 11],  # queen
-    [-11, -10, -9, -1, 1, 9, 10, 11]  # king
+    [-16, 16],  # pawn
+    [-33, -31, -18, -14, 14, 18, 31, 33],  # knight
+    [-17, -15, 15, 17],  # bishop
+    [-16, -1, 1, 16],  # rook
+    [-17, -16, -15, -1, 1, 15, 16, 17],  # queen
+    [-17, -16, -15, -1, 1, 15, 16, 17]  # king
 ]
 
 CASTLING_FLAGS: list[Castling] = [
@@ -43,16 +43,14 @@ ATTACK_SQUARES = [[[] for _ in range(NUM_SQUARES)] for _ in PIECES]
 ATTACK_SQUARES[Piece.PAWN] = [[[] for _ in range(NUM_SQUARES)], [[] for _ in range(NUM_SQUARES)]]
 
 squares = list(Square)
-BIG_BOARD: list[Square] = []
+BOARD_0X88: list[Square] = []
 for r in range(8):
-    BIG_BOARD.append(Square.NONE)
-    BIG_BOARD.extend(squares[r * 8:r * 8 + 8])
-    BIG_BOARD.append(Square.NONE)
-BIG_BOARD.extend([Square.NONE] * 20)
+    BOARD_0X88.extend(squares[r * 8:r * 8 + 8])
+    BOARD_0X88.extend([Square.NONE] * 8)
 
-TO_BIG_BOARD: list[int] = []
+TO_BOARD_0X88: list[int] = []
 for r in range(8):
-    TO_BIG_BOARD.extend([f for f in range(r * 10 + 1, r * 10 + 9)])
+    TO_BOARD_0X88.extend([f for f in range(r * 16, r * 16 + 8)])
 
 PIECE_VALUE: list[int] = [100, 320, 330, 500, 900, 20000]
 PIECE_TABLE: list[list[int]] = [
@@ -119,30 +117,31 @@ PIECE_TABLE: list[list[int]] = [
 ]
 
 PIECE_SQUARE_VALUE: list[list[list[int]]] = [[[0] * NUM_SQUARES for _ in PIECES], [[0] * NUM_SQUARES for _ in PIECES]]
+
 for origin in Square:
     if origin == Square.NONE:
         continue
     for piece in PIECES:
         if piece == Piece.PAWN:
             for color in (Color.WHITE, Color.BLACK):
-                single = TO_BIG_BOARD[origin] + DIRECTIONS[Piece.PAWN][color]
-                if BIG_BOARD[single] != Square.NONE:
-                    PAWN_FORWARD[color][origin] = BIG_BOARD[single]
+                single = TO_BOARD_0X88[origin] + DIRECTIONS[Piece.PAWN][color]
+                if not single & 0x88:
+                    PAWN_FORWARD[color][origin] = BOARD_0X88[single]
                     for target in (single - 1, single + 1):
-                        if BIG_BOARD[target] != Square.NONE:
-                            ATTACK_SQUARES[Piece.PAWN][color][origin].append(BIG_BOARD[target])
+                        if not target & 0x88:
+                            ATTACK_SQUARES[Piece.PAWN][color][origin].append(BOARD_0X88[target])
         else:
             for d, direction in enumerate(DIRECTIONS[piece]):
                 squares = []
-                target = TO_BIG_BOARD[origin]
+                target = TO_BOARD_0X88[origin]
                 while True:
                     target += direction
-                    if BIG_BOARD[target] == Square.NONE:
+                    if target & 0x88:
                         break
                     if not piece.is_sliding:
-                        ATTACK_SQUARES[piece][origin].append(BIG_BOARD[target])
+                        ATTACK_SQUARES[piece][origin].append(BOARD_0X88[target])
                         break
-                    squares.append(BIG_BOARD[target])
+                    squares.append(BOARD_0X88[target])
                 if piece.is_sliding and squares:
                     ATTACK_SQUARES[piece][origin].append(squares)
 
