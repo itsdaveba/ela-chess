@@ -49,7 +49,7 @@ white=None, black=None, result=None, history=[])"
 
 """
 
-    game = ChessGame("7k/5K2/8/6Q1/8/8/8/8 w - - 97 1")
+    game = ChessGame("7k/5K2/8/6Q1/8/8/P7/8 w - - 97 1")
     monkeypatch.setattr('sys.stdin', io.StringIO("g5g6"))
     game.play(white, black, -1, 1, -1)
     captured = capsys.readouterr()
@@ -83,7 +83,7 @@ white=None, black=None, result=None, history=[])"
 
     monkeypatch.setattr('sys.stdin', io.StringIO("g5g4\nundo\ng5g4\ng4h4"))
     game.play(white, black, -1, 1, -1)
-    assert repr(game) == "ChessGame(fen='7k/5K2/8/6Q1/8/8/8/8 w - - 97 1', \
+    assert repr(game) == "ChessGame(fen='7k/5K2/8/6Q1/8/8/P7/8 w - - 97 1', \
 white=Human, black=Engine, result=Color.WHITE, history=[Move.G5G4, Move.H8H7, Move.G4H4])"
     assert str(game) == f"""\
 [Event "Player vs Engine"]
@@ -94,7 +94,7 @@ white=Human, black=Engine, result=Color.WHITE, history=[Move.G5G4, Move.H8H7, Mo
 [Black "ElaChess"]
 [Result "1-0"]
 [SetUp "1"]
-[FEN "7k/5K2/8/6Q1/8/8/8/8 w - - 97 1"]
+[FEN "7k/5K2/8/6Q1/8/8/P7/8 w - - 97 1"]
 
 g5g4 h8h7 g4h4"""
     captured = capsys.readouterr()
@@ -120,3 +120,9 @@ g5g4 h8h7 g4h4"""
     game.play(white, black, -1, 0, -1)
     captured = capsys.readouterr()
     assert captured.out.find("Fifty-move rule") != -1
+
+    game.undo_move()
+    monkeypatch.setattr('sys.stdin', io.StringIO("a2a4\nf7f8\nf8f7\nf7f8\nf8f7"))
+    game.play(white, black, -1, 0, -1)
+    captured = capsys.readouterr()
+    assert captured.out.find("Threefold repetition") != -1
