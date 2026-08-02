@@ -70,38 +70,41 @@ if __name__ == "__main__":
                 time = depth = nodes = -1
                 subcommand = tokens[1] if len(tokens) >= 2 else "infinite"
 
-                if subcommand == "perft":
-                    if len(tokens) >= 3:
-                        depth = int(tokens[2])
-                        start_time = perf_counter()
-                        nodes = perft(game.position, depth)
-                        time_elapsed = perf_counter() - start_time
-                        info = {
-                            "depth": depth,
-                            "nodes": nodes,
-                            "nps": int(nodes / time_elapsed),
-                            "time": int(time_elapsed * 1000)
-                        }
-                        sys.stdout.write("info")
-                        for key in ["depth", "nodes", "nps", "time"]:
-                            sys.stdout.write(f" {key} {info[key]}")
-                        sys.stdout.write("\n")
-                        sys.stdout.flush()
-                        continue
+                try:
+                    if subcommand == "perft":
+                        if len(tokens) >= 3:
+                            depth = int(tokens[2])
+                            start_time = perf_counter()
+                            nodes = perft(game.position, depth)
+                            time_elapsed = perf_counter() - start_time
+                            info = {
+                                "depth": depth,
+                                "nodes": nodes,
+                                "nps": int(nodes / time_elapsed),
+                                "time": int(time_elapsed * 1000)
+                            }
+                            sys.stdout.write("info")
+                            for key in ["depth", "nodes", "nps", "time"]:
+                                sys.stdout.write(f" {key} {info[key]}")
+                            sys.stdout.write("\n")
+                            sys.stdout.flush()
+                            continue
 
-                if subcommand == "movetime":
-                    if len(tokens) >= 3:
-                        time = int(tokens[2])
-                elif subcommand == "depth":
-                    if len(tokens) >= 3:
-                        depth = int(tokens[2])
-                elif subcommand == "nodes":
-                    if len(tokens) >= 3:
-                        nodes = int(tokens[2])
-                elif subcommand == "wtime":
-                    if len(tokens) >= 9:
-                        side = game.position.side
-                        time = int(int(tokens[TIME_IDX[side]]) / 20 + int(tokens[INCR_IDX[side]]) / 2)
+                    if subcommand == "movetime":
+                        if len(tokens) >= 3:
+                            time = int(tokens[2])
+                    elif subcommand == "depth":
+                        if len(tokens) >= 3:
+                            depth = int(tokens[2])
+                    elif subcommand == "nodes":
+                        if len(tokens) >= 3:
+                            nodes = int(tokens[2])
+                    elif subcommand == "wtime":
+                        if len(tokens) >= 9:
+                            side = game.position.side
+                            time = int(int(tokens[TIME_IDX[side]]) / 20 + int(tokens[INCR_IDX[side]]) / 2)
+                except ValueError:
+                    pass
 
                 search_thread = Thread(target=search, args=(engine, game.position.copy(), time, depth, nodes, True))
                 search_thread.start()
