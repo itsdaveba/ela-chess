@@ -212,7 +212,7 @@ class ChessGame:
     def repetition(self) -> bool:
         count = 0
 
-        for i in range(-4, -self.position.halfmove.value - 1, -2):
+        for i in range(-4, max(-self.position.halfmove.value - 1, -len(self.history) - 1), -2):
             if self.position.hash == self.history.irrevs[i][-1]:
                 count += 1
                 if count == 2:
