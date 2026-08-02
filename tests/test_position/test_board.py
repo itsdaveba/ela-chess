@@ -39,6 +39,10 @@ q . . . . . b ."""
     assert board.in_check(Color.BLACK)
     assert not Board().in_check(Color.WHITE)
 
+    # hash
+    assert board != Color.WHITE
+    assert board == Board("r1bk3r/p2pBpNp/n4n2/1p1NP2P/6P1/3P4/P1P1K3/q5b1")
+
 
 def test_move_generator():
     board = Board()
@@ -104,30 +108,36 @@ def test_string():
 
 def test_make_undo():
     board = Board("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R")
+    assert board.string == "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R"
+    assert board == Board("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R")
     assert board.eval == 105
 
     # make
     type = MoveType.PAWN_MOVE | MoveType.PAWN_DOUBLE_MOVE
     capture = board.make_move(Color.BLACK, Move(Square.C7, Square.C5, type))
     assert board.string == "r3k2r/p2pqpb1/bn2pnp1/2pPN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R"
+    assert board == Board("r3k2r/p2pqpb1/bn2pnp1/2pPN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R")
     assert capture == Piece.NONE
     assert board.eval == 115
 
     type = MoveType.PAWN_MOVE | MoveType.CAPTURE | MoveType.EPCAPTURE
     capture = board.make_move(Color.WHITE, Move(Square.D5, Square.C6, type))
     assert board.string == "r3k2r/p2pqpb1/bnP1pnp1/4N3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R"
+    assert board == Board("r3k2r/p2pqpb1/bnP1pnp1/4N3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R")
     assert capture == Piece.NONE
     assert board.eval == 210
 
     type = MoveType.CASTLE
     capture = board.make_move(Color.BLACK, Move(Square.E8, Square.G8, type))
     assert board.string == "r4rk1/p2pqpb1/bnP1pnp1/4N3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R"
+    assert board == Board("r4rk1/p2pqpb1/bnP1pnp1/4N3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R")
     assert capture == Piece.NONE
     assert board.eval == 180
 
     type = MoveType.PAWN_MOVE | MoveType.CAPTURE
     capture = board.make_move(Color.WHITE, Move(Square.G2, Square.H3, type))
     assert board.string == "r4rk1/p2pqpb1/bnP1pnp1/4N3/1p2P3/2N2Q1P/PPPBBP1P/R3K2R"
+    assert board == Board("r4rk1/p2pqpb1/bnP1pnp1/4N3/1p2P3/2N2Q1P/PPPBBP1P/R3K2R")
     assert capture == Piece.PAWN
     assert board.eval == 285
 
@@ -135,19 +145,23 @@ def test_make_undo():
     type = MoveType.PAWN_MOVE | MoveType.CAPTURE
     board.undo_move(Color.WHITE, Move(Square.G2, Square.H3, type), Piece.PAWN)
     assert board.string == "r4rk1/p2pqpb1/bnP1pnp1/4N3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R"
+    assert board == Board("r4rk1/p2pqpb1/bnP1pnp1/4N3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R")
     assert board.eval == 180
 
     type = MoveType.CASTLE
     board.undo_move(Color.BLACK, Move(Square.E8, Square.G8, type), Piece.NONE)
     assert board.string == "r3k2r/p2pqpb1/bnP1pnp1/4N3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R"
+    assert board == Board("r3k2r/p2pqpb1/bnP1pnp1/4N3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R")
     assert board.eval == 210
 
     type = MoveType.PAWN_MOVE | MoveType.CAPTURE | MoveType.EPCAPTURE
     board.undo_move(Color.WHITE, Move(Square.D5, Square.C6, type), Piece.NONE)
     assert board.string == "r3k2r/p2pqpb1/bn2pnp1/2pPN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R"
+    assert board == Board("r3k2r/p2pqpb1/bn2pnp1/2pPN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R")
     assert board.eval == 115
 
     type = MoveType.PAWN_MOVE | MoveType.PAWN_DOUBLE_MOVE
     board.undo_move(Color.BLACK, Move(Square.C7, Square.C5, type), Piece.NONE)
     assert board.string == "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R"
+    assert board == Board("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R")
     assert board.eval == 105

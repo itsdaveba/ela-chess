@@ -1,3 +1,5 @@
+import random
+
 from .color import Color
 from .piece import Piece
 from .square import Square
@@ -13,6 +15,16 @@ CASTLING_ROOK_INFO: list[list[tuple[Castling, Square]]] = [
     [(Castling.WHITE_KINGSIDE, Square.H1), (Castling.WHITE_QUEENSIDE, Square.A1)],
     [(Castling.BLACK_KINGSIDE, Square.H8), (Castling.BLACK_QUEENSIDE, Square.A8)]
 ]
+HASH_SIDE: list[int] = [0, random.getrandbits(64)]
+HASH_CASTLING_FLAGS: list[int] = [random.getrandbits(64) for _ in range(4)]
+HASH_CASTLING: list[int] = [0] * 16
+for castling in range(16):
+    hash = 0
+    for i, flag in enumerate(Castling):
+        if castling & flag:
+            hash ^= HASH_CASTLING_FLAGS[i]
+    HASH_CASTLING[castling] = hash
+HASH_EPSQUARE: list[int] = [random.getrandbits(64) for _ in range(8)] + [0]
 
 
 def perft(position: "Position", depth: int) -> int:
@@ -39,8 +51,14 @@ class Position:
         self.epsquare: Square
         self.halfmove: Counter
         self.fullmove: Counter
+        self.hash: int
 
         self.fen = fen
+
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, Position):
+            return self.hash == other.hash
+        return False
 
     def __repr__(self) -> str:
         return f"Position('{self.fen}')"
@@ -84,6 +102,11 @@ class Position:
         self.halfmove = Counter.from_string(fen_elements[4])
         self.fullmove = Counter.from_string(fen_elements[5])
 
+        self.hash = self.board.hash
+        self.hash ^= HASH_SIDE[self.side]
+        self.hash ^= HASH_CASTLING[self.castling]
+        self.hash ^= HASH_EPSQUARE[self.epsquare.file]
+
     @property
     def eval(self) -> int:
         return self.board.eval
@@ -98,26 +121,39 @@ class Position:
     def in_check(self, side: Color) -> bool:
         return self.board.in_check(side)
 
-    def make_move(self, move: Move) -> tuple[Piece, Castling, Square, Counter]:
-        capture = self.board.make_move(self.side, move)
+    def make_move(self, move: Move) -> tuple[Piece, Castling, Square, Counter, int]:
+        hash = self.hash
 
-        irrev = capture, self.castling, self.epsquare, self.halfmove.copy()
+        self.hash ^= self.board.hash
+        capture = self.board.make_move(self.side, move)
+        self.hash ^= self.board.hash
+
+        irrev = capture, self.castling, self.epsquare, self.halfmove.copy(), hash
 
         if self.castling:
             if self.board.piece[move.target] == Piece.KING:
-                self.castling &= ~CASTLING_FLAGS[self.side]
+                if self.castling & CASTLING_FLAGS[self.side]:
+                    self.hash ^= HASH_CASTLING[self.castling]
+                    self.castling &= ~CASTLING_FLAGS[self.side]
+                    self.hash ^= HASH_CASTLING[self.castling]
             elif self.board.piece[move.target] == Piece.ROOK:
                 for flag, square in CASTLING_ROOK_INFO[self.side]:
-                    if move.origin == square:
+                    if move.origin == square and self.castling & flag:
                         self.castling &= ~flag
+                        self.hash ^= HASH_CASTLING[flag]
             if capture == Piece.ROOK:
                 for flag, square in CASTLING_ROOK_INFO[self.side.opponent]:
-                    if move.target == square:
+                    if move.target == square and self.castling & flag:
                         self.castling &= ~flag
+                        self.hash ^= HASH_CASTLING[flag]
 
         if move.type & MoveType.PAWN_DOUBLE_MOVE:
+            if self.epsquare != Square.NONE:
+                self.hash ^= HASH_EPSQUARE[self.epsquare.file]
             self.epsquare = PAWN_FORWARD[self.side][move.origin]
-        else:
+            self.hash ^= HASH_EPSQUARE[self.epsquare.file]
+        elif self.epsquare != Square.NONE:
+            self.hash ^= HASH_EPSQUARE[self.epsquare.file]
             self.epsquare = Square.NONE
 
         if move.type & (MoveType.PAWN_MOVE | MoveType.CAPTURE):
@@ -129,13 +165,14 @@ class Position:
             self.fullmove.incr()
 
         self.side = self.side.opponent
+        self.hash ^= HASH_SIDE[Color.BLACK]
 
         return irrev
 
-    def undo_move(self, move: Move, irrev: tuple[Piece, Castling, Square, Counter]) -> None:
+    def undo_move(self, move: Move, irrev: tuple[Piece, Castling, Square, Counter, int]) -> None:
         self.side = self.side.opponent
 
-        capture, self.castling, self.epsquare, self.halfmove = irrev
+        capture, self.castling, self.epsquare, self.halfmove, self.hash = irrev
 
         self.board.undo_move(self.side, move, capture)
 

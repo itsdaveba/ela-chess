@@ -27,7 +27,8 @@ White to move
     assert position.eval == 105
 
     copy = position.copy()
-    assert copy != position
+    assert copy == position
+    assert copy != Color.WHITE
     assert copy.fen == "r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1"
 
     assert position.in_check(Color.WHITE)
@@ -63,96 +64,119 @@ def test_make_undo():
     moves = []
     irrevs = []
     position = Position("r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2QK2R w KQkq - 0 1")
+    assert position == Position("r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2QK2R w KQkq - 0 1")
 
     # make
     pseudo_legal_moves = position.pseudo_legal_moves
     moves.append(pseudo_legal_moves[pseudo_legal_moves.index(Move.from_string("f3e5"))])
     irrevs.append(position.make_move(moves[-1]))
     assert position.fen == "r3k2r/Pppp1ppp/1b3nbN/nP2N3/BBP1P3/q7/Pp1P2PP/R2QK2R b KQkq - 1 1"
+    assert position == Position("r3k2r/Pppp1ppp/1b3nbN/nP2N3/BBP1P3/q7/Pp1P2PP/R2QK2R b KQkq - 1 1")
 
     pseudo_legal_moves = position.pseudo_legal_moves
     moves.append(pseudo_legal_moves[pseudo_legal_moves.index(Move.from_string("f6g4"))])
     irrevs.append(position.make_move(moves[-1]))
     assert position.fen == "r3k2r/Pppp1ppp/1b4bN/nP2N3/BBP1P1n1/q7/Pp1P2PP/R2QK2R w KQkq - 2 2"
+    assert position == Position("r3k2r/Pppp1ppp/1b4bN/nP2N3/BBP1P1n1/q7/Pp1P2PP/R2QK2R w KQkq - 2 2")
 
     pseudo_legal_moves = position.pseudo_legal_moves
     moves.append(pseudo_legal_moves[pseudo_legal_moves.index(Move.from_string("d1g4"))])
     irrevs.append(position.make_move(moves[-1]))
     assert position.fen == "r3k2r/Pppp1ppp/1b4bN/nP2N3/BBP1P1Q1/q7/Pp1P2PP/R3K2R b KQkq - 0 2"
+    assert position == Position("r3k2r/Pppp1ppp/1b4bN/nP2N3/BBP1P1Q1/q7/Pp1P2PP/R3K2R b KQkq - 0 2")
 
     pseudo_legal_moves = position.pseudo_legal_moves
     moves.append(pseudo_legal_moves[pseudo_legal_moves.index(Move.from_string("b2a1q"))])
     irrevs.append(position.make_move(moves[-1]))
     assert position.fen == "r3k2r/Pppp1ppp/1b4bN/nP2N3/BBP1P1Q1/q7/P2P2PP/q3K2R w Kkq - 0 3"
+    assert position == Position("r3k2r/Pppp1ppp/1b4bN/nP2N3/BBP1P1Q1/q7/P2P2PP/q3K2R w Kkq - 0 3")
 
     pseudo_legal_moves = position.pseudo_legal_moves
     moves.append(pseudo_legal_moves[pseudo_legal_moves.index(Move.from_string("e1e2"))])
     irrevs.append(position.make_move(moves[-1]))
     assert position.fen == "r3k2r/Pppp1ppp/1b4bN/nP2N3/BBP1P1Q1/q7/P2PK1PP/q6R b kq - 1 3"
+    assert position == Position("r3k2r/Pppp1ppp/1b4bN/nP2N3/BBP1P1Q1/q7/P2PK1PP/q6R b kq - 1 3")
 
     pseudo_legal_moves = position.pseudo_legal_moves
     moves.append(pseudo_legal_moves[pseudo_legal_moves.index(Move.from_string("h8g8"))])
     irrevs.append(position.make_move(moves[-1]))
     assert position.fen == "r3k1r1/Pppp1ppp/1b4bN/nP2N3/BBP1P1Q1/q7/P2PK1PP/q6R w q - 2 4"
+    assert position == Position("r3k1r1/Pppp1ppp/1b4bN/nP2N3/BBP1P1Q1/q7/P2PK1PP/q6R w q - 2 4")
 
     pseudo_legal_moves = position.pseudo_legal_moves
     moves.append(pseudo_legal_moves[pseudo_legal_moves.index(Move.from_string("d2d4"))])
     irrevs.append(position.make_move(moves[-1]))
     assert position.fen == "r3k1r1/Pppp1ppp/1b4bN/nP2N3/BBPPP1Q1/q7/P3K1PP/q6R b q d3 0 4"
+    assert position == Position("r3k1r1/Pppp1ppp/1b4bN/nP2N3/BBPPP1Q1/q7/P3K1PP/q6R b q d3 0 4")
 
     pseudo_legal_moves = position.pseudo_legal_moves
     moves.append(pseudo_legal_moves[pseudo_legal_moves.index(Move.from_string("c7c5"))])
     irrevs.append(position.make_move(moves[-1]))
     assert position.fen == "r3k1r1/Pp1p1ppp/1b4bN/nPp1N3/BBPPP1Q1/q7/P3K1PP/q6R w q c6 0 5"
+    assert position == Position("r3k1r1/Pp1p1ppp/1b4bN/nPp1N3/BBPPP1Q1/q7/P3K1PP/q6R w q c6 0 5")
 
     pseudo_legal_moves = position.pseudo_legal_moves
     moves.append(pseudo_legal_moves[pseudo_legal_moves.index(Move.from_string("b5c6"))])
     irrevs.append(position.make_move(moves[-1]))
     assert position.fen == "r3k1r1/Pp1p1ppp/1bP3bN/n3N3/BBPPP1Q1/q7/P3K1PP/q6R b q - 0 5"
+    assert position == Position("r3k1r1/Pp1p1ppp/1bP3bN/n3N3/BBPPP1Q1/q7/P3K1PP/q6R b q - 0 5")
 
     pseudo_legal_moves = position.pseudo_legal_moves
     moves.append(pseudo_legal_moves[pseudo_legal_moves.index(Move.from_string("e8c8"))])
     irrevs.append(position.make_move(moves[-1]))
     assert position.fen == "2kr2r1/Pp1p1ppp/1bP3bN/n3N3/BBPPP1Q1/q7/P3K1PP/q6R w - - 1 6"
+    assert position == Position("2kr2r1/Pp1p1ppp/1bP3bN/n3N3/BBPPP1Q1/q7/P3K1PP/q6R w - - 1 6")
 
     pseudo_legal_moves = position.pseudo_legal_moves
     moves.append(pseudo_legal_moves[pseudo_legal_moves.index(Move.from_string("c6c7"))])
     irrevs.append(position.make_move(moves[-1]))
     assert position.fen == "2kr2r1/PpPp1ppp/1b4bN/n3N3/BBPPP1Q1/q7/P3K1PP/q6R b - - 0 6"
+    assert position == Position("2kr2r1/PpPp1ppp/1b4bN/n3N3/BBPPP1Q1/q7/P3K1PP/q6R b - - 0 6")
 
     # undo
     position.undo_move(moves.pop(), irrevs.pop())
     assert position.fen == "2kr2r1/Pp1p1ppp/1bP3bN/n3N3/BBPPP1Q1/q7/P3K1PP/q6R w - - 1 6"
+    assert position == Position("2kr2r1/Pp1p1ppp/1bP3bN/n3N3/BBPPP1Q1/q7/P3K1PP/q6R w - - 1 6")
 
     position.undo_move(moves.pop(), irrevs.pop())
     assert position.fen == "r3k1r1/Pp1p1ppp/1bP3bN/n3N3/BBPPP1Q1/q7/P3K1PP/q6R b q - 0 5"
+    assert position == Position("r3k1r1/Pp1p1ppp/1bP3bN/n3N3/BBPPP1Q1/q7/P3K1PP/q6R b q - 0 5")
 
     position.undo_move(moves.pop(), irrevs.pop())
     assert position.fen == "r3k1r1/Pp1p1ppp/1b4bN/nPp1N3/BBPPP1Q1/q7/P3K1PP/q6R w q c6 0 5"
+    assert position == Position("r3k1r1/Pp1p1ppp/1b4bN/nPp1N3/BBPPP1Q1/q7/P3K1PP/q6R w q c6 0 5")
 
     position.undo_move(moves.pop(), irrevs.pop())
     assert position.fen == "r3k1r1/Pppp1ppp/1b4bN/nP2N3/BBPPP1Q1/q7/P3K1PP/q6R b q d3 0 4"
+    assert position == Position("r3k1r1/Pppp1ppp/1b4bN/nP2N3/BBPPP1Q1/q7/P3K1PP/q6R b q d3 0 4")
 
     position.undo_move(moves.pop(), irrevs.pop())
     assert position.fen == "r3k1r1/Pppp1ppp/1b4bN/nP2N3/BBP1P1Q1/q7/P2PK1PP/q6R w q - 2 4"
+    assert position == Position("r3k1r1/Pppp1ppp/1b4bN/nP2N3/BBP1P1Q1/q7/P2PK1PP/q6R w q - 2 4")
 
     position.undo_move(moves.pop(), irrevs.pop())
     assert position.fen == "r3k2r/Pppp1ppp/1b4bN/nP2N3/BBP1P1Q1/q7/P2PK1PP/q6R b kq - 1 3"
+    assert position == Position("r3k2r/Pppp1ppp/1b4bN/nP2N3/BBP1P1Q1/q7/P2PK1PP/q6R b kq - 1 3")
 
     position.undo_move(moves.pop(), irrevs.pop())
     assert position.fen == "r3k2r/Pppp1ppp/1b4bN/nP2N3/BBP1P1Q1/q7/P2P2PP/q3K2R w Kkq - 0 3"
+    assert position == Position("r3k2r/Pppp1ppp/1b4bN/nP2N3/BBP1P1Q1/q7/P2P2PP/q3K2R w Kkq - 0 3")
 
     position.undo_move(moves.pop(), irrevs.pop())
     assert position.fen == "r3k2r/Pppp1ppp/1b4bN/nP2N3/BBP1P1Q1/q7/Pp1P2PP/R3K2R b KQkq - 0 2"
+    assert position == Position("r3k2r/Pppp1ppp/1b4bN/nP2N3/BBP1P1Q1/q7/Pp1P2PP/R3K2R b KQkq - 0 2")
 
     position.undo_move(moves.pop(), irrevs.pop())
     assert position.fen == "r3k2r/Pppp1ppp/1b4bN/nP2N3/BBP1P1n1/q7/Pp1P2PP/R2QK2R w KQkq - 2 2"
+    assert position == Position("r3k2r/Pppp1ppp/1b4bN/nP2N3/BBP1P1n1/q7/Pp1P2PP/R2QK2R w KQkq - 2 2")
 
     position.undo_move(moves.pop(), irrevs.pop())
     assert position.fen == "r3k2r/Pppp1ppp/1b3nbN/nP2N3/BBP1P3/q7/Pp1P2PP/R2QK2R b KQkq - 1 1"
+    assert position == Position("r3k2r/Pppp1ppp/1b3nbN/nP2N3/BBP1P3/q7/Pp1P2PP/R2QK2R b KQkq - 1 1")
 
     position.undo_move(moves.pop(), irrevs.pop())
     assert position.fen == "r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2QK2R w KQkq - 0 1"
+    assert position == Position("r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2QK2R w KQkq - 0 1")
 
 
 def test_perft():

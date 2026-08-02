@@ -1,3 +1,5 @@
+import random
+
 from .color import Color
 from .piece import Piece
 from .castling import Castling
@@ -117,6 +119,7 @@ PIECE_TABLE: list[list[int]] = [
 ]
 
 PIECE_SQUARE_VALUE: list[list[list[int]]] = [[[0] * NUM_SQUARES for _ in PIECES], [[0] * NUM_SQUARES for _ in PIECES]]
+HASH_VALUE: list[list[list[int]]] = [[[0] * NUM_SQUARES for _ in PIECES], [[0] * NUM_SQUARES for _ in PIECES]]
 
 for origin in Square:
     if origin == Square.NONE:
@@ -150,6 +153,9 @@ for origin in Square:
         PIECE_SQUARE_VALUE[Color.WHITE][piece][origin] = value + table[origin.rank * 8 + origin.file]
         PIECE_SQUARE_VALUE[Color.BLACK][piece][origin] = -value - table[(7 - origin.rank) * 8 + origin.file]
 
+        HASH_VALUE[Color.WHITE][piece][origin] = random.getrandbits(64)
+        HASH_VALUE[Color.BLACK][piece][origin] = random.getrandbits(64)
+
 
 class Board:
     def __init__(self, string: str = EMPTY_BOARD_STRING) -> None:
@@ -157,8 +163,14 @@ class Board:
         self.piece: list[Piece]
         self.piece_list: list[list[set[Square]]]
         self.eval: int
+        self.hash: int
 
         self.string = string
+
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, Board):
+            return self.hash == other.hash
+        return False
 
     def __repr__(self) -> str:
         return self.string
@@ -206,6 +218,7 @@ class Board:
         self.piece = [Piece.NONE] * NUM_SQUARES
         self.piece_list = [[set() for _ in PIECES], [set() for _ in PIECES]]
         self.eval = 0
+        self.hash = 0
 
         ranks = string.split("/")
         if len(ranks) != 8:
@@ -403,12 +416,14 @@ class Board:
         self.piece[square] = piece
         self.piece_list[side][piece].add(square)
         self.eval += PIECE_SQUARE_VALUE[side][piece][square]
+        self.hash ^= HASH_VALUE[side][piece][square]
 
     def _remove_piece(self, side: Color, piece: Piece, square: Square) -> None:
         self.color[square] = Color.NONE
         self.piece[square] = Piece.NONE
         self.piece_list[side][piece].remove(square)
         self.eval -= PIECE_SQUARE_VALUE[side][piece][square]
+        self.hash ^= HASH_VALUE[side][piece][square]
 
     def _replace_piece(self, old_side: Color, old_piece: Piece,
                        new_side: Color, new_piece: Piece, square: Square) -> None:
@@ -417,3 +432,4 @@ class Board:
         self.piece_list[old_side][old_piece].remove(square)
         self.piece_list[new_side][new_piece].add(square)
         self.eval += PIECE_SQUARE_VALUE[new_side][new_piece][square] - PIECE_SQUARE_VALUE[old_side][old_piece][square]
+        self.hash ^= HASH_VALUE[new_side][new_piece][square] ^ HASH_VALUE[old_side][old_piece][square]
