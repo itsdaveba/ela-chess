@@ -5,12 +5,13 @@ from datetime import datetime
 from .history import History
 from .player import Player, HumanPlayer
 
+from ..engine.engine import EnginePlayer
+
 from ..move.move import Move
 
 from ..position.color import Color
+from ..position.counter import Counter
 from ..position.position import Position, SIDE_STRING
-
-from ..search.engine import EnginePlayer
 
 
 STARTING_POSITION_FEN: str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
@@ -52,6 +53,22 @@ class ChessGame:
 
     def __str__(self) -> str:
         return self.pgn
+
+    @property
+    def side(self) -> Color:
+        return self.position.side
+
+    @property
+    def halfmove(self) -> Counter:
+        return self.position.halfmove
+
+    @property
+    def eval(self) -> int:
+        return self.position.eval
+
+    @property
+    def pseudo_legal_moves(self) -> list[Move]:
+        return self.position.pseudo_legal_moves
 
     @property
     def pgn(self) -> str:
@@ -99,6 +116,9 @@ class ChessGame:
 
     def display(self) -> None:
         print(self.position)
+
+    def in_check(self) -> bool:
+        return self.position.in_check(self.position.side)
 
     def make_move(self, move: Move | str, verbose: bool = False) -> bool:
         if isinstance(move, str):
@@ -166,7 +186,7 @@ class ChessGame:
 
         while self.playing:
             player = white if self.position.side == Color.WHITE else black
-            move = player.search(self.position.copy(), time, depth, nodes)
+            move = player.search(self, time, depth, nodes)
 
             if isinstance(move, str):
                 if move in ("exit", "quit", "resign"):
@@ -232,7 +252,7 @@ class ChessGame:
         try:
             move = Move.from_string(move_str)
         except ValueError:
-            if verbose:  # pragma: no cover
+            if verbose:
                 print(f"Invalid move: '{move_str}'")
             return None
 
@@ -240,6 +260,6 @@ class ChessGame:
             moves = self.position.pseudo_legal_moves
             return moves[moves.index(move)]
         except ValueError:
-            if verbose:  # pragma: no cover
+            if verbose:
                 print(f"Illegal move: '{move}'")
             return None

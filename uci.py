@@ -106,7 +106,7 @@ if __name__ == "__main__":
                 except ValueError:
                     pass
 
-                search_thread = Thread(target=search, args=(engine, game.position.copy(), time, depth, nodes, True))
+                search_thread = Thread(target=search, args=(engine, game, time, depth, nodes, True))
                 search_thread.start()
 
             case "stop":

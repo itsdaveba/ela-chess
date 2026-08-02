@@ -12,6 +12,7 @@ def test_game(monkeypatch, capsys):
     game = ChessGame()
     assert repr(game) == "ChessGame(white=None, black=None, result=None, history=[])"
     assert game.has_legal_moves()
+    assert not game.in_check()
 
     assert game.make_move("e2e4")
     assert repr(game) == "ChessGame(white=None, black=None, result=None, history=[Move.E2E4])"
@@ -29,6 +30,7 @@ def test_game(monkeypatch, capsys):
     game = ChessGame("rnb1kbnr/pppp1ppp/8/4p3/6Pq/5P2/PPPPP2P/RNBQKBNR w KQkq - 0 1")
     assert repr(game) == "ChessGame(fen='rnb1kbnr/pppp1ppp/8/4p3/6Pq/5P2/PPPPP2P/RNBQKBNR w KQkq - 0 1', \
 white=None, black=None, result=None, history=[])"
+    assert game.in_check()
     assert not game.has_legal_moves()
     assert not game.make_move("e2e4")
 
@@ -48,6 +50,9 @@ white=None, black=None, result=None, history=[])"
 [Result "*"]
 
 """
+
+    assert not game.make_move("xxxx", False)
+    assert not game.make_move("e2e2", False)
 
     game = ChessGame("7k/5K2/8/6Q1/8/8/P7/8 w - - 97 1")
     monkeypatch.setattr('sys.stdin', io.StringIO("g5g6"))

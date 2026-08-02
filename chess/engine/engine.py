@@ -1,12 +1,16 @@
 import sys
 import time
 import random
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from ..game.game import ChessGame
 
 from ..game.player import Player
 
 from ..move.move import Move
 
-from ..position.position import Color, Position
+from ..position.position import Color
 
 
 MAX_DEPTH: int = 128
@@ -25,7 +29,7 @@ class EnginePlayer(Player):
         self.stop: bool
         self.max_nodes: int
         self.max_time: float
-        self.best_move: Move
+        self.best_move: Move | str
         self.pv: list[list[Move]]
 
     def print_uci_info(self, depth: int, score_type: str, score: int, time_elapsed: float, pv: list[Move]) -> None:
@@ -45,7 +49,7 @@ class EnginePlayer(Player):
         sys.stdout.write(f"pv {' '.join(map(str, pv))}\n")
         sys.stdout.flush()
 
-    def search(self, position: Position, max_time: int, max_depth: int,
+    def search(self, game: "ChessGame", max_time: int, max_depth: int,
                max_nodes: int, print_uci_info: bool = False) -> Move | str:
         self.nodes = 0
         self.stop = False
@@ -54,32 +58,43 @@ class EnginePlayer(Player):
         start_time = time.perf_counter()
         self.max_time = max_time if max_time <= 0 else start_time + max_time / 1000
 
-        moves = position.pseudo_legal_moves
+        no_legal_moves = True
+        moves = game.pseudo_legal_moves
         random.shuffle(moves)
-        self.best_move = moves[0]
+
+        for move in moves:
+            if game.make_move(move):
+                no_legal_moves = False
+                self.best_move = move
+                game.undo_move()
+                break
+
+        if no_legal_moves:
+            if print_uci_info:
+                sys.stdout.write(f"info depth 0 score {'mate' if game.in_check() else 'cp'} 0\n")
+                sys.stdout.flush()
+            self.best_move = "(none)"
+            return self.best_move
 
         if max_depth < 0:
             max_depth = MAX_DEPTH
         self.pv = [[moves[0]] * depth for depth in range(max_depth, -1, -1)]
-
-        side = position.side
 
         for depth in range(1, max_depth + 1):
             alpha = MIN_SCORE
             random.shuffle(moves)
 
             for move in moves:
-                irrev = position.make_move(move)
-                if not position.in_check(side):
+                if game.make_move(move):
                     try:
-                        score = -self.negamax(position, MIN_SCORE, -alpha, depth - 1, 1)
+                        score = -self.negamax(game, MIN_SCORE, -alpha, depth - 1, 1)
                     except TimeoutError:
                         return self.best_move
+                    game.undo_move()
                     if score > alpha:
                         alpha = score
                         self.pv[0][0] = move
                         self.pv[0][1:depth] = self.pv[1][:depth - 1]
-                position.undo_move(move, irrev)
 
             self.best_move = self.pv[0][0]
             time_elapsed = time.perf_counter() - start_time
@@ -95,7 +110,7 @@ class EnginePlayer(Player):
 
         return self.best_move
 
-    def negamax(self, position: Position, alpha: int, beta: int, depth: int, ply: int) -> int:
+    def negamax(self, game: "ChessGame", alpha: int, beta: int, depth: int, ply: int) -> int:
         self.nodes += 1
 
         if self.nodes % TIME_CONTROL_FREQ == 0:
@@ -106,28 +121,28 @@ class EnginePlayer(Player):
             if self.max_time >= 0 and time.perf_counter() > self.max_time:
                 raise TimeoutError
 
-        if depth == 0:
-            return position.eval if position.side == Color.WHITE else -position.eval
+        if game.repetition() or game.halfmove.value >= 100:
+            return 0
 
-        side = position.side
+        if depth == 0:
+            return game.eval if game.side == Color.WHITE else -game.eval
+
         no_legal_moves = True
-        moves = position.pseudo_legal_moves
+        moves = game.pseudo_legal_moves
         random.shuffle(moves)
 
         for move in moves:
-            irrev = position.make_move(move)
-            if not position.in_check(side):
+            if game.make_move(move):
                 no_legal_moves = False
-                score = -self.negamax(position, -beta, -alpha, depth - 1, ply + 1)
+                score = -self.negamax(game, -beta, -alpha, depth - 1, ply + 1)
+                game.undo_move()
                 if score >= beta:
-                    position.undo_move(move, irrev)
                     return beta
                 if score > alpha:
                     alpha = score
                     self.pv[ply][0] = move
-                    self.pv[ply][1:depth] = self.pv[ply+1][:depth - 1]
-            position.undo_move(move, irrev)
+                    self.pv[ply][1:depth] = self.pv[ply+1][:depth - 1]  # TODO fix illegal pv
 
         if no_legal_moves:
-            return (MIN_SCORE + ply) if position.in_check(side) else 0
+            return (MIN_SCORE + ply) if game.in_check() else 0
         return alpha

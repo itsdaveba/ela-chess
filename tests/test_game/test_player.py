@@ -1,22 +1,22 @@
 import io
 
-from chess import HumanPlayer, EnginePlayer, Position, Move
+from chess import HumanPlayer, EnginePlayer, ChessGame, Move
 
 
 def test_player(monkeypatch):
-    position = Position("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+    game = ChessGame()
 
     # human
     player = HumanPlayer()
     assert repr(player) == "Human"
 
     monkeypatch.setattr('sys.stdin', io.StringIO("e2e4"))
-    move = player.search(position.copy(), -1, -1, -1)
+    move = player.search(game, -1, -1, -1)
     assert move == "e2e4"
 
     # engine
     player = EnginePlayer()
     assert repr(player) == "Engine"
 
-    move = player.search(position.copy(), -1, 1, -1)
+    move = player.search(game, -1, 1, -1)
     assert isinstance(move, Move)

@@ -1,3 +1,5 @@
+from .engine.engine import EnginePlayer
+
 from .game.game import ChessGame
 from .game.history import History
 from .game.player import Player, HumanPlayer
@@ -11,8 +13,6 @@ from .position.counter import Counter
 from .position.castling import Castling
 from .position.position import Position, perft
 from .position.square import Square, File, Rank
-
-from .search.engine import EnginePlayer
 
 
 __all__ = ["ChessGame", "History", "Player", "HumanPlayer", "EnginePlayer", "Move", "MoveType",

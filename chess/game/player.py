@@ -1,8 +1,10 @@
+from typing import TYPE_CHECKING
 from abc import ABC, abstractmethod
 
-from ..move.move import Move
+if TYPE_CHECKING:
+    from ..game.game import ChessGame
 
-from ..position.position import Position
+from ..move.move import Move
 
 
 class Player(ABC):
@@ -12,7 +14,7 @@ class Player(ABC):
         return self.name
 
     @abstractmethod
-    def search(self, position: Position, max_time: int, max_depth: int,
+    def search(self, game: "ChessGame", max_time: int, max_depth: int,
                max_nodes: int, print_uci_info: bool = False) -> Move | str:
         ...
 
@@ -20,6 +22,6 @@ class Player(ABC):
 class HumanPlayer(Player):
     name = "Human"
 
-    def search(self, position: Position, max_time: int, max_depth: int,
+    def search(self, game: "ChessGame", max_time: int, max_depth: int,
                max_nodes: int, print_uci_info: bool = False) -> Move | str:
         return input("Move: ")
