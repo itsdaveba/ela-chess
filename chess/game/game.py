@@ -232,7 +232,7 @@ class ChessGame:
         try:
             move = Move.from_string(move_str)
         except ValueError:
-            if verbose:
+            if verbose:  # pragma: no cover
                 print(f"Invalid move: '{move_str}'")
             return None
 
@@ -240,6 +240,6 @@ class ChessGame:
             moves = self.position.pseudo_legal_moves
             return moves[moves.index(move)]
         except ValueError:
-            if verbose:
+            if verbose:  # pragma: no cover
                 print(f"Illegal move: '{move}'")
             return None
