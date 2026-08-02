@@ -100,9 +100,9 @@ class ChessGame:
     def display(self) -> None:
         print(self.position)
 
-    def make_move(self, move: Move | str) -> bool:
+    def make_move(self, move: Move | str, verbose: bool = False) -> bool:
         if isinstance(move, str):
-            parsed = self._parse_move(move)
+            parsed = self._parse_move(move, verbose)
 
             if parsed is None:
                 return False
@@ -113,7 +113,8 @@ class ChessGame:
         irrev = self.position.make_move(move)
 
         if self.position.in_check(side):
-            print(f"Illegal move: '{move}'")
+            if verbose:
+                print(f"Illegal move: '{move}'")
             self.position.undo_move(move, irrev)
             return False
 
@@ -186,12 +187,17 @@ class ChessGame:
             else:
                 print(f"Engine move: {move}")
 
-            if self.make_move(move):
+            if self.make_move(move, verbose=True):
                 print(f"\n{self.position}\n")
 
                 if not self.has_legal_moves():
                     self.playing = False
                     self.winner = self._get_winner()
+
+                elif self.repetition():
+                    print("Threefold repetition")
+                    self.playing = False
+                    self.winner = Color.NONE
 
                 elif self.position.halfmove.value >= 100:
                     print("Fifty-move rule")
@@ -203,6 +209,17 @@ class ChessGame:
         print(f"\nResult: {RESULT[self.winner]}")
         print("Draw\n" if self.winner == Color.NONE else f"{SIDE_STRING[self.winner]} wins\n")
 
+    def repetition(self) -> bool:
+        count = 0
+
+        for i in range(-4, -self.position.halfmove.value - 1, -2):
+            if self.position.hash == self.history.irrevs[i][-1]:
+                count += 1
+                if count == 2:
+                    return True
+
+        return False
+
     def _get_winner(self) -> Color:
         if self.position.in_check(self.position.side):
             print("Checkmate")
@@ -211,16 +228,18 @@ class ChessGame:
             print("Stalemate")
             return Color.NONE
 
-    def _parse_move(self, move_str: str) -> Move | None:
+    def _parse_move(self, move_str: str, verbose: bool) -> Move | None:
         try:
             move = Move.from_string(move_str)
         except ValueError:
-            print(f"Invalid move: '{move_str}'")
+            if verbose:
+                print(f"Invalid move: '{move_str}'")
             return None
 
         try:
             moves = self.position.pseudo_legal_moves
             return moves[moves.index(move)]
         except ValueError:
-            print(f"Illegal move: '{move}'")
+            if verbose:
+                print(f"Illegal move: '{move}'")
             return None

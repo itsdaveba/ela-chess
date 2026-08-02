@@ -34,7 +34,7 @@ if __name__ == "__main__":
 
             case "setoption":
                 name = tokens[2] if len(tokens) >= 3 else ""
-                sys.stdout.write(f"No such option: {name}\n")
+                sys.stdout.write(f"No such option: '{name}'\n")
                 sys.stdout.flush()
 
             case "isready":
@@ -52,10 +52,19 @@ if __name__ == "__main__":
                     game.reset()
                 elif param == "fen":
                     index = 9
-                    game.reset(" ".join(tokens[2:8]))
+                    fen = " ".join(tokens[2:8])
+                    try:
+                        game.reset(fen)
+                    except ValueError:
+                        sys.stdout.write(f"Invalid fen: '{fen}'\n")
+                        sys.stdout.flush()
+                        continue
                 if index:
                     for move in tokens[index:]:
-                        game.make_move(move)
+                        if not game.make_move(move):
+                            sys.stdout.write(f"Invalid move: '{move}'\n")
+                            sys.stdout.flush()
+                            break
 
             case "go":
                 time = depth = nodes = -1

@@ -5,7 +5,7 @@ from .piece import Piece
 from .square import Square
 from .counter import Counter
 from .castling import Castling
-from .board import Board, PAWN_FORWARD, CASTLING_FLAGS
+from .board import Board, PAWN_FORWARD, CASTLING_FLAGS, ATTACK_SQUARES
 
 from ..move.move import Move, MoveType
 
@@ -106,6 +106,7 @@ class Position:
         self.hash ^= HASH_SIDE[self.side]
         self.hash ^= HASH_CASTLING[self.castling]
         self.hash ^= HASH_EPSQUARE[self.epsquare.file]
+        self._update_epsquare(self.side)
 
     @property
     def eval(self) -> int:
@@ -152,6 +153,7 @@ class Position:
                 self.hash ^= HASH_EPSQUARE[self.epsquare.file]
             self.epsquare = PAWN_FORWARD[self.side][move.origin]
             self.hash ^= HASH_EPSQUARE[self.epsquare.file]
+            self._update_epsquare(self.side.opponent)
         elif self.epsquare != Square.NONE:
             self.hash ^= HASH_EPSQUARE[self.epsquare.file]
             self.epsquare = Square.NONE
@@ -178,3 +180,20 @@ class Position:
 
         if self.side == Color.BLACK:
             self.fullmove.decr()
+
+    def _update_epsquare(self, side: Color) -> None:
+        if self.epsquare != Square.NONE:
+            legal_epcapture = False
+            type = MoveType.PAWN_MOVE | MoveType.EPCAPTURE | MoveType.CAPTURE
+
+            for origin in ATTACK_SQUARES[Piece.PAWN][side.opponent][self.epsquare]:
+                if self.board.piece[origin] == Piece.PAWN and self.board.color[origin] == side:
+                    epmove = Move(origin, self.epsquare, type)
+                    capture = self.board.make_move(side, epmove)
+                    if not self.board.in_check(side):
+                        legal_epcapture = True
+                    self.board.undo_move(side, epmove, capture)
+
+            if not legal_epcapture:
+                self.hash ^= HASH_EPSQUARE[self.epsquare.file]
+                self.epsquare = Square.NONE
