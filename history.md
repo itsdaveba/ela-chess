@@ -17,3 +17,9 @@
 - Simplified evaluation function
 - Principal variation
 - UCI 'info' and 'stop' commands
+
+## v0.4
+- 0x88 board
+- Piece list
+- Zobrist hashing
+- Threefold repetition

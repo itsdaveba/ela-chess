@@ -27,7 +27,7 @@ if __name__ == "__main__":
 
         match command:
             case "uci":
-                sys.stdout.write("id name ElaChess 0.3\n")
+                sys.stdout.write("id name ElaChess 0.4\n")
                 sys.stdout.write("id author Dave Barragan\n")
                 sys.stdout.write("uciok\n")
                 sys.stdout.flush()
