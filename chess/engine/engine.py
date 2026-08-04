@@ -39,13 +39,14 @@ class EnginePlayer(Player):
             score_key: score,
             "nodes": self.nodes,
             "nps": int(self.nodes / time_elapsed),
-            "time": int(time_elapsed * 1000)
+            "time": int(time_elapsed * 1000),
+            "pv": " ".join(map(str, pv))
         }
 
-        sys.stdout.write("info ")
+        sys.stdout.write("info")
         for key in ["depth", score_key, "nodes", "nps", "time"]:
-            sys.stdout.write(f"{key} {info[key]} ")
-        sys.stdout.write(f"pv {' '.join(map(str, pv))}\n")
+            sys.stdout.write(f" {key} {info[key]}")
+        sys.stdout.write("\n")
         sys.stdout.flush()
 
     def search(self, game: "ChessGame", max_time: int, max_depth: int,

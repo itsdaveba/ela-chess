@@ -13,6 +13,7 @@ def test_game(monkeypatch, capsys):
     assert repr(game) == "ChessGame(white=None, black=None, result=None, history=[])"
     assert game.has_legal_moves()
     assert not game.in_check()
+    assert game.hash == game.position.hash
 
     assert game.make_move("e2e4")
     assert repr(game) == "ChessGame(white=None, black=None, result=None, history=[Move.E2E4])"

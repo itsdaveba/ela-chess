@@ -67,6 +67,10 @@ class ChessGame:
         return self.position.eval
 
     @property
+    def hash(self) -> int:
+        return self.position.hash
+
+    @property
     def pseudo_legal_moves(self) -> list[Move]:
         return self.position.pseudo_legal_moves
 
