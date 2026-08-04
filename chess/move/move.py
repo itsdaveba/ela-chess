@@ -6,6 +6,7 @@ from ..position.square import Square
 
 
 class MoveType(IntFlag):
+    NONE = 64
     PAWN_MOVE = 32
     PAWN_DOUBLE_MOVE = 16
     PROMOTION = 8
@@ -13,7 +14,7 @@ class MoveType(IntFlag):
     CAPTURE = 2
     CASTLE = 1
 
-    NONE = 0
+    NORMAL = 0
 
 
 @dataclass
@@ -24,6 +25,8 @@ class Move:
     promotion: Piece = Piece.NONE
 
     def __repr__(self) -> str:
+        if self.type == MoveType.NONE:
+            return "Move.NONE"
         return f"Move.{self.string.upper()}"
 
     def __str__(self) -> str:
@@ -43,16 +46,22 @@ class Move:
         return True
 
     @classmethod
+    def none(cls) -> "Move":
+        return cls(Square.NONE, Square.NONE, MoveType.NONE)
+
+    @classmethod
     def from_string(cls, string: str) -> "Move":
         if len(string) in (4, 5):
             origin = Square.from_string(string[0:2])
             target = Square.from_string(string[2:4])
             promotion = Piece.NONE if len(string) == 4 else Piece.from_char(string[4].upper())
-            return cls(origin, target, MoveType.NONE, promotion)
+            return cls(origin, target, MoveType.NORMAL, promotion)
         raise ValueError(f"invalid move string: '{string}'")
 
     @property
     def string(self) -> str:
+        if self.type == MoveType.NONE:
+            return "(none)"
         string = self.origin.string + self.target.string
         if self.promotion != Piece.NONE:
             string += self.promotion.char.lower()

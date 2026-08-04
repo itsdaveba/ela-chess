@@ -8,7 +8,7 @@ if TYPE_CHECKING:
 
 from ..game.player import Player
 
-from ..move.move import Move
+from ..move.move import Move, MoveType
 
 from ..position.position import Color
 
@@ -29,8 +29,7 @@ class EnginePlayer(Player):
         self.stop: bool
         self.max_nodes: int
         self.max_time: float
-        self.best_move: Move | str
-        self.pv: list[list[Move]]
+        self.best_move: Move
 
     def print_uci_info(self, depth: int, score_type: str, score: int, time_elapsed: float, pv: list[Move]) -> None:
         score_key = f"score {score_type}"
@@ -57,32 +56,29 @@ class EnginePlayer(Player):
 
         start_time = time.perf_counter()
         self.max_time = max_time if max_time <= 0 else start_time + max_time / 1000
+        self.best_move = Move.none()
 
-        no_legal_moves = True
         moves = game.pseudo_legal_moves
         random.shuffle(moves)
 
         for move in moves:
             if game.make_move(move):
-                no_legal_moves = False
                 self.best_move = move
                 game.undo_move()
                 break
 
-        if no_legal_moves:
+        if self.best_move.type == MoveType.NONE:
             if print_uci_info:
                 sys.stdout.write(f"info depth 0 score {'mate' if game.in_check() else 'cp'} 0\n")
                 sys.stdout.flush()
-            self.best_move = "(none)"
             return self.best_move
 
-        if max_depth < 0:
-            max_depth = MAX_DEPTH
-        self.pv = [[moves[0]] * depth for depth in range(max_depth, -1, -1)]
+        for depth in range(1, (MAX_DEPTH if max_depth < 0 else max_depth) + 1):
 
         for depth in range(1, max_depth + 1):
             alpha = MIN_SCORE
             random.shuffle(moves)
+            best_move = Move.none()
 
             for move in moves:
                 if game.make_move(move):
@@ -93,20 +89,19 @@ class EnginePlayer(Player):
                     game.undo_move()
                     if score > alpha:
                         alpha = score
-                        self.pv[0][0] = move
-                        self.pv[0][1:depth] = self.pv[1][:depth - 1]
+                        best_move = move
 
-            self.best_move = self.pv[0][0]
+            self.best_move = best_move
             time_elapsed = time.perf_counter() - start_time
 
             if abs(alpha) > MATE_CUTOFF:
                 if print_uci_info:
                     score = depth // 2 if alpha > 0 else -(depth // 2)
-                    self.print_uci_info(depth, "mate", score, time_elapsed, self.pv[0][:depth - 1])
+                    self.print_uci_info(depth, "mate", score, time_elapsed, [best_move])
                 return self.best_move
 
             if print_uci_info:
-                self.print_uci_info(depth, "cp", alpha, time_elapsed, self.pv[0][:depth])
+                self.print_uci_info(depth, "cp", alpha, time_elapsed, [best_move])
 
         return self.best_move
 
@@ -127,22 +122,24 @@ class EnginePlayer(Player):
         if depth == 0:
             return game.eval if game.side == Color.WHITE else -game.eval
 
-        no_legal_moves = True
         moves = game.pseudo_legal_moves
+
+        best_score = MIN_SCORE
         random.shuffle(moves)
+        best_move = Move.none()
 
         for move in moves:
             if game.make_move(move):
-                no_legal_moves = False
                 score = -self.negamax(game, -beta, -alpha, depth - 1, ply + 1)
                 game.undo_move()
                 if score >= beta:
-                    return beta
+                    return score
                 if score > alpha:
                     alpha = score
-                    self.pv[ply][0] = move
-                    self.pv[ply][1:depth] = self.pv[ply+1][:depth - 1]  # TODO fix illegal pv
+                if score > best_score:
+                    best_move = move
+                    best_score = score
 
-        if no_legal_moves:
+        if best_move.type == MoveType.NONE:
             return (MIN_SCORE + ply) if game.in_check() else 0
-        return alpha
+        return best_score

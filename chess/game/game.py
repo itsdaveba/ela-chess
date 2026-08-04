@@ -76,7 +76,7 @@ class ChessGame:
             pgn = [f'[Event "{EVENT[(type(self.white), type(self.black))]}"]']
         except KeyError:
             pgn = ['[Event "?"]']
-        pgn.append('[Site "Ela Chess"]')
+        pgn.append('[Site "ElaChess"]')
         pgn.append(f'[Date "{datetime.today().strftime("%Y.%m.%d")}"]')
         pgn.append('[Round "?"]')
         pgn.append(f'[White "{PLAYER_NAME[type(self.white)]}"]')

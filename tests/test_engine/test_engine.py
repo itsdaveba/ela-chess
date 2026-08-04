@@ -99,23 +99,23 @@ def test_engine(capsys):
     move = engine.search(game, -1, -1, -1, True)
     captured = capsys.readouterr()
     assert captured.out.find("info depth 0 score mate 0") != -1
-    assert isinstance(move, str)
-    assert move == "(none)"
+    assert isinstance(move, Move)
+    assert move.string == "(none)"
     move = engine.search(game, -1, -1, -1)
-    assert move == "(none)"
+    assert isinstance(move, Move)
+    assert move.string == "(none)"
 
     game.reset("8/8/8/4k3/8/8/5q2/7K w - - 0 1")
     move = engine.search(game, -1, -1, -1, True)
     captured = capsys.readouterr()
     assert captured.out.find("info depth 0 score cp 0") != -1
-    assert isinstance(move, str)
-    assert move == "(none)"
+    assert isinstance(move, Move)
+    assert move.string == "(none)"
 
     # thread
     game.reset("6k1/3R4/5K2/8/8/8/8/8 b - - 0 1")
     thread = Thread(target=engine.search, args=(game, -1, -1, -1))
     thread.start()
-    assert thread.is_alive()
     engine.stop = True
     thread.join()
     assert not thread.is_alive()

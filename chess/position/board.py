@@ -345,7 +345,7 @@ class Board:
         for direction in directions:
             for target in direction:
                 if self.color[target] == Color.NONE:
-                    moves.append(Move(origin, target, MoveType.NONE))
+                    moves.append(Move(origin, target, MoveType.NORMAL))
                     continue
                 if self.color[target] != side:
                     moves.append(Move(origin, target, MoveType.CAPTURE))

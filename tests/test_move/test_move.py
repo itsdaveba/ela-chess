@@ -8,6 +8,10 @@ def test_move():
     assert repr(move) == "Move.E2E4"
     assert str(move) == "e2e4"
 
+    move = Move.none()
+    assert repr(move) == "Move.NULL"
+    assert str(move) == "(none)"
+
     move = Move(Square.E7, Square.E8, MoveType.PAWN_MOVE | MoveType.PROMOTION, Piece.QUEEN)
     assert repr(move) == "Move.E7E8Q"
     assert str(move) == "e7e8q"
@@ -28,5 +32,6 @@ def test_move():
 
 
 def test_type():
-    assert len(MoveType) == 7
-    assert not MoveType.NONE
+    assert len(MoveType) == 8
+    assert MoveType.NONE
+    assert not MoveType.NORMAL

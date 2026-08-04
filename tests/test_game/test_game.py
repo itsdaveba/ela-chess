@@ -42,7 +42,7 @@ white=None, black=None, result=None, history=[])"
     assert repr(game) == "ChessGame(white=None, black=None, result=None, history=[])"
     assert str(game) == f"""\
 [Event "?"]
-[Site "Ela Chess"]
+[Site "ElaChess"]
 [Date "{datetime.today().strftime("%Y.%m.%d")}"]
 [Round "?"]
 [White "?"]
@@ -92,7 +92,7 @@ white=None, black=None, result=None, history=[])"
 white=Human, black=Engine, result=Color.WHITE, history=[Move.G5G4, Move.H8H7, Move.G4H4])"
     assert str(game) == f"""\
 [Event "Player vs Engine"]
-[Site "Ela Chess"]
+[Site "ElaChess"]
 [Date "{datetime.today().strftime("%Y.%m.%d")}"]
 [Round "?"]
 [White "Player"]
