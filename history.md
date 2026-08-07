@@ -23,3 +23,6 @@
 - Piece list
 - Zobrist hashing
 - Threefold repetition
+
+## v0.5
+- Transposition table
