@@ -3,10 +3,7 @@ from threading import Thread
 from time import perf_counter
 
 from chess import ChessGame, EnginePlayer, perft
-
-
-TIME_IDX = [2, 4]
-INCR_IDX = [6, 8]
+from chess.engine.engine import MIN_HASH_SIZE, MAX_HASH_SIZE, DEFAULT_HASH_SIZE
 
 
 def search(engine: EnginePlayer, *args) -> None:
@@ -29,13 +26,21 @@ if __name__ == "__main__":
             case "uci":
                 sys.stdout.write("id name ElaChess 0.5\n")
                 sys.stdout.write("id author Dave Barragan\n")
+                sys.stdout.write(f"option name Hash type spin default {DEFAULT_HASH_SIZE} ")
+                sys.stdout.write(f"min {MIN_HASH_SIZE} max {MAX_HASH_SIZE}\n")
                 sys.stdout.write("uciok\n")
                 sys.stdout.flush()
 
             case "setoption":
                 name = " ".join(tokens[2:])
                 try:
-                    raise Exception
+                    if tokens[2] == "Hash":
+                        value = int(tokens[4])
+                        if value < MIN_HASH_SIZE or value > MAX_HASH_SIZE:
+                            raise Exception
+                        engine.hash_size = value
+                    else:
+                        raise Exception
                 except Exception:
                     sys.stdout.write(f"No such option: '{name}'\n")
                     sys.stdout.flush()
@@ -45,7 +50,7 @@ if __name__ == "__main__":
                 sys.stdout.flush()
 
             case "ucinewgame":
-                pass
+                engine.reset()
 
             case "position":
                 try:
@@ -98,9 +103,10 @@ if __name__ == "__main__":
                         depth = int(tokens[2])
                     elif subcommand == "nodes":
                         nodes = int(tokens[2])
-                    elif subcommand == "wtime":
-                        side = game.side
-                        time = int(int(tokens[TIME_IDX[side]]) / 20 + int(tokens[INCR_IDX[side]]) / 2)
+                    else:
+                        t = [int(tokens[tokens.index("wtime") + 1]), int(tokens[tokens.index("btime") + 1])]
+                        inc = [int(tokens[tokens.index("winc") + 1]), int(tokens[tokens.index("binc") + 1])]
+                        time = int(t[game.side] / 20 + inc[game.side] / 2)
                 except Exception:
                     pass
 
@@ -116,6 +122,7 @@ if __name__ == "__main__":
 
             case "d":
                 sys.stdout.write(f"{game.position}\n")
+                sys.stdout.write(f"FEN: {game.position.fen}\n")
                 sys.stdout.flush()
 
             case "eval":

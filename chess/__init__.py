@@ -1,4 +1,5 @@
 from .engine.engine import EnginePlayer
+from .engine.ttentry import TTEntry, NodeType
 
 from .game.game import ChessGame
 from .game.history import History
@@ -15,5 +16,5 @@ from .position.position import Position, perft
 from .position.square import Square, File, Rank
 
 
-__all__ = ["ChessGame", "History", "Player", "HumanPlayer", "EnginePlayer", "Move", "MoveType",
-           "Color", "Piece", "Board", "Counter", "Castling", "Position", "perft", "Square", "File", "Rank"]
+__all__ = ["TTEntry", "NodeType", "ChessGame", "History", "Player", "HumanPlayer", "EnginePlayer", "Move",
+           "MoveType", "Color", "Piece", "Board", "Counter", "Castling", "Position", "perft", "Square", "File", "Rank"]

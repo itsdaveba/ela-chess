@@ -15,7 +15,7 @@ class Player(ABC):
 
     @abstractmethod
     def search(self, game: "ChessGame", max_time: int, max_depth: int,
-               max_nodes: int, print_uci_info: bool = False) -> Move | str:
+               max_nodes: int, print_info: bool = False) -> Move | str:
         ...
 
 
@@ -23,5 +23,5 @@ class HumanPlayer(Player):
     name = "Human"
 
     def search(self, game: "ChessGame", max_time: int, max_depth: int,
-               max_nodes: int, print_uci_info: bool = False) -> Move | str:
+               max_nodes: int, print_info: bool = False) -> Move | str:
         return input("Move: ")

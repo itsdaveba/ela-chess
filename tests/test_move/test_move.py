@@ -9,7 +9,7 @@ def test_move():
     assert str(move) == "e2e4"
 
     move = Move.none()
-    assert repr(move) == "Move.NULL"
+    assert repr(move) == "Move.NONE"
     assert str(move) == "(none)"
 
     move = Move(Square.E7, Square.E8, MoveType.PAWN_MOVE | MoveType.PROMOTION, Piece.QUEEN)

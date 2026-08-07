@@ -124,6 +124,18 @@ class ChessGame:
     def in_check(self) -> bool:
         return self.position.in_check(self.position.side)
 
+    def copy(self) -> "ChessGame":
+        copy = ChessGame(self.fen)
+        copy.playing = self.playing
+        copy.winner = self.winner
+        copy.white = self.white
+        copy.black = self.black
+
+        for move in self.history.moves:
+            copy.make_move(move)
+
+        return copy
+
     def make_move(self, move: Move | str, verbose: bool = False) -> bool:
         if isinstance(move, str):
             parsed = self._parse_move(move, verbose)
@@ -233,13 +245,13 @@ class ChessGame:
         print(f"\nResult: {RESULT[self.winner]}")
         print("Draw\n" if self.winner == Color.NONE else f"{SIDE_STRING[self.winner]} wins\n")
 
-    def repetition(self) -> bool:
+    def repetition(self, num: int = 3) -> bool:
         count = 0
 
         for i in range(-4, max(-self.position.halfmove.value - 1, -len(self.history) - 1), -2):
             if self.position.hash == self.history.irrevs[i][-1]:
                 count += 1
-                if count == 2:
+                if count == num - 1:
                     return True
 
         return False

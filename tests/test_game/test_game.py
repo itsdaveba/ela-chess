@@ -106,6 +106,16 @@ g5g4 h8h7 g4h4"""
     captured = capsys.readouterr()
     assert captured.out.find("Engine move: h8h7") != -1
 
+    copy = game.copy()
+    assert copy.fen == game.fen
+    assert copy.playing == game.playing
+    assert copy.winner == game.winner
+    for copy_move, game_move in zip(copy.history.moves, game.history.moves):
+        assert copy_move == game_move
+    assert copy.position == game.position
+    assert copy.white == game.white
+    assert copy.black == game.black
+
     game.save_pgn()
     captured = capsys.readouterr()
     assert captured.out.find("PGN file saved") != -1
