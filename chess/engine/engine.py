@@ -117,10 +117,10 @@ class EnginePlayer(Player):
 
         best_move = Move.none()
         key = game.hash % self.num_entries
+        ttentry = self.tt[key]
 
         for depth in range(1, (MAX_DEPTH if max_depth < 0 else max_depth) + 1):
 
-            ttentry = self.tt[key]
             if ttentry.hash == game.hash and ttentry.depth >= depth and ttentry.type == NodeType.PVNode:
                 alpha = ttentry.score
                 best_move = ttentry.best
@@ -144,6 +144,7 @@ class EnginePlayer(Player):
 
                 if ttentry.depth <= depth:
                     self.tt[key] = TTEntry(game.hash, best_move, depth, alpha, NodeType.PVNode)
+                    ttentry = self.tt[key]
 
             self.best_move = best_move
             time_elapsed = time.perf_counter() - start_time
