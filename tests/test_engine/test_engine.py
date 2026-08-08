@@ -1,6 +1,6 @@
 from threading import Thread
 
-from chess import EnginePlayer, ChessGame, Move
+from chess import EnginePlayer, ChessGame, Move, TTEntry, NodeType
 from chess.engine.engine import DEFAULT_HASH_SIZE
 
 
@@ -86,6 +86,24 @@ def test_engine(capsys):
     assert isinstance(move, Move)
     assert move.string == "e3e4"
 
+    game.reset("7k/4Q3/8/8/8/8/8/4K3 b - - 99 1")
+    move = engine.search(game, -1, 3, -1, True)
+    captured = capsys.readouterr()
+    assert captured.out.find("info depth 1 score cp 0") != -1
+    assert isinstance(move, Move)
+    assert move.string == "h8g8"
+    move = engine.search(game, 1000, -1, -1)
+    assert isinstance(move, Move)
+    assert move.string == "h8g8"
+    move = engine.search(game, -1, -1, 10000)
+    assert isinstance(move, Move)
+    assert move.string == "h8g8"
+
+    engine.tt[game.hash % engine.num_entries] = TTEntry(1, Move.none(), 3, 0, NodeType.CutNode)
+    move = engine.search(game, -1, 3, -1)
+    assert isinstance(move, Move)
+    assert move.string == "h8g8"
+
     game.reset("rnb1kbnr/pppp1ppp/8/4p3/6Pq/5P2/PPPPP2P/RNBQKBNR w KQkq - 1 3")
     move = engine.search(game, -1, -1, -1, True)
     captured = capsys.readouterr()
@@ -104,6 +122,7 @@ def test_engine(capsys):
     assert move.string == "(none)"
 
     # thread
+    engine.reset()
     game.reset("6k1/3R4/5K2/8/8/8/8/8 b - - 0 1")
     thread = Thread(target=engine.search, args=(game, -1, -1, -1))
     thread.start()
