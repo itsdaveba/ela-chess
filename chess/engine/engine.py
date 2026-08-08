@@ -121,26 +121,30 @@ class EnginePlayer(Player):
 
         for depth in range(1, (MAX_DEPTH if max_depth < 0 else max_depth) + 1):
 
-            alpha = MIN_SCORE
-            random.shuffle(moves)
+            if ttentry.hash == game.hash and ttentry.depth >= depth and ttentry.type == NodeType.PVNode:
+                alpha = ttentry.score
+                best_move = ttentry.best
+            else:
+                alpha = MIN_SCORE
+                random.shuffle(moves)
 
-            if ttentry.hash == game.hash and ttentry.depth:
-                moves.insert(0, moves.pop(moves.index(ttentry.best)))
+                if ttentry.hash == game.hash and ttentry.depth:
+                    moves.insert(0, moves.pop(moves.index(ttentry.best)))
 
-            for move in moves:
-                if game.make_move(move):
-                    try:
-                        score = -self.negamax(game, MIN_SCORE, -alpha, depth - 1, 1)
-                    except TimeoutError:
-                        return self.best_move
-                    game.undo_move()
-                    if score > alpha:
-                        alpha = score
-                        best_move = move
+                for move in moves:
+                    if game.make_move(move):
+                        try:
+                            score = -self.negamax(game, MIN_SCORE, -alpha, depth - 1, 1)
+                        except TimeoutError:
+                            return self.best_move
+                        game.undo_move()
+                        if score > alpha:
+                            alpha = score
+                            best_move = move
 
-            if ttentry.depth <= depth:
-                self.tt[key] = TTEntry(game.hash, best_move, depth, alpha, NodeType.PVNode)
-                ttentry = self.tt[key]
+                if ttentry.depth <= depth:
+                    self.tt[key] = TTEntry(game.hash, best_move, depth, alpha, NodeType.PVNode)
+                    ttentry = self.tt[key]
 
             self.best_move = best_move
             time_elapsed = time.perf_counter() - start_time
@@ -175,6 +179,14 @@ class EnginePlayer(Player):
 
         key = game.hash % self.num_entries
         ttentry = self.tt[key]
+
+        if ttentry.hash == game.hash and ttentry.depth >= depth:
+            if ttentry.type == NodeType.PVNode:
+                return ttentry.score
+            if ttentry.type == NodeType.CutNode and ttentry.score >= beta:
+                return ttentry.score
+            if ttentry.type == NodeType.AllNode and ttentry.score <= alpha:
+                return ttentry.score
 
         moves = game.pseudo_legal_moves
         random.shuffle(moves)
