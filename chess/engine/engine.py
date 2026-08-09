@@ -126,49 +126,71 @@ class EnginePlayer(Player):
                 sys.stdout.flush()
             return self.best_move
 
-        best_move = Move.none()
         key = game.hash % self.num_entries
         ttentry = self.tt[key]
+        score = game.eval if game.side == Color.WHITE else -game.eval
 
         for depth in range(1, (MAX_DEPTH if max_depth < 0 else max_depth) + 1):
 
             if ttentry.hash == game.hash and ttentry.depth >= depth and ttentry.type == NodeType.PVNode:
-                alpha = ttentry.score
+                score = ttentry.score
                 best_move = ttentry.best
             else:
-                alpha = MIN_SCORE
+                delta = 50
+                alpha = score - delta
+                beta = score + delta
                 random.shuffle(moves)
 
                 moves.insert(0, moves.pop(moves.index(self.best_move)))
 
-                for move in moves:
-                    if game.make_move(move):
-                        try:
-                            score = -self.negamax(game, MIN_SCORE, -alpha, depth - 1, 1)
-                        except TimeoutError:
-                            return self.best_move
-                        game.undo_move()
-                        if score > alpha:
-                            alpha = score
-                            best_move = move
+                while True:
+                    score, best_move = self.search_root(game, moves, alpha, beta, depth)
+                    if score >= beta:
+                        beta += delta
+                        delta *= 2
+                    elif score <= alpha:
+                        alpha -= delta
+                        delta *= 2
+                    else:
+                        break
 
                 if ttentry.depth <= depth:
-                    self.tt[key] = TTEntry(game.hash, best_move, depth, alpha, NodeType.PVNode)
+                    self.tt[key] = TTEntry(game.hash, best_move, depth, score, NodeType.PVNode)
                     ttentry = self.tt[key]
 
             self.best_move = best_move
             time_elapsed = time.perf_counter() - start_time
 
-            if abs(alpha) > MATE_CUTOFF:
+            if abs(score) > MATE_CUTOFF:
                 if print_info:
-                    score = depth // 2 if alpha > 0 else -(depth // 2)
+                    score = depth // 2 if score > 0 else -(depth // 2)
                     self.print_info(depth, "mate", score, time_elapsed, self.pv(game, best_move))
                 return self.best_move
 
             if print_info:
-                self.print_info(depth, "cp", alpha, time_elapsed, self.pv(game, best_move))
+                self.print_info(depth, "cp", score, time_elapsed, self.pv(game, best_move))
 
         return self.best_move
+
+    def search_root(self, game: "ChessGame", moves: list[Move], alpha: int, beta: int, depth: int) -> tuple[int, Move]:
+        best_move = Move.none()
+        best_score = MIN_SCORE
+
+        for move in moves:
+            if game.make_move(move):
+                score = -self.negamax(game, -beta, -alpha, depth - 1, 1)
+                game.undo_move()
+                if score >= beta:
+                    best_move = move
+                    best_score = score
+                    break
+                if score > alpha:
+                    alpha = score
+                if score > best_score:
+                    best_move = move
+                    best_score = score
+
+        return best_score, best_move
 
     def negamax(self, game: "ChessGame", alpha: int, beta: int, depth: int, ply: int) -> int:
         if depth == 0:
