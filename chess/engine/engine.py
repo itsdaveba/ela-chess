@@ -174,7 +174,7 @@ class EnginePlayer(Player):
             return 0
 
         if depth == 0:
-            return game.eval if game.side == Color.WHITE else -game.eval
+            return self.quiescence(game)
 
         key = game.hash % self.num_entries
         ttentry = self.tt[key]
@@ -220,3 +220,6 @@ class EnginePlayer(Player):
             self.tt[key] = TTEntry(game.hash, best_move, depth, best_score, type)
 
         return best_score
+
+    def quiescense(self, game: "ChessGame"):
+        return game.eval if game.side == Color.WHITE else -game.eval
