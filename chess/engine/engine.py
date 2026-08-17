@@ -160,6 +160,12 @@ class EnginePlayer(Player):
         return self.best_move
 
     def negamax(self, game: "ChessGame", alpha: int, beta: int, depth: int, ply: int) -> int:
+        if depth == 0:
+            return self.quiescence(game, alpha, beta)
+
+        if game.repetition(2) or game.halfmove.value >= 100:
+            return 0
+
         self.nodes += 1
 
         if self.nodes % TIME_CONTROL_FREQ == 0:
@@ -169,12 +175,6 @@ class EnginePlayer(Player):
                 raise TimeoutError
             if self.max_time >= 0 and time.perf_counter() > self.max_time:
                 raise TimeoutError
-
-        if game.repetition(2) or game.halfmove.value >= 100:
-            return 0
-
-        if depth == 0:
-            return self.quiescence(game)
 
         key = game.hash % self.num_entries
         ttentry = self.tt[key]
@@ -221,5 +221,34 @@ class EnginePlayer(Player):
 
         return best_score
 
-    def quiescense(self, game: "ChessGame"):
-        return game.eval if game.side == Color.WHITE else -game.eval
+    def quiescence(self, game: "ChessGame", alpha: int, beta: int) -> int:
+        self.nodes += 1
+
+        if self.nodes % TIME_CONTROL_FREQ == 0:
+            if self.stop:
+                raise TimeoutError
+            if self.max_nodes >= 0 and self.nodes >= self.max_nodes:
+                raise TimeoutError
+            if self.max_time >= 0 and time.perf_counter() > self.max_time:
+                raise TimeoutError
+
+        eval = game.eval if game.side == Color.WHITE else -game.eval  # TODO if eval >= beta or > alpha
+
+        moves = game.pseudo_legal_moves
+        random.shuffle(moves)
+
+        best_score = eval
+
+        for move in moves:
+            if move.type & MoveType.CAPTURE and game.make_move(move):
+                score = -self.quiescence(game, -beta, -alpha)
+                game.undo_move()
+                if score >= beta:
+                    best_score = score
+                    break
+                if score > alpha:
+                    alpha = score
+                if score > best_score:
+                    best_score = score
+
+        return best_score
