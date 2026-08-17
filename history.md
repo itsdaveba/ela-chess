@@ -26,3 +26,4 @@
 
 ## v0.5
 - Transposition table
+- Quiescence search
