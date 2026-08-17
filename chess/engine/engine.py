@@ -90,6 +90,17 @@ class EnginePlayer(Player):
         game.undo_move()
         return pv
 
+    def time_control(self):
+        self.nodes += 1
+
+        if self.nodes % TIME_CONTROL_FREQ == 0:
+            if self.stop:
+                raise TimeoutError
+            if self.max_nodes >= 0 and self.nodes >= self.max_nodes:
+                raise TimeoutError
+            if self.max_time >= 0 and time.perf_counter() > self.max_time:
+                raise TimeoutError
+
     def search(self, game: "ChessGame", max_time: int, max_depth: int,
                max_nodes: int, print_info: bool = False) -> Move | str:
         self.nodes = 0
@@ -166,15 +177,7 @@ class EnginePlayer(Player):
         if game.repetition(2) or game.halfmove.value >= 100:
             return 0
 
-        self.nodes += 1
-
-        if self.nodes % TIME_CONTROL_FREQ == 0:
-            if self.stop:
-                raise TimeoutError
-            if self.max_nodes >= 0 and self.nodes >= self.max_nodes:
-                raise TimeoutError
-            if self.max_time >= 0 and time.perf_counter() > self.max_time:
-                raise TimeoutError
+        self.time_control()
 
         key = game.hash % self.num_entries
         ttentry = self.tt[key]
@@ -222,22 +225,17 @@ class EnginePlayer(Player):
         return best_score
 
     def quiescence(self, game: "ChessGame", alpha: int, beta: int) -> int:
-        self.nodes += 1
+        self.time_control()
 
-        if self.nodes % TIME_CONTROL_FREQ == 0:
-            if self.stop:
-                raise TimeoutError
-            if self.max_nodes >= 0 and self.nodes >= self.max_nodes:
-                raise TimeoutError
-            if self.max_time >= 0 and time.perf_counter() > self.max_time:
-                raise TimeoutError
+        best_score = game.eval if game.side == Color.WHITE else -game.eval
 
-        eval = game.eval if game.side == Color.WHITE else -game.eval  # TODO if eval >= beta or > alpha
+        if best_score >= beta:
+            return best_score
+        if best_score > alpha:
+            alpha = best_score
 
         moves = game.pseudo_legal_moves
         random.shuffle(moves)
-
-        best_score = eval
 
         for move in moves:
             if move.type & MoveType.CAPTURE and game.make_move(move):
