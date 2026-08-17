@@ -75,6 +75,10 @@ class ChessGame:
         return self.position.pseudo_legal_moves
 
     @property
+    def pseudo_legal_captures(self) -> list[Move]:
+        return self.position.pseudo_legal_captures
+
+    @property
     def pgn(self) -> str:
         try:
             pgn = [f'[Event "{EVENT[(type(self.white), type(self.black))]}"]']

@@ -234,11 +234,11 @@ class EnginePlayer(Player):
         if best_score > alpha:
             alpha = best_score
 
-        moves = game.pseudo_legal_moves
+        moves = game.pseudo_legal_captures
         random.shuffle(moves)
 
         for move in moves:
-            if move.type & MoveType.CAPTURE and game.make_move(move):
+            if game.make_move(move):
                 score = -self.quiescence(game, -beta, -alpha)
                 game.undo_move()
                 if score >= beta:

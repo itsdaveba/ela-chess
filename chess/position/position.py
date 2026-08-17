@@ -114,7 +114,11 @@ class Position:
 
     @property
     def pseudo_legal_moves(self) -> list[Move]:
-        return self.board.generate_pseudo_legal_moves(self.side, self.castling, self.epsquare)
+        return self.board.generate_pseudo_legal_moves(self.side, self.castling, self.epsquare, only_captures=False)
+
+    @property
+    def pseudo_legal_captures(self) -> list[Move]:
+        return self.board.generate_pseudo_legal_moves(self.side, self.castling, self.epsquare, only_captures=True)
 
     def in_check(self, side: Color) -> bool:
         return self.board.in_check(side)

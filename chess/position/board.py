@@ -280,16 +280,20 @@ class Board:
             return self.is_attacked(next(iter(self.piece_list[side][Piece.KING])), side.opponent)
         return False
 
-    def generate_pseudo_legal_moves(self, side: Color, castling: Castling, epsquare: Square) -> list[Move]:
+    def generate_pseudo_legal_moves(self, side: Color, castling: Castling,
+                                    epsquare: Square, only_captures: bool) -> list[Move]:
         moves = []
 
         for piece, squares in zip(PIECES, self.piece_list[side]):
             for origin in squares:
                 if piece == Piece.PAWN:
-                    moves.extend(self._pawn_moves(side, origin, epsquare))
+                    if only_captures:
+                        moves.extend(self._pawn_capture_moves(side, origin, epsquare))
+                    else:
+                        moves.extend(self._pawn_moves(side, origin, epsquare))
                 else:
-                    moves.extend(self._piece_moves(side, piece, origin))
-                    if piece == Piece.KING and castling & CASTLING_FLAGS[side]:
+                    moves.extend(self._piece_moves(side, piece, origin, only_captures))
+                    if not only_captures and piece == Piece.KING and castling & CASTLING_FLAGS[side]:
                         moves.extend(self._castle_moves(side, origin, castling))
 
         return moves
@@ -337,7 +341,7 @@ class Board:
             return moves
         return [Move(origin, target, type)]
 
-    def _piece_moves(self, side: Color, piece: Piece, origin: Square) -> list[Move]:
+    def _piece_moves(self, side: Color, piece: Piece, origin: Square, only_captures: bool) -> list[Move]:
         moves = []
 
         is_sliding = piece.is_sliding
@@ -345,7 +349,8 @@ class Board:
         for direction in directions:
             for target in direction:
                 if self.color[target] == Color.NONE:
-                    moves.append(Move(origin, target, MoveType.NORMAL))
+                    if not only_captures:
+                        moves.append(Move(origin, target, MoveType.NORMAL))
                     continue
                 if self.color[target] != side:
                     moves.append(Move(origin, target, MoveType.CAPTURE))
