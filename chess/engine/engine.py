@@ -144,7 +144,10 @@ class EnginePlayer(Player):
                 moves.insert(0, moves.pop(moves.index(self.best_move)))
 
                 while True:
-                    score, best_move = self.search_root(game, moves, alpha, beta, depth)
+                    try:
+                        score, best_move = self.search_root(game, moves, alpha, beta, depth)
+                    except TimeoutError:
+                        return self.best_move
                     if score >= beta:
                         beta += delta
                         delta *= 2
