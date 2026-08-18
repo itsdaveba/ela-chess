@@ -281,7 +281,7 @@ class Board:
         return False
 
     def generate_pseudo_legal_moves(self, side: Color, castling: Castling,
-                                    epsquare: Square, only_captures: bool) -> list[Move]:
+                                    epsquare: Square, only_captures: bool = False) -> list[Move]:
         moves = []
 
         for piece, squares in zip(PIECES, self.piece_list[side]):

@@ -66,10 +66,12 @@ def test_move_generator():
     # king
     board.string = "8/8/8/5p2/3pKP2/3P4/8/8"
     assert len(board.generate_pseudo_legal_moves(Color.WHITE, Castling.NONE, Square.NONE)) == 6
+    assert len(board.generate_pseudo_legal_moves(Color.WHITE, Castling.NONE, Square.D6, True)) == 2
 
     # pawn
     board.string = "7q/5PP1/8/3pP3/2P4p/P5p1/1P5P/8"
     assert len(board.generate_pseudo_legal_moves(Color.WHITE, Castling.NONE, Square.D6)) == 21
+    assert len(board.generate_pseudo_legal_moves(Color.WHITE, Castling.NONE, Square.D6, True)) == 7
 
     # castling
     castling = Castling(15)

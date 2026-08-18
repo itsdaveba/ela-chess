@@ -60,6 +60,7 @@ white=None, black=None, result=None, history=[])"
     game.play(white, black, -1, 1, -1)
     captured = capsys.readouterr()
     assert captured.out.find("Stalemate") != -1
+    assert game.halfmove.value == 98
 
     game.undo_move()
     monkeypatch.setattr('sys.stdin', io.StringIO("resign"))

@@ -89,7 +89,7 @@ def test_engine(capsys):
     game.reset("7k/4Q3/8/8/8/8/8/4K3 b - - 99 1")
     move = engine.search(game, -1, 3, -1, True)
     captured = capsys.readouterr()
-    assert captured.out.find("info depth 1 score cp 0") != -1
+    assert captured.out.find("info depth 1 score cp -870") != -1
     assert isinstance(move, Move)
     assert move.string == "h8g8"
     move = engine.search(game, 1000, -1, -1)

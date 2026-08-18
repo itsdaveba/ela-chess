@@ -31,6 +31,7 @@ White to move
     assert not position.in_check(Color.BLACK)
 
     assert len(position.pseudo_legal_moves) == 38
+    assert len(position.pseudo_legal_captures) == 3
 
 
 def test_fen():
