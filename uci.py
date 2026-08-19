@@ -34,8 +34,8 @@ if __name__ == "__main__":
             case "setoption":
                 name = " ".join(tokens[2:])
                 try:
+                    value = int(tokens[4])
                     if tokens[2] == "Hash":
-                        value = int(tokens[4])
                         if value < MIN_HASH_SIZE or value > MAX_HASH_SIZE:
                             raise Exception
                         engine.hash_size = value
