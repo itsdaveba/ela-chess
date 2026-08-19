@@ -14,7 +14,7 @@ if __name__ == "__main__":
     parser.add_argument("fen", nargs="?")
     parser.add_argument("-w", "--white", choices=["human", "engine"], default="human", help="(default: human)")
     parser.add_argument("-b", "--black", choices=["human", "engine"], default="engine", help="(default: engine)")
-    parser.add_argument("-t", "--time", type=int, default=-1)
+    parser.add_argument("-t", "--time", type=int, default=-1, help="(milliseconds)")
     parser.add_argument("-d", "--depth", type=int, default=-1)
     parser.add_argument("-n", "--nodes", type=int, default=-1)
     parser.add_argument("-s", "--save", nargs="?", const="game.pgn", default=None)
